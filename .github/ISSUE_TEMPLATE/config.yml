@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
   - name: 安全漏洞
-    url: https://github.com/<owner>/<repo>/security/advisories/new
+    url: https://github.com/makotowu/btwaf-ce/security/advisories/new
     about: 请通过私密 Security Advisories 报告可利用漏洞，不要公开提交 Issue。
   - name: 使用文档
-    url: https://github.com/<owner>/<repo>#readme
+    url: https://github.com/makotowu/btwaf-ce#readme
     about: 安装、配置、卸载和常见问题。

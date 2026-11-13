@@ -25,7 +25,7 @@
 - 不需要构建前端：`static/` 是可直接加载的 Vue 3 + Element Plus UMD 资源。
 
 ```bash
-git clone <repo-url> btwaf-ce
+git clone https://github.com/makotowu/btwaf-ce btwaf-ce
 cd btwaf-ce
 cd tests && npm install && cd ..
 node tests/run.mjs

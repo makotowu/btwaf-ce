@@ -15,7 +15,7 @@
 
 请通过本仓库 GitHub 的私密漏洞报告 / Security Advisories 提交：
 
-`<repo-url>/security/advisories/new`
+`https://github.com/makotowu/btwaf-ce/security/advisories/new`
 
 如果该入口不可用，请通过仓库维护者资料中的联系方式请求私密渠道。
 

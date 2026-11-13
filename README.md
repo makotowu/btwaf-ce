@@ -87,7 +87,7 @@
 安装方式只推荐 Releases。以下仅用于开发/测试：
 
 ```bash
-git clone <repo-url> btwaf-ce && cd btwaf-ce
+git clone https://github.com/makotowu/btwaf-ce btwaf-ce && cd btwaf-ce
 node tests/run.mjs
 python tests/python/test_backend.py
 python tools/check_frontend.py

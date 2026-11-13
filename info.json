@@ -5,7 +5,7 @@
   "versions": "0.1.0",
   "checks": "/www/server/panel/plugin/btwaf_ce",
   "author": "makotowu",
-  "home": "",
+  "home": "https://github.com/makotowu/btwaf-ce",
   "type": "系统工具",
   "tip": "lib",
   "shell": "install.sh"
