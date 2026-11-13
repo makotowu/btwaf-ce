@@ -64,7 +64,7 @@ jobs:
           python tools/build_zip.py --version "$VERSION"
 
       - name: Upload zip
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: btwaf-ce-package
           path: dist/btwaf_ce-*.zip
