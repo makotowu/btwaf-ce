@@ -1,0 +1,121 @@
+{
+  "schema": 1,
+  "version": "0.1.0",
+  "enabled": true,
+  "observe": false,
+  "sensitivity": 2,
+  "block": {
+    "status": 403,
+    "use_custom": false,
+    "page": ""
+  },
+  "scan": {
+    "body_limit": 1048576,
+    "arg_limit": 8192,
+    "header_limit": 8192,
+    "upload_scan_limit": 20971520,
+    "max_args": 200
+  },
+  "log": {
+    "enabled": true,
+    "retain_days": 30,
+    "rotate_size": 52428800,
+    "snippet": 512
+  },
+  "cc": {
+    "open": true,
+    "cycle": 60,
+    "limit": 120,
+    "block_time": 300,
+    "status": 444,
+    "url_cc": false,
+    "skip_static": true
+  },
+  "attack_block": {
+    "open": true,
+    "cycle": 120,
+    "limit": 20,
+    "block_time": 1800
+  },
+  "modules": {
+    "sqli": {
+      "open": true,
+      "tier": 1
+    },
+    "xss": {
+      "open": true,
+      "tier": 1
+    },
+    "rce": {
+      "open": true,
+      "tier": 1
+    },
+    "lfi": {
+      "open": true,
+      "tier": 1
+    },
+    "php": {
+      "open": true,
+      "tier": 1
+    },
+    "java": {
+      "open": true,
+      "tier": 1
+    },
+    "scan": {
+      "open": true,
+      "tier": 1
+    },
+    "crawler": {
+      "open": true,
+      "tier": 1
+    },
+    "sensitive": {
+      "open": true,
+      "tier": 1
+    },
+    "upload": {
+      "open": true,
+      "tier": 1
+    },
+    "protocol": {
+      "open": true,
+      "tier": 1
+    },
+    "custom": {
+      "open": true,
+      "tier": 1
+    }
+  },
+  "lists": {
+    "ip_black": [],
+    "ip_white": [],
+    "url_black": [],
+    "url_white": [],
+    "ua_black": [],
+    "ua_white": [],
+    "param_white": []
+  },
+  "rule_exclude": {
+    "crs": [],
+    "ce": []
+  },
+  "trusted_proxies": [],
+  "crawler": {
+    "allow": [
+      "baiduspider",
+      "googlebot",
+      "bingbot",
+      "bytespider",
+      "sogou",
+      "360spider",
+      "yandex",
+      "duckduckbot",
+      "applebot"
+    ],
+    "block_fake": true
+  },
+  "fail_open": true,
+  "whitelist_first": true,
+  "update_time": 0
+}

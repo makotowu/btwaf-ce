@@ -1,0 +1,62 @@
+name: Bug report
+description: 报告可复现的问题
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢反馈。请先搜索现有 Issue，并删除日志中的凭据、真实 IP 和生产数据。
+        安全漏洞请不要使用此模板，按 SECURITY.md 的私密渠道报告。
+  - type: input
+    id: version
+    attributes:
+      label: 插件版本
+      placeholder: "例如 0.1.0"
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: 环境
+      description: 面板版本、Nginx 版本与 lua-nginx-module、Python 版本、系统版本
+      placeholder: |
+        - 面板:
+        - Nginx:
+        - Python:
+        - 系统:
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 问题描述
+      description: 发生了什么，期望是什么
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      placeholder: |
+        1.
+        2.
+        3.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 相关日志 / 配置
+      description: 请先脱敏
+      render: shell
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: 确认
+      options:
+        - label: 我已搜索现有 Issue，并确认不是重复问题
+          required: true
+        - label: 我已删除日志中的凭据、真实 IP 和生产数据
+          required: true
+        - label: 我理解这是社区项目，维护者按尽力而为的原则处理
+          required: true

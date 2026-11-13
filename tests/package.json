@@ -1,0 +1,14 @@
+{
+  "name": "btwaf-ce-tests",
+  "version": "1.0.0",
+  "private": true,
+  "description": "btwaf_ce Lua 引擎测试 harness（wasmoon 加载真实 Lua 文件，注入 ngx 垫片）",
+  "type": "module",
+  "scripts": {
+    "test": "node run.mjs"
+  },
+  "devDependencies": {
+    "wasmoon": "^1.16.0",
+    "vscode-oniguruma": "^2.0.1"
+  }
+}

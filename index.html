@@ -1,0 +1,141 @@
+<!-- AUTO DARK THEME --->
+<div id="app">
+    <div style="padding:24px;font-size:13px;color:var(--el-text-color-secondary,#909399)">宝塔WAF社区版 控制台加载中…</div>
+</div>
+
+<script>
+    /* [btwaf_ce] 计算插件根路径并动态加载版本化资源。 */
+    (function () {
+        var BASE = '/btwaf_ce';
+        var VERSION = '0.1.0';
+        try {
+            var path = window.location.pathname || '';
+            var idx = path.indexOf('btwaf_ce');
+            if (idx >= 0) BASE = path.substring(0, idx + 'btwaf_ce'.length).replace(/\/+$/, '') || BASE;
+        } catch (e) { /* 保底使用默认前缀 */ }
+        window.__btwafCeBase = BASE;
+
+        var loaded = false;
+        function withVersion(p) {
+            return BASE + p + (p.indexOf('?') < 0 ? '?' : '&') + 'v=' + encodeURIComponent(VERSION);
+        }
+        function addCss(p) {
+            var l = document.createElement('link');
+            l.rel = 'stylesheet';
+            l.href = withVersion(p);
+            document.head.appendChild(l);
+        }
+        function addScript(p) {
+            return new Promise(function (resolve, reject) {
+                var s = document.createElement('script');
+                s.src = withVersion(p);
+                s.async = false;
+                s.onload = resolve;
+                s.onerror = function () { reject(new Error(p)); };
+                document.head.appendChild(s);
+            });
+        }
+        function fail(msg) {
+            var el = document.getElementById('app');
+            if (!el) return;
+            el.innerHTML = '<div style="padding:24px;font-size:13px;line-height:1.8;color:var(--el-color-danger,#db2828)">'
+                + '宝塔WAF社区版 控制台资源加载失败：' + String(msg)
+                + '<br>请刷新重试；若仍失败，请到「软件商店 → 第三方应用 → 宝塔WAF社区版」重新打开，'
+                + '或在「系统诊断」中执行一键修复。</div>';
+        }
+        function boot() {
+            if (loaded) return;
+            loaded = true;
+            addCss('/static/css/btp-panel.css');
+            addCss('/static/css/app.css');
+            addScript('/static/js/btp.js')
+                .then(function () { return addScript('/static/js/btp-components.js'); })
+                .then(function () { return addScript('/static/js/charts.js'); })
+                .then(function () { return addScript('/static/js/api.js'); })
+                .then(function () { return addScript('/static/js/app.js'); })
+                .catch(function (e) { fail((e && e.message) || e); });
+        }
+        fetch(BASE + '/static/version.json?t=' + Date.now(), { cache: 'no-store' })
+            .then(function (r) { return r.ok ? r.json() : {}; })
+            .then(function (d) { if (d && d.version) VERSION = String(d.version); })
+            .then(function () { window.__BTWAF_ASSET_VERSION = VERSION; })
+            .catch(function () { /* 保留内置版本号 */ })
+            .then(boot);
+    })();
+</script>
+
+<script>
+    /* [btwaf_ce] 适配面板 layer：宽高随视口收缩，内容区内部滚动（避免底部内容被裁掉）。 */
+    (function () {
+        var TRIES = 80;
+        var tried = 0;
+        var timer = null;
+        function fit() {
+            tried++;
+            try {
+                if (!window.jQuery) return false;
+                var $ = window.jQuery;
+                var $page = $('.layui-layer-page');
+                if (!$page.length) return false;
+                var vw = window.innerWidth || document.documentElement.clientWidth || 1280;
+                var vh = window.innerHeight || document.documentElement.clientHeight || 800;
+                /* 浏览器缩放会改变 CSS 视口；宽高必须同时满足下限与视口上限，
+                   否则 layer 会超出窗口（右侧/底部被裁掉且无法滚动）。 */
+                var w = Math.min(1240, Math.max(360, vw - 48));
+                var h = Math.min(860, Math.max(320, vh - 48));
+                w = Math.min(w, Math.max(320, vw - 16));
+                h = Math.min(h, Math.max(280, vh - 16));
+                var $content = $page.find('.layui-layer-content');
+                var titleH = ($page.find('.layui-layer-title').outerHeight() || 42);
+                $page.addClass('waf-layer-page');
+                $page.find('.layui-layer-setwin .layui-layer-close')
+                    .removeClass('layui-layer-close2').addClass('layui-layer-close1');
+                $page.css({
+                    width: w + 'px',
+                    height: h + 'px',
+                    left: Math.max(8, Math.round((vw - w) / 2)) + 'px',
+                    top: Math.max(8, Math.round((vh - h) / 2)) + 'px'
+                });
+                if ($content.length) {
+                    $content.css({
+                        height: (h - titleH) + 'px',
+                        width: '100%',
+                        overflowY: 'hidden',
+                        overflowX: 'hidden',
+                        padding: 0,
+                        boxSizing: 'border-box'
+                    });
+                }
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        function start() {
+            if (fit()) return;
+            timer = setInterval(function () {
+                if (fit() || tried >= TRIES) {
+                    clearInterval(timer);
+                    timer = null;
+                }
+            }, 150);
+        }
+        if (window.jQuery) start();
+        else {
+            var boot = setInterval(function () {
+                if (window.jQuery) {
+                    clearInterval(boot);
+                    start();
+                }
+            }, 150);
+        }
+        window.addEventListener('resize', function () {
+            if (window.jQuery && jQuery('.layui-layer-page').length) fit();
+        });
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', function () {
+                if (window.jQuery && jQuery('.layui-layer-page').length) fit();
+            });
+        }
+    })();
+</script>

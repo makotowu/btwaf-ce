@@ -1,0 +1,530 @@
+-- origin=OWASP CRS v4.30.0 https://github.com/coreruleset/coreruleset (Apache-2.0)
+-- generated_by=tools/import_crs.py from REQUEST-941-APPLICATION-ATTACK-XSS.conf  DO NOT EDIT
+-- module=xss  rules=32
+
+return {
+  meta = {
+    module = "xss",
+    source = "crs",
+    crs_version = "4.30.0",
+    file = "REQUEST-941-APPLICATION-ATTACK-XSS.conf",
+    generated_by = "tools/import_crs.py",
+  },
+  rules = {
+    {
+      id = "crs-941100", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "XSS Attack Detected via libinjection",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "user-agent" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@detectXSS",
+          value = "",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Attack Detected via libinjection",
+    },
+    {
+      id = "crs-941101", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "XSS Attack Detected via libinjection",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_FILENAME" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "referer" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@detectXSS",
+          value = "",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Attack Detected via libinjection",
+    },
+    {
+      id = "crs-941110", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "XSS Filter - Category 1: Script Tag Vector",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_FILENAME" }, { type = "REQUEST_HEADERS", parse = { "all" } }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<script[^>]*>[\\s\\S]*?",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Filter - Category 1: Script Tag Vector",
+    },
+    {
+      id = "crs-941120", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "XSS Filter - Category 2: Event Handler Vector",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" } }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)[\\t-\\r \"'\\(,/-9;=`]on[a-z]{3,50}[\\t-\\r \\(,;]*?=[^=]",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Filter - Category 2: Event Handler Vector",
+    },
+    {
+      id = "crs-941130", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "XSS Filter - Category 3: Attribute Vector",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "user-agent" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i).(?:\\b(?:(?:x(?:link:href|html|mlns)|data:text/html|formaction)\\b|pattern[\\s\\x0b]*=)|(?:!ENTITY[\\s\\x0b]+(?:%[\\s\\x0b]+)?[^\\s\\x0b]+[\\s\\x0b]+(?:SYSTEM|PUBLIC)|@import|;base64)\\b)",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Filter - Category 3: Attribute Vector",
+    },
+    {
+      id = "crs-941140", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "XSS Filter - Category 4: Javascript URI Vector",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "user-agent" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "referer" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls", "removeWhitespace" },
+          op = "@rx",
+          value = "(?i)[a-z]+=(?:[^:=]+:[^;]+;)*?[^:=]+:url\\(javascript",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Filter - Category 4: Javascript URI Vector",
+    },
+    {
+      id = "crs-941150", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "XSS Filter - Category 5: Disallowed HTML Attributes",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "user-agent" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)\\b(?:s(?:tyle|rc)|href)\\b[\\s\\S]*?=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS Filter - Category 5: Disallowed HTML Attributes",
+    },
+    {
+      id = "crs-941160", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "NoScript XSS InjectionChecker: HTML Injection",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "user-agent" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "referer" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<[^0-9<>A-Z_a-z]*(?:[^\\s\\x0b\"'<>]*:)?[^0-9<>A-Z_a-z]*[^0-9A-Z_a-z]*?(?:s[^0-9A-Z_a-z]*?(?:c[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?p[^0-9A-Z_a-z]*?t|t[^0-9A-Z_a-z]*?y[^0-9A-Z_a-z]*?l[^0-9A-Z_a-z]*?e|v[^0-9A-Z_a-z]*?g|e[^0-9A-Z_a-z]*?t[^0-9>A-Z_a-z])|f[^0-9A-Z_a-z]*?o[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?m|d[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?a[^0-9A-Z_a-z]*?l[^0-9A-Z_a-z]*?o[^0-9A-Z_a-z]*?g|m[^0-9A-Z_a-z]*?(?:a[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?q[^0-9A-Z_a-z]*?u[^0-9A-Z_a-z]*?e[^0-9A-Z_a-z]*?e|e[^0-9A-Z_a-z]*?t[^0-9A-Z_a-z]*?a[^0-9>A-Z_a-z])|(?:l[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?n[^0-9A-Z_a-z]*?k|o[^0-9A-Z_a-z]*?b[^0-9A-Z_a-z]*?j[^0-9A-Z_a-z]*?e[^0-9A-Z_a-z]*?c[^0-9A-Z_a-z]*?t|e[^0-9A-Z_a-z]*?m[^0-9A-Z_a-z]*?b[^0-9A-Z_a-z]*?e[^0-9A-Z_a-z]*?d|a[^0-9A-Z_a-z]*?(?:p[^0-9A-Z_a-z]*?p[^0-9A-Z_a-z]*?l[^0-9A-Z_a-z]*?e[^0-9A-Z_a-z]*?t|u[^0-9A-Z_a-z]*?d[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?o|n[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?m[^0-9A-Z_a-z]*?a[^0-9A-Z_a-z]*?t[^0-9A-Z_a-z]*?e)|p[^0-9A-Z_a-z]*?a[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?a[^0-9A-Z_a-z]*?m|i?[^0-9A-Z_a-z]*?f[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?a[^0-9A-Z_a-z]*?m[^0-9A-Z_a-z]*?e|b[^0-9A-Z_a-z]*?(?:a[^0-9A-Z_a-z]*?s[^0-9A-Z_a-z]*?e|o[^0-9A-Z_a-z]*?d[^0-9A-Z_a-z]*?y|i[^0-9A-Z_a-z]*?n[^0-9A-Z_a-z]*?d[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?n[^0-9A-Z_a-z]*?g[^0-9A-Z_a-z]*?s)|i[^0-9A-Z_a-z]*?m[^0-9A-Z_a-z]*?a?[^0-9A-Z_a-z]*?g[^0-9A-Z_a-z]*?e?|v[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?d[^0-9A-Z_a-z]*?e[^0-9A-Z_a-z]*?o)[^0-9>A-Z_a-z])|(?:<[0-9A-Z_a-z][^\\s\\x0b/]*[\\s\\x0b/]|[\"'](?:[^\\s\\x0b/]*[\\s\\x0b/])?)(?:background|formaction|lowsrc|on(?:a(?:bort|ctivate|d(?:apteradded|dtrack)|fter(?:print|(?:scriptexecu|upda)te)|lerting|n(?:imation(?:cancel|end|iteration|start)|tennastatechange)|ppcommand|u(?:dio(?:end|process|start)|xclick))|b(?:e(?:fore(?:(?:(?:(?:de)?activa|scriptexecu)t|toggl)e|c(?:opy|ut)|editfocus|input|p(?:aste|rint)|u(?:nload|pdate))|gin(?:Event)?)|l(?:ocked|ur)|oun(?:ce|dary)|roadcast|usy)|c(?:a(?:(?:ch|llschang)ed|nplay(?:through)?|rdstatechange)|(?:ell|fstate)change|h(?:a(?:rging(?:time)?cha)?nge|ecking)|l(?:ick|ose)|o(?:m(?:mand(?:update)?|p(?:lete|osition(?:end|start|update)))|n(?:nect(?:ed|ing)|t(?:extmenu|rolselect))|py)|u(?:echange|t))|d(?:ata(?:(?:availabl|chang)e|error|setc(?:hanged|omplete))|blclick|e(?:activate|livery(?:error|success)|vice(?:found|light|(?:mo|orienta)tion|proximity))|i(?:aling|s(?:abled|c(?:hargingtimechange|onnect(?:ed|ing))))|o(?:m(?:a(?:ctivate|ttrmodified)|(?:characterdata|subtree)modified|focus(?:in|out)|mousescroll|node(?:inserted(?:intodocument)?|removed(?:fromdocument)?))|wnloading)|r(?:ag(?:drop|e(?:n(?:d|ter)|xit)|(?:gestur|leav)e|over|start)|op)|urationchange)|e(?:mptied|n(?:abled|d(?:ed|Event)?|ter)|rror(?:update)?|xit)|f(?:ailed|i(?:lterchange|nish)|o(?:cus(?:in|out)?|rm(?:change|input))|ullscreenchange)|g(?:amepad(?:axismove|button(?:down|up)|(?:dis)?connected)|et)|h(?:ashchange|e(?:adphoneschange|l[dp])|olding)|i(?:cc(?:cardlockerror|infochange)|n(?:coming|put|valid))|key(?:down|press|up)|l(?:evelchange|o(?:ad(?:e(?:d(?:meta)?data|nd)|start)?|secapture)|y)|m(?:ark|essage|o(?:use(?:down|enter|(?:lea|mo)ve|o(?:ut|ver)|up|wheel)|ve(?:end|start)?|z(?:a(?:fterpaint|udioavailable)|(?:beforeresiz|orientationchang|t(?:apgestur|imechang))e|(?:edgeui(?:c(?:ancel|omplet)|start)e|network(?:down|up)loa)d|fullscreen(?:change|error)|m(?:agnifygesture(?:start|update)?|ouse(?:hittest|pixelscroll))|p(?:ointerlock(?:change|error)|resstapgesture)|rotategesture(?:start|update)?|s(?:crolledareachanged|wipegesture(?:end|start|update)?))))|no(?:match|update)|o(?:(?:bsolet|(?:ff|n)lin)e|pen|verflow(?:changed)?)|p(?:a(?:ge(?:hide|show)|int|(?:st|us)e)|lay(?:ing)?|o(?:inter(?:down|enter|(?:(?:lea|mo)v|rawupdat)e|o(?:ut|ver)|up)|p(?:state|up(?:hid(?:den|ing)|show(?:ing|n))))|ro(?:gress|pertychange))|r(?:atechange|e(?:adystatechange|ceived|movetrack|peat(?:Event)?|quest|s(?:et|ize|u(?:lt|m(?:e|ing)))|trieving)|ow(?:e(?:nter|xit)|s(?:delete|inserted)))|s(?:croll(?:end)?|e(?:arch|ek(?:complete|ed|ing)|lect(?:ionchange|start)?|n(?:ding|t)|t)|how|(?:ound|peech)(?:end|start)|t(?:a(?:lled|rt|t(?:echange|uschanged))|k(?:comma|sessione)nd|op)|u(?:bmit|ccess|spend)|vg(?:abort|error|(?:un)?load|resize|scroll|zoom))|t(?:ext|ime(?:out|update)|o(?:ggle|uch(?:cancel|en(?:d|ter)|(?:lea|mo)ve|start))|ransition(?:cancel|end|run|start))|u(?:n(?:derflow|handledrejection|load)|p(?:dateready|gradeneeded)|s(?:erproximity|sdreceived))|v(?:ersion|o(?:ic|lum)e)change|w(?:a(?:it|rn)ing|ebkit(?:animation(?:end|iteration|start)|(?:playbacktargetavailabilitychange|transitionen)d)|heel)|zoom)|ping|s(?:rc|tyle))[\\x08-\\n\\f\\r ]*?=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "NoScript XSS InjectionChecker: HTML Injection",
+    },
+    {
+      id = "crs-941170", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "NoScript XSS InjectionChecker: Attribute Injection",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "user-agent" }, { type = "REQUEST_HEADERS", parse = { "all" }, key = "referer" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)(?:[^0-9A-Z_a-z]|^)(?:javascript:(?:.+[\\(\\.<=\\[\\x5c]|.*?(?:\\bname\\b|\\x5c[ux][0-9]))|data:(?:(?:[a-z][0-9A-Z_a-z]+/[0-9A-Z_a-z][\\+\\-0-9A-Z_a-z]+[0-9A-Z_a-z])?[,;]|.*?(?:;.*?\\b(?:base64|charset=)|,.*?<.*?[0-9A-Z_a-z].*?>)))|@[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?m[^0-9A-Z_a-z]*?p[^0-9A-Z_a-z]*?o[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?t[^0-9A-Z_a-z]*?(?:/\\*.*?)?(?:[\"']|[^0-9A-Z_a-z]*?u[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?l.*?\\()|-[^0-9A-Z_a-z]*?m[^0-9A-Z_a-z]*?o[^0-9A-Z_a-z]*?z[^0-9A-Z_a-z]*?-[^0-9A-Z_a-z]*?b[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?n[^0-9A-Z_a-z]*?d[^0-9A-Z_a-z]*?i[^0-9A-Z_a-z]*?n[^0-9A-Z_a-z]*?g[^:]*?:[^0-9A-Z_a-z]*?u[^0-9A-Z_a-z]*?r[^0-9A-Z_a-z]*?l.*?\\(",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "NoScript XSS InjectionChecker: Attribute Injection",
+    },
+    {
+      id = "crs-941180", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "Node-Validator Deny List Keywords",
+      tags = { "application-multi", "language-multi", "platform-nodejs", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls", "lowercase" },
+          op = "@pm",
+          value = {
+            "-moz-binding", ".innerhtml", ".parentnode", "<!--", "<![cdata[", "document.body.appendchild",
+            "document.cookie", "document.domain", "document.queryselector", "document.write", "window.location",
+          },
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "Node-Validator Deny List Keywords",
+    },
+    {
+      id = "crs-941181", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "Node-Validator Deny List Keywords",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "lowercase", "removeNulls" },
+          op = "@contains",
+          value = "-->",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "Node-Validator Deny List Keywords",
+    },
+    {
+      id = "crs-941190", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<style.*?>.*?(?:@[\\x5ci]|(?:[:=]|&#x?0*(?:58|3[AD]|61);?).*?(?:[\\(\\x5c]|&#x?0*(?:40|28|92|5C);?))",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941200", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i:<.*[:]?vmlframe.*?[\\s/+]*?src[\\s/+]*=)",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941210", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "Javascript Word Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)(?:j|&#(?:0*(?:74|106)|x0*[46]A);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:a|&#(?:0*(?:65|97)|x0*[46]1);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:v|&#(?:0*(?:86|118)|x0*[57]6);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:a|&#(?:0*(?:65|97)|x0*[46]1);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:s|&#(?:0*(?:115|83)|x0*[57]3);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:c|&#(?:x0*[46]3|0*(?:99|67));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:r|&#(?:x0*[57]2|0*(?:114|82));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:i|&#(?:x0*[46]9|0*(?:105|73));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:p|&#(?:x0*[57]0|0*(?:112|80));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:t|&#(?:x0*[57]4|0*(?:116|84));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?::|&(?:#(?:0*58|x0*3A);?|colon;)).",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "Javascript Word Detected",
+    },
+    {
+      id = "crs-941220", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)(?:v|&#(?:0*(?:118|86)|x0*[57]6);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:b|&#(?:0*(?:98|66)|x0*[46]2);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:s|&#(?:0*(?:115|83)|x0*[57]3);)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:c|&#(?:x0*[46]3|0*(?:99|67));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:r|&#(?:x0*[57]2|0*(?:114|82));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:i|&#(?:x0*[46]9|0*(?:105|73));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:p|&#(?:x0*[57]0|0*(?:112|80));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?:t|&#(?:x0*[57]4|0*(?:116|84));)(?:[\\t\\n\\r]|&(?:#(?:0*(?:9|1[03])|x0*[AD]);?|(?:tab|newline);))*(?::|&(?:#(?:0*58|x0*3A);?|colon;)).",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941230", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<EMBED[\\s/+].*?(?:src|type).*?=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941240", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "lowercase", "removeNulls" },
+          op = "@rx",
+          value = "<[?]?import[\\s/+\\S]*?implementation[\\s/+]*?=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941250", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<META[\\s\\x0b\\+/].*?http-equiv[\\s\\x0b\\+/]*=[\\s\\x0b\\+/]*[\"'`]?(?:[crs]|&#x?0*(?:6[37]|43|99|[578][23]|11[45]);?)",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941260", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i:<META[\\s/+].*?charset[\\s/+]*=)",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941270", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<LINK[\\s/+].*?href[\\s/+]*=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941280", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<BASE[\\s/+].*?href[\\s/+]*=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941290", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<APPLET[\\s/+>]",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941300", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "utf8ToUnicode", "urlDecodeUni", "htmlEntityDecode", "jsDecode", "cssDecode", "removeNulls" },
+          op = "@rx",
+          value = "(?i)<OBJECT[\\s\\x0b\\+/].*?(?:type|c(?:ode(?:type)?|lassid)|data)[\\s\\x0b\\+/]*=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941320", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "Possible XSS Attack Detected - HTML Tag Handler",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242/63" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "jsDecode", "lowercase" },
+          op = "@rx",
+          value = "<(?:a(?:bbr|cronym|ddress|pplet|rea|udioscope)?|b(?:ase(?:front)?|do|gsound|ig|l(?:(?:ackfac|ockquot)e|ink)|ody|[qr]|utton)?|c(?:aption|enter|ite|o(?:de|l(?:group)?|mment))|d(?:[dt]|e?l|fn|i[rv])|em(?:bed)?|f(?:ieldset|n|o(?:nt|rm)|rame(?:set)?)|h(?:[1r]|ead|tml)|i(?:frame|layer|mg|n(?:put|s)|sindex)?|k(?:db|eygen)|l(?:a(?:bel|yer)|egend|i(?:mittext|nk|sting)?)|m(?:a(?:p|rquee)|e(?:nu|ta)|ulticol)|no(?:br|embed|frames|s(?:cript|martquotes))|o(?:bject|l|pt(?:group|ion))|p(?:aram|laintext|re)?|q|r(?:t|uby)|s(?:amp|cript|e(?:lect|rver)|hadow|idebar|mall|pa(?:cer|n)|t(?:r(?:ike|ong)|yle)|u[bp])?|t(?:(?:ab|it)le|body|[dr]|extarea|(?:foo)?t|h(?:ead)?)|ul?|(?:va|wb)r|xm[lp])[^0-9A-Z_a-z]",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "Possible XSS Attack Detected - HTML Tag Handler",
+    },
+    {
+      id = "crs-941330", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "htmlEntityDecode", "compressWhitespace" },
+          op = "@rx",
+          value = "(?i)[\"'] *(?:[^ '0-:_a-z~]|in).*?(?:(?:l|\\x5cu006C)(?:o|\\x5cu006F)(?:c|\\x5cu0063)(?:a|\\x5cu0061)(?:t|\\x5cu0074)(?:i|\\x5cu0069)(?:o|\\x5cu006F)(?:n|\\x5cu006E)|(?:n|\\x5cu006E)(?:a|\\x5cu0061)(?:m|\\x5cu006D)(?:e|\\x5cu0065)|(?:o|\\x5cu006F)(?:n|\\x5cu006E)(?:e|\\x5cu0065)(?:r|\\x5cu0072)(?:r|\\x5cu0072)(?:o|\\x5cu006F)(?:r|\\x5cu0072)|(?:v|\\x5cu0076)(?:a|\\x5cu0061)(?:l|\\x5cu006C)(?:u|\\x5cu0075)(?:e|\\x5cu0065)(?:O|\\x5cu004F)(?:f|\\x5cu0066)).*?=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941340", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "IE XSS Filters - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "htmlEntityDecode", "compressWhitespace" },
+          op = "@rx",
+          value = "(?i)[\"'][ ]*(?:[^a-z0-9~_:' ]|in).+?[.].+?=",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "IE XSS Filters - Attack Detected",
+    },
+    {
+      id = "crs-941350", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "UTF-7 Encoding IE XSS - Attack Detected",
+      tags = { "application-multi", "language-multi", "platform-internet-explorer", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "urlDecodeUni", "htmlEntityDecode", "jsDecode" },
+          op = "@rx",
+          value = "\\+ADw-.*(?:\\+AD4-|>)|<.*\\+AD4-",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "UTF-7 Encoding IE XSS - Attack Detected",
+    },
+    {
+      id = "crs-941360", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "JSFuck / Hieroglyphy obfuscation detected",
+      tags = { "application-multi", "language-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242/63" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = {  },
+          op = "@rx",
+          value = "![!+ ]\\[\\]",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "JSFuck / Hieroglyphy obfuscation detected",
+    },
+    {
+      id = "crs-941370", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "JavaScript global variable found",
+      tags = { "application-multi", "language-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242/63" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "urlDecodeUni", "compressWhitespace" },
+          op = "@rx",
+          value = "(?:self|document|t(?:his|op)|window)[\\s\\x0b]*(?:/\\*|[\\)\\[]).+?(?:\\]|\\*/)",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "JavaScript global variable found",
+    },
+    {
+      id = "crs-941380", module = "xss", tier = 2, score = 5, src = "crs",
+      name = "AngularJS client side template injection detected",
+      tags = { "application-multi", "language-multi", "attack-xss", "xss-perf-disable", "paranoia-level/2", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242/63" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = {  },
+          op = "@rx",
+          value = "\\{\\{.*?}}",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "AngularJS client side template injection detected",
+    },
+    {
+      id = "crs-941390", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "Javascript method detected",
+      tags = { "application-multi", "language-multi", "platform-nodejs", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "htmlEntityDecode", "jsDecode" },
+          op = "@rx",
+          value = "(?i)\\b(?:eval|set(?:timeout|interval)|new[\\s\\x0b]+Function|a(?:lert|tob)|btoa|(?:promp|impor)t|con(?:firm|sole\\.(?:log|dir))|fetch)[\\s\\x0b]*[\\(\\{]",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "Javascript method detected",
+    },
+    {
+      id = "crs-941400", module = "xss", tier = 1, score = 5, src = "crs",
+      name = "XSS JavaScript function without parentheses",
+      tags = { "application-multi", "language-multi", "attack-xss", "xss-perf-disable", "paranoia-level/1", "OWASP_CRS", "OWASP_CRS/ATTACK-XSS", "capec/1000/152/242" },
+      chain = {
+        {
+          vars = { { type = "REQUEST_COOKIES", parse = { "all" } }, { type = "REQUEST_COOKIES_NAMES" }, { type = "ARGS_NAMES" }, { type = "ARGS", parse = { "all" } }, { type = "REQUEST_FILENAME" } },
+          transforms = { "urlDecodeUni", "compressWhitespace" },
+          op = "@rx",
+          value = "((?:\\[[^\\]]*\\]|Reflect)[^\\.]*\\.).*(?:map|sort|apply)[^\\.]*\\..*call[^`]*`.*`",
+          negate = false,
+        },
+      },
+      status = 403,
+      msg = "XSS JavaScript function without parentheses",
+    },
+  },
+}

@@ -1,0 +1,5 @@
+{"id":"reg-sqli-comment-or","source":"regression","input":{"method":"GET","uri":"/?id=1%2F**%2FOR%2F**%2F1%3D1","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"sqli","rule":""}}
+{"id":"reg-sqli-comment-union","source":"regression","input":{"method":"GET","uri":"/?id=1%2F**%2FUNION%2F**%2FSELECT%2F**%2F1","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"sqli","rule":""}}
+{"id":"reg-sqli-comment-version","source":"regression","input":{"method":"GET","uri":"/?id=1%2F*!50000OR*%2F1%3D1","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"sqli","rule":""}}
+{"id":"reg-sqli-comment-benign-1","source":"regression","input":{"method":"GET","uri":"/?q=hello%2F**%2Fworld","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":false,"module":"","rule":""}}
+{"id":"reg-sqli-comment-benign-2","source":"regression","input":{"method":"GET","uri":"/?q=see%2F**%2Fthis","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":false,"module":"","rule":""}}

@@ -1,0 +1,8 @@
+{"id":"reg-cmdi-semicolon-id","source":"regression","input":{"method":"GET","uri":"/?cmd=%3Bid","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"rce","rule":"ce-rce-019"}}
+{"id":"reg-cmdi-pipe-id","source":"regression","input":{"method":"GET","uri":"/?cmd=%7Cid","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"rce","rule":"ce-rce-019"}}
+{"id":"reg-cmdi-and-id","source":"regression","input":{"method":"GET","uri":"/?cmd=%26%26id","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"rce","rule":"ce-rce-019"}}
+{"id":"reg-cmdi-whoami","source":"regression","input":{"method":"GET","uri":"/?cmd=%3Bwhoami","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"rce","rule":"ce-rce-019"}}
+{"id":"reg-cmdi-uname","source":"regression","input":{"method":"GET","uri":"/?cmd=%7Cuname%20-a","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":true,"module":"rce","rule":"ce-rce-019"}}
+{"id":"reg-cmdi-benign-id","source":"regression","input":{"method":"GET","uri":"/?q=id","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":false,"module":"","rule":""}}
+{"id":"reg-cmdi-benign-semicolon","source":"regression","input":{"method":"GET","uri":"/?q=foo%3Bbar","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":false,"module":"","rule":""}}
+{"id":"reg-cmdi-benign-param","source":"regression","input":{"method":"GET","uri":"/?q=valid%3Bparam","headers":{"Host":"localhost","User-Agent":"Mozilla/5.0"}},"expect":{"block":false,"module":"","rule":""}}

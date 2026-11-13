@@ -1,0 +1,4383 @@
+{
+  "crs_version": "4.30.0",
+  "generated_at": 1762992000,
+  "generated_by": "tools/import_crs.py",
+  "counts": {
+    "crs": 226,
+    "ce": 205,
+    "total": 431,
+    "skipped": 230
+  },
+  "rules": [
+    {
+      "id": "crs-911100",
+      "module": "protocol",
+      "name": "Method is not allowed by policy",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-913100",
+      "module": "scan",
+      "name": "Found User-Agent associated with security scanner",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920100",
+      "module": "protocol",
+      "name": "Invalid HTTP Request Line",
+      "tier": 1,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920120",
+      "module": "protocol",
+      "name": "Attempted multipart/form-data bypass",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920121",
+      "module": "protocol",
+      "name": "Attempted multipart/form-data bypass",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920160",
+      "module": "protocol",
+      "name": "Content-Length HTTP header is not numeric",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920170",
+      "module": "protocol",
+      "name": "GET or HEAD Request with Body Content",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920171",
+      "module": "protocol",
+      "name": "GET or HEAD Request with Transfer-Encoding",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920181",
+      "module": "protocol",
+      "name": "Content-Length and Transfer-Encoding headers present",
+      "tier": 1,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920200",
+      "module": "protocol",
+      "name": "Range: Too many fields (6 or more)",
+      "tier": 2,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920201",
+      "module": "protocol",
+      "name": "Range: Too many fields for pdf request (63 or more)",
+      "tier": 2,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920210",
+      "module": "protocol",
+      "name": "Multiple/Conflicting Connection Header Data Found",
+      "tier": 1,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920230",
+      "module": "protocol",
+      "name": "Multiple URL Encoding Detected",
+      "tier": 2,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920260",
+      "module": "protocol",
+      "name": "Unicode Full/Half Width Abuse Attack Attempt",
+      "tier": 1,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920270",
+      "module": "protocol",
+      "name": "Invalid character in request (null character)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920271",
+      "module": "protocol",
+      "name": "Invalid character in request (non printable characters)",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920272",
+      "module": "protocol",
+      "name": "Invalid character in request (outside of printable chars below ascii 127)",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920280",
+      "module": "protocol",
+      "name": "Request Missing a Host Header",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920290",
+      "module": "protocol",
+      "name": "Empty Host Header",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920300",
+      "module": "protocol",
+      "name": "Request Missing an Accept Header",
+      "tier": 3,
+      "score": 2,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920310",
+      "module": "protocol",
+      "name": "Request Has an Empty Accept Header",
+      "tier": 1,
+      "score": 2,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920311",
+      "module": "protocol",
+      "name": "Request Has an Empty Accept Header",
+      "tier": 1,
+      "score": 2,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920320",
+      "module": "protocol",
+      "name": "Missing User Agent Header",
+      "tier": 2,
+      "score": 2,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920330",
+      "module": "protocol",
+      "name": "Empty User Agent Header",
+      "tier": 1,
+      "score": 2,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920340",
+      "module": "protocol",
+      "name": "Content-Type header missing from request with non-zero Content-Length",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920350",
+      "module": "protocol",
+      "name": "Host header is a numeric IP address",
+      "tier": 1,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920470",
+      "module": "protocol",
+      "name": "Illegal Content-Type header",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920490",
+      "module": "protocol",
+      "name": "Request header x-up-devcap-post-charset detected in combination with prefix 'UP' to User-Agent",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920500",
+      "module": "protocol",
+      "name": "Attempt to access a backup or working file",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920510",
+      "module": "protocol",
+      "name": "Invalid Cache-Control request header",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920520",
+      "module": "protocol",
+      "name": "Accept-Encoding header exceeded sensible length",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920521",
+      "module": "protocol",
+      "name": "Illegal Accept-Encoding header",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920530",
+      "module": "protocol",
+      "name": "Multiple charsets detected in content type header",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920540",
+      "module": "protocol",
+      "name": "Possible Unicode character bypass detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920600",
+      "module": "protocol",
+      "name": "Illegal Accept header: charset parameter",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920610",
+      "module": "protocol",
+      "name": "Raw (unencoded) fragment in request URI",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920620",
+      "module": "protocol",
+      "name": "Multiple Content-Type Request Headers",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-920660",
+      "module": "protocol",
+      "name": "Obsolete Request-Range header detected",
+      "tier": 1,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921110",
+      "module": "protocol",
+      "name": "HTTP Request Smuggling Attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921120",
+      "module": "protocol",
+      "name": "HTTP Response Splitting Attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921130",
+      "module": "protocol",
+      "name": "HTTP Response Splitting Attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921140",
+      "module": "protocol",
+      "name": "HTTP Header Injection Attack via headers",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921150",
+      "module": "protocol",
+      "name": "HTTP Header Injection Attack via payload (CR/LF detected)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921151",
+      "module": "protocol",
+      "name": "HTTP Header Injection Attack via payload (CR/LF detected)",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921190",
+      "module": "protocol",
+      "name": "HTTP Splitting (CR/LF in request filename detected)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921200",
+      "module": "protocol",
+      "name": "LDAP Injection Attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921210",
+      "module": "protocol",
+      "name": "HTTP Parameter Pollution after detecting bogus char after parameter array",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921230",
+      "module": "protocol",
+      "name": "HTTP Range Header detected",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921240",
+      "module": "protocol",
+      "name": "mod_proxy attack attempt detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921421",
+      "module": "protocol",
+      "name": "Content-Type header: Dangerous content type outside the mime type declaration",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-921422",
+      "module": "protocol",
+      "name": "Content-Type header: Dangerous content type outside the mime type declaration",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-930100",
+      "module": "lfi",
+      "name": "Path Traversal Attack (/../) or (/.../)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-930110",
+      "module": "lfi",
+      "name": "Path Traversal Attack (/../) or (/.../)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-930120",
+      "module": "lfi",
+      "name": "OS File Access Attempt",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-930121",
+      "module": "lfi",
+      "name": "OS File Access Attempt in REQUEST_HEADERS",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-930130",
+      "module": "lfi",
+      "name": "Restricted File Access Attempt",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-930140",
+      "module": "lfi",
+      "name": "Restricted File Access Attempt: AI Coding Assistant Artifact",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-931100",
+      "module": "lfi",
+      "name": "Possible Remote File Inclusion (RFI) Attack: URL Parameter using IP Address",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-931110",
+      "module": "lfi",
+      "name": "Possible Remote File Inclusion (RFI) Attack: Common RFI Vulnerable Parameter Name used w/URL Payload",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-931120",
+      "module": "lfi",
+      "name": "Possible Remote File Inclusion (RFI) Attack: URL Payload Used w/Trailing Question Mark Character (?)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-931131",
+      "module": "lfi",
+      "name": "Possible Remote File Inclusion (RFI) Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932120",
+      "module": "rce",
+      "name": "Remote Command Execution: Windows PowerShell Command Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932125",
+      "module": "rce",
+      "name": "Remote Command Execution: Windows Powershell Alias Command Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932130",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Expression Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932131",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Expression Found",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932140",
+      "module": "rce",
+      "name": "Remote Command Execution: Windows FOR/IF Command Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932160",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Code Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932161",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Code Found in REQUEST_HEADERS",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932170",
+      "module": "rce",
+      "name": "Remote Command Execution: Shellshock (CVE-2014-6271)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932171",
+      "module": "rce",
+      "name": "Remote Command Execution: Shellshock (CVE-2014-6271)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932175",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix shell alias invocation",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932180",
+      "module": "rce",
+      "name": "Restricted File Upload Attempt",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932190",
+      "module": "rce",
+      "name": "Remote Command Execution: Wildcard bypass technique attempt",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932210",
+      "module": "rce",
+      "name": "Remote Command Execution: SQLite System Command Execution",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932220",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection with pipe",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932230",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection (2-3 chars)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932231",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932232",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932235",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection (command without evasion)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932236",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection (command without evasion)",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932237",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Code Found in REQUEST_HEADERS",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932238",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Code Found in REQUEST_HEADERS",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932239",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Command Injection found in user-agent or referer header",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932250",
+      "module": "rce",
+      "name": "Remote Command Execution: Direct Unix Command Execution",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932260",
+      "module": "rce",
+      "name": "Remote Command Execution: Direct Unix Command Execution",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932270",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Expression Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932271",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix Shell Expression Found",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932280",
+      "module": "rce",
+      "name": "Remote Command Execution: Brace Expansion Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932281",
+      "module": "rce",
+      "name": "Remote Command Execution: Brace Expansion Found",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932290",
+      "module": "rce",
+      "name": "Remote Command Execution: Quote evasion Found",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932300",
+      "module": "rce",
+      "name": "Remote Command Execution: SMTP Command Execution",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932301",
+      "module": "rce",
+      "name": "Remote Command Execution: SMTP Command Execution",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932310",
+      "module": "rce",
+      "name": "Remote Command Execution: IMAP Command Execution",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932311",
+      "module": "rce",
+      "name": "Remote Command Execution: IMAP Command Execution",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932320",
+      "module": "rce",
+      "name": "Remote Command Execution: POP3 Command Execution",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932321",
+      "module": "rce",
+      "name": "Remote Command Execution: POP3 Command Execution",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932330",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix shell history invocation",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932331",
+      "module": "rce",
+      "name": "Remote Command Execution: Unix shell history invocation",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932340",
+      "module": "rce",
+      "name": "Remote Command Execution: Direct Unix Command Execution (No Arguments)",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932350",
+      "module": "rce",
+      "name": "Remote Command Execution: Direct Unix Command Execution (No Arguments)",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932370",
+      "module": "rce",
+      "name": "Remote Command Execution: Windows Command Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932371",
+      "module": "rce",
+      "name": "Remote Command Execution: Windows Command Injection",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932380",
+      "module": "rce",
+      "name": "Remote Command Execution: Windows Command Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-932390",
+      "module": "rce",
+      "name": "Remote Command Execution: Shell Fork Bomb",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933100",
+      "module": "php",
+      "name": "PHP Injection Attack: PHP Open Tag Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933110",
+      "module": "php",
+      "name": "PHP Injection Attack: PHP Script File Upload Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933111",
+      "module": "php",
+      "name": "PHP Injection Attack: PHP Script File Upload Found",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933120",
+      "module": "php",
+      "name": "PHP Injection Attack: Configuration Directive Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933130",
+      "module": "php",
+      "name": "PHP Injection Attack: Variables Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933131",
+      "module": "php",
+      "name": "PHP Injection Attack: Variables Found",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933135",
+      "module": "php",
+      "name": "PHP Injection Attack: Variable Access Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933140",
+      "module": "php",
+      "name": "PHP Injection Attack: I/O Stream Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933151",
+      "module": "php",
+      "name": "PHP Injection Attack: Medium-Risk PHP Function Name Found",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933152",
+      "module": "php",
+      "name": "PHP Injection Attack: Medium-Risk PHP Function Name Found",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933153",
+      "module": "php",
+      "name": "PHP Injection Attack: Medium-Risk PHP Function Name Found",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933160",
+      "module": "php",
+      "name": "PHP Injection Attack: High-Risk PHP Function Call Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933161",
+      "module": "php",
+      "name": "PHP Injection Attack: Low-Value PHP Function Call Found",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933170",
+      "module": "php",
+      "name": "PHP Injection Attack: Serialized Object Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933180",
+      "module": "php",
+      "name": "PHP Injection Attack: Variable Function Call Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933190",
+      "module": "php",
+      "name": "PHP Injection Attack: PHP Closing Tag Found",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933200",
+      "module": "php",
+      "name": "PHP Injection Attack: Wrapper scheme detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-933220",
+      "module": "php",
+      "name": "PHP Injection Attack: PHP Session File Upload Attempt",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934100",
+      "module": "rce",
+      "name": "Node.js Injection Attack 1/2",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934101",
+      "module": "rce",
+      "name": "Node.js Injection Attack 2/2",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934110",
+      "module": "rce",
+      "name": "Possible Server Side Request Forgery (SSRF) Attack: Cloud provider metadata URL in Parameter",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934120",
+      "module": "rce",
+      "name": "Possible Server Side Request Forgery (SSRF) Attack: URL Parameter using IP Address",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934130",
+      "module": "rce",
+      "name": "JavaScript Prototype Pollution",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934140",
+      "module": "rce",
+      "name": "Perl Injection Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934150",
+      "module": "rce",
+      "name": "Ruby Injection Attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934170",
+      "module": "rce",
+      "name": "PHP data scheme attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934180",
+      "module": "rce",
+      "name": "SSTI Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934190",
+      "module": "rce",
+      "name": "Possible Server Side Request Forgery (SSRF) Attack: Scheme-less localhost or internal hostname detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934200",
+      "module": "rce",
+      "name": "Server-Side Template Injection (SSTI) Attack",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934210",
+      "module": "rce",
+      "name": "ORM Lookup Operator Injection",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-934220",
+      "module": "rce",
+      "name": "ORM Lookup Operator Injection via Nested Traversal",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941100",
+      "module": "xss",
+      "name": "XSS Attack Detected via libinjection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941101",
+      "module": "xss",
+      "name": "XSS Attack Detected via libinjection",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941110",
+      "module": "xss",
+      "name": "XSS Filter - Category 1: Script Tag Vector",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941120",
+      "module": "xss",
+      "name": "XSS Filter - Category 2: Event Handler Vector",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941130",
+      "module": "xss",
+      "name": "XSS Filter - Category 3: Attribute Vector",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941140",
+      "module": "xss",
+      "name": "XSS Filter - Category 4: Javascript URI Vector",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941150",
+      "module": "xss",
+      "name": "XSS Filter - Category 5: Disallowed HTML Attributes",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941160",
+      "module": "xss",
+      "name": "NoScript XSS InjectionChecker: HTML Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941170",
+      "module": "xss",
+      "name": "NoScript XSS InjectionChecker: Attribute Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941180",
+      "module": "xss",
+      "name": "Node-Validator Deny List Keywords",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941181",
+      "module": "xss",
+      "name": "Node-Validator Deny List Keywords",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941190",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941200",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941210",
+      "module": "xss",
+      "name": "Javascript Word Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941220",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941230",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941240",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941250",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941260",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941270",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941280",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941290",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941300",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941320",
+      "module": "xss",
+      "name": "Possible XSS Attack Detected - HTML Tag Handler",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941330",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941340",
+      "module": "xss",
+      "name": "IE XSS Filters - Attack Detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941350",
+      "module": "xss",
+      "name": "UTF-7 Encoding IE XSS - Attack Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941360",
+      "module": "xss",
+      "name": "JSFuck / Hieroglyphy obfuscation detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941370",
+      "module": "xss",
+      "name": "JavaScript global variable found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941380",
+      "module": "xss",
+      "name": "AngularJS client side template injection detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941390",
+      "module": "xss",
+      "name": "Javascript method detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-941400",
+      "module": "xss",
+      "name": "XSS JavaScript function without parentheses",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942100",
+      "module": "sqli",
+      "name": "SQL Injection Attack Detected via libinjection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942101",
+      "module": "sqli",
+      "name": "SQL Injection Attack Detected via libinjection",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942120",
+      "module": "sqli",
+      "name": "SQL Injection Attack: SQL Operator Detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942140",
+      "module": "sqli",
+      "name": "SQL Injection Attack: Common DB Names Detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942150",
+      "module": "sqli",
+      "name": "SQL Injection Attack: SQL function name detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942151",
+      "module": "sqli",
+      "name": "SQL Injection Attack: SQL function name detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942152",
+      "module": "sqli",
+      "name": "SQL Injection Attack: SQL function name detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942170",
+      "module": "sqli",
+      "name": "Detects SQL benchmark and sleep injection attempts including conditional queries",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942180",
+      "module": "sqli",
+      "name": "Detects basic SQL authentication bypass attempts 1/3",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942210",
+      "module": "sqli",
+      "name": "Detects chained SQL injection attempts 1/2",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942220",
+      "module": "sqli",
+      "name": "Looking for integer overflow attacks, these are taken from skipfish, except 2.2.2250738585072011e-308 is the \"magic number\" crash",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942230",
+      "module": "sqli",
+      "name": "Detects conditional SQL injection attempts",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942240",
+      "module": "sqli",
+      "name": "Detects MySQL charset switch and MSSQL DoS attempts",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942250",
+      "module": "sqli",
+      "name": "Detects MATCH AGAINST, MERGE and EXECUTE IMMEDIATE injections",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942251",
+      "module": "sqli",
+      "name": "Detects HAVING injections",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942260",
+      "module": "sqli",
+      "name": "Detects basic SQL authentication bypass attempts 2/3",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942270",
+      "module": "sqli",
+      "name": "Looking for basic sql injection. Common attack string for mysql, oracle and others",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942280",
+      "module": "sqli",
+      "name": "Detects Postgres pg_sleep injection, waitfor delay attacks and database shutdown attempts",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942290",
+      "module": "sqli",
+      "name": "Finds basic MongoDB SQL injection attempts",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942300",
+      "module": "sqli",
+      "name": "Detects MySQL comments, conditions and ch(a)r injections",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942310",
+      "module": "sqli",
+      "name": "Detects chained SQL injection attempts 2/2",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942320",
+      "module": "sqli",
+      "name": "Detects MySQL and PostgreSQL stored procedure/function injections",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942321",
+      "module": "sqli",
+      "name": "Detects MySQL and PostgreSQL stored procedure/function injections",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942330",
+      "module": "sqli",
+      "name": "Detects classic SQL injection probings 1/3",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942340",
+      "module": "sqli",
+      "name": "Detects basic SQL authentication bypass attempts 3/3",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942360",
+      "module": "sqli",
+      "name": "Detects concatenated basic SQL injection and SQLLFI attempts",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942361",
+      "module": "sqli",
+      "name": "Detects basic SQL injection based on keyword alter or union",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942362",
+      "module": "sqli",
+      "name": "Detects concatenated basic SQL injection and SQLLFI attempts",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942370",
+      "module": "sqli",
+      "name": "Detects classic SQL injection probings 2/3",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942380",
+      "module": "sqli",
+      "name": "SQL Injection Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942390",
+      "module": "sqli",
+      "name": "SQL Injection Attack using (X)OR",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942400",
+      "module": "sqli",
+      "name": "SQL Injection Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942410",
+      "module": "sqli",
+      "name": "SQL Injection Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942420",
+      "module": "sqli",
+      "name": "Restricted SQL Character Anomaly Detection (cookies): # of special characters exceeded (8)",
+      "tier": 3,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942430",
+      "module": "sqli",
+      "name": "Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (12)",
+      "tier": 2,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942431",
+      "module": "sqli",
+      "name": "Restricted SQL Character Anomaly Detection (args): # of special characters exceeded (6)",
+      "tier": 3,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942450",
+      "module": "sqli",
+      "name": "SQL Bin or Hex Encoding Identified",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942460",
+      "module": "sqli",
+      "name": "Meta-Character Anomaly Detection Alert - Repetitive Non-Word Characters",
+      "tier": 3,
+      "score": 3,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942470",
+      "module": "sqli",
+      "name": "SQL Injection Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942480",
+      "module": "sqli",
+      "name": "SQL Injection Attack",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942490",
+      "module": "sqli",
+      "name": "Detects classic SQL injection probings 3/3",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942500",
+      "module": "sqli",
+      "name": "MySQL in-line comment detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942510",
+      "module": "sqli",
+      "name": "SQLi bypass attempt by ticks or backticks detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942511",
+      "module": "sqli",
+      "name": "SQLi bypass attempt by ticks detected",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942520",
+      "module": "sqli",
+      "name": "Detects basic SQL authentication bypass attempts 4.0/4",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942522",
+      "module": "sqli",
+      "name": "Detects basic SQL authentication bypass attempts 4.1/4",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942530",
+      "module": "sqli",
+      "name": "SQLi query termination detected",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-942550",
+      "module": "sqli",
+      "name": "JSON-Based SQL Injection",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944100",
+      "module": "java",
+      "name": "Remote Command Execution: Suspicious Java class detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944130",
+      "module": "java",
+      "name": "Suspicious Java class detected",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944140",
+      "module": "java",
+      "name": "Java Injection Attack: Java Script File Upload Found",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944150",
+      "module": "java",
+      "name": "Potential Remote Command Execution: Log4j / Log4shell",
+      "tier": 1,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944151",
+      "module": "java",
+      "name": "Potential Remote Command Execution: Log4j / Log4shell",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944200",
+      "module": "java",
+      "name": "Magic bytes Detected, probable java serialization in use",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944210",
+      "module": "java",
+      "name": "Magic bytes Detected Base64 Encoded, probable java serialization in use",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944240",
+      "module": "java",
+      "name": "Remote Command Execution: Java serialization (CVE-2015-4852)",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944250",
+      "module": "java",
+      "name": "Remote Command Execution: Suspicious Java method detected",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944260",
+      "module": "java",
+      "name": "Remote Command Execution: Malicious class-loading payload",
+      "tier": 2,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "crs-944300",
+      "module": "java",
+      "name": "Base64 encoded string matched suspicious keyword",
+      "tier": 3,
+      "score": 5,
+      "src": "crs"
+    },
+    {
+      "id": "ce-base-001",
+      "module": "protocol",
+      "name": "请求方法包含非法字符",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-base-002",
+      "module": "protocol",
+      "name": "请求行包含控制字符",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-base-003",
+      "module": "protocol",
+      "name": "URI 包含裸换行或空字节",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-base-004",
+      "module": "protocol",
+      "name": "Host 头包含非法字符",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-base-005",
+      "module": "protocol",
+      "name": "URI 长度超过 2048",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-base-006",
+      "module": "protocol",
+      "name": "参数名长度超过 512",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-base-008",
+      "module": "protocol",
+      "name": "请求头名称数量异常",
+      "tier": 2,
+      "score": 2,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-001",
+      "module": "crawler",
+      "name": "伪装百度爬虫访问敏感文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-002",
+      "module": "crawler",
+      "name": "伪装搜索引擎爬虫执行攻击",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-003",
+      "module": "crawler",
+      "name": "伪装爬虫访问后台登录",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-004",
+      "module": "crawler",
+      "name": "伪装爬虫发起非 GET 请求",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-005",
+      "module": "crawler",
+      "name": "伪装爬虫探测上传漏洞",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-006",
+      "module": "crawler",
+      "name": "伪装爬虫探目录遍历",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-007",
+      "module": "crawler",
+      "name": "伪装爬虫请求站点地图探测",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-crawler-008",
+      "module": "crawler",
+      "name": "伪装爬虫空 Referer 高频探测",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-001",
+      "module": "java",
+      "name": "ScriptEngineManager 脚本执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-002",
+      "module": "java",
+      "name": "Class.forName 动态加载类",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-003",
+      "module": "java",
+      "name": "Fastjson/Jackson gadget 类名",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-004",
+      "module": "java",
+      "name": "Spring 上下文加载 gadget",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-005",
+      "module": "java",
+      "name": "JNDI InitialContext lookup",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-006",
+      "module": "java",
+      "name": "URLClassLoader 远程类加载",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-007",
+      "module": "java",
+      "name": "Java 文件读取类调用",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-008",
+      "module": "java",
+      "name": "SnakeYAML 反序列化",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-009",
+      "module": "java",
+      "name": "ysoserial/JRMP 利用特征",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-java-010",
+      "module": "java",
+      "name": "SpEL/OGNL 表达式注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-001",
+      "module": "lfi",
+      "name": "读取 Linux 账号文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-002",
+      "module": "lfi",
+      "name": "读取 Windows 系统文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-003",
+      "module": "lfi",
+      "name": "PHP 流包装器协议",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-004",
+      "module": "lfi",
+      "name": "文件类参数名 + 路径穿越组合",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-005",
+      "module": "lfi",
+      "name": "反斜杠路径穿越",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-006",
+      "module": "lfi",
+      "name": "多层路径穿越",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-007",
+      "module": "lfi",
+      "name": "包含 Web 服务器/应用日志",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-008",
+      "module": "lfi",
+      "name": "包含临时目录/会话文件",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-009",
+      "module": "lfi",
+      "name": "XML 外部实体（XXE）声明",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-010",
+      "module": "lfi",
+      "name": "请求读取 /etc 系统配置",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-011",
+      "module": "lfi",
+      "name": "参数值包含绝对路径敏感目录",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-lfi-012",
+      "module": "lfi",
+      "name": "引用 PHP 配置文件读取",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-001",
+      "module": "rce",
+      "name": "ThinkPHP invokefunction 远程执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-002",
+      "module": "rce",
+      "name": "ThinkPHP 5.0.23 _method=__construct",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-003",
+      "module": "rce",
+      "name": "ThinkPHP filter 参数注入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-004",
+      "module": "rce",
+      "name": "ThinkPHP 命名空间路径穿越",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-005",
+      "module": "rce",
+      "name": "ThinkPHP vars 变量覆盖",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-006",
+      "module": "rce",
+      "name": "DedeCMS recommend.php 任意文件上传",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-007",
+      "module": "rce",
+      "name": "DedeCMS dedesql 类直接访问",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-008",
+      "module": "rce",
+      "name": "DedeCMS download.php SSRF/文件读取",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-009",
+      "module": "sqli",
+      "name": "PHPCMS get_menu 后台接口利用",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-010",
+      "module": "sqli",
+      "name": "PHPCMS 参数注入特征",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-011",
+      "module": "rce",
+      "name": "PHPCMS v9 后台 getshell 入口",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-012",
+      "module": "rce",
+      "name": "用友 NC NCFindWeb 任意文件读取",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-013",
+      "module": "rce",
+      "name": "泛微 e-cology BeanShell 执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-014",
+      "module": "rce",
+      "name": "泛微 OA 文件上传/SSRF 接口",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-015",
+      "module": "rce",
+      "name": "致远 OA htmlofficeservlet 执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-016",
+      "module": "rce",
+      "name": "通达 OA 上传/包含利用",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-017",
+      "module": "lfi",
+      "name": "若依 RuoYi 任意文件下载",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-018",
+      "module": "rce",
+      "name": "Laravel Ignition 远程执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-019",
+      "module": "rce",
+      "name": "Jenkins /script Groovy 执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-020",
+      "module": "rce",
+      "name": "Struts2 OGNL 表达式利用",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-021",
+      "module": "java",
+      "name": "Shiro rememberMe 反序列化",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-022",
+      "module": "lfi",
+      "name": "WordPress RevSlider 任意文件读取",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-023",
+      "module": "rce",
+      "name": "WordPress wp-file-manager 上传执行",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-024",
+      "module": "rce",
+      "name": "Confluence OGNL 注入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-nday-025",
+      "module": "php",
+      "name": "帝国 CMS 后台 getshell 参数",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-001",
+      "module": "php",
+      "name": "eval 执行用户输入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-002",
+      "module": "php",
+      "name": "assert 执行用户输入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-003",
+      "module": "php",
+      "name": "preg_replace /e 修饰符执行",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-004",
+      "module": "php",
+      "name": "create_function 动态函数",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-005",
+      "module": "php",
+      "name": "call_user_func 回连用户输入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-006",
+      "module": "php",
+      "name": "base64 混淆 + eval 组合",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-007",
+      "module": "php",
+      "name": "危险函数直接读取超全局变量",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-008",
+      "module": "php",
+      "name": "include/require 包含用户输入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-009",
+      "module": "php",
+      "name": "file_put_contents 写入用户输入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-010",
+      "module": "php",
+      "name": "move_uploaded_file 移动上传",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-011",
+      "module": "php",
+      "name": "phpinfo 探测调用",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-012",
+      "module": "php",
+      "name": "反序列化用户输入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-013",
+      "module": "php",
+      "name": "变量覆盖/参数解析注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-014",
+      "module": "php",
+      "name": "array_map 调用 assert/eval",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-php-015",
+      "module": "php",
+      "name": "PHP 免杀 WebShell 特征",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-001",
+      "module": "protocol",
+      "name": "IIS %uXXXX Unicode 编码规避",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-002",
+      "module": "protocol",
+      "name": "Overlong UTF-8 编码绕过",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-003",
+      "module": "protocol",
+      "name": "双重 URL 编码路径穿越",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-004",
+      "module": "protocol",
+      "name": "请求头值包含裸 CR/LF",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-005",
+      "module": "protocol",
+      "name": "请求头名称含非法字符",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-006",
+      "module": "protocol",
+      "name": "非法 HTTP 协议版本",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-007",
+      "module": "protocol",
+      "name": "同时存在 Content-Length 与 Transfer-Encoding",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-008",
+      "module": "protocol",
+      "name": "multipart/form-data 缺少 boundary",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-009",
+      "module": "protocol",
+      "name": "URI 以 // 开头（协议相对跳转探测）",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-010",
+      "module": "protocol",
+      "name": "参数包含 %00 空字节",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-011",
+      "module": "protocol",
+      "name": "Cookie 值包含控制字符",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-012",
+      "module": "protocol",
+      "name": "X-Forwarded-For 包含注入字符",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-013",
+      "module": "protocol",
+      "name": "Cookie 数量异常",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-protocol-014",
+      "module": "protocol",
+      "name": "请求体 Content-Type 携带多个 charset",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-001",
+      "module": "rce",
+      "name": "JNDI/Log4j2 注入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-002",
+      "module": "rce",
+      "name": "JNDI 关键词变体",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-003",
+      "module": "rce",
+      "name": "SSTI 算术探针",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-004",
+      "module": "rce",
+      "name": "FreeMarker 模板指令注入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-005",
+      "module": "rce",
+      "name": "Windows PowerShell 编码执行",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-006",
+      "module": "rce",
+      "name": "Windows LOLBin 下载执行",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-007",
+      "module": "rce",
+      "name": "反弹 Shell 载荷",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-008",
+      "module": "rce",
+      "name": "LD_PRELOAD 劫持",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-009",
+      "module": "rce",
+      "name": "命令替换符内嵌命令",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-010",
+      "module": "rce",
+      "name": "危险文件删除/破坏命令",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-011",
+      "module": "rce",
+      "name": "Node.js child_process 注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-012",
+      "module": "rce",
+      "name": "原型链污染",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-013",
+      "module": "rce",
+      "name": "Python 命令执行注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-014",
+      "module": "rce",
+      "name": "Perl/Ruby 单行命令执行",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-015",
+      "module": "rce",
+      "name": "Fastjson @type 反序列化",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-016",
+      "module": "rce",
+      "name": "Shellshock 环境变量载荷",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-017",
+      "module": "rce",
+      "name": "命令拼接执行特征",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-018",
+      "module": "rce",
+      "name": "环境变量命令分隔绕过",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-rce-019",
+      "module": "rce",
+      "name": "Shell 命令分隔符 + 短命令",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-001",
+      "module": "scan",
+      "name": "国内常用扫描器 User-Agent",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-002",
+      "module": "scan",
+      "name": "Acunetix 专用请求头",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-003",
+      "module": "scan",
+      "name": "Acunetix WVS 探测路径",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-004",
+      "module": "scan",
+      "name": "PHP easter egg 哈希探测",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-005",
+      "module": "scan",
+      "name": "嵌入式设备/路由器扫描探针",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-006",
+      "module": "scan",
+      "name": "常见 WebShell 落地路径探测",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-007",
+      "module": "scan",
+      "name": "Java 中间件管理端点扫描（JMX/WebLogic）",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-008",
+      "module": "scan",
+      "name": "中间件/搜索引擎管理接口探测",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-009",
+      "module": "scan",
+      "name": "phpMyAdmin 安装目录探测",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-010",
+      "module": "scan",
+      "name": "通用扫描器标识请求头",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-011",
+      "module": "scan",
+      "name": "扫描器高频探测文件（WEB-INF/META-INF）",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-012",
+      "module": "scan",
+      "name": "漏洞扫描器常见回连标记",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-013",
+      "module": "scan",
+      "name": "Tomcat 管理台外部访问",
+      "tier": 3,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-014",
+      "module": "scan",
+      "name": "探测 PHP 版本/配置泄露文件",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-015",
+      "module": "scan",
+      "name": "扫描器批量探测路径特征（连续 404 目录）",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-016",
+      "module": "scan",
+      "name": "扫描器探测 Windows 敏感路径",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-017",
+      "module": "scan",
+      "name": "扫描器常见编码探测参数",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-018",
+      "module": "scan",
+      "name": "扫描器探测 spring/actuator 根路径",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-019",
+      "module": "scan",
+      "name": "漏洞扫描器特征查询参数",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-scan-020",
+      "module": "scan",
+      "name": "扫描器 UA 与空 Host 组合",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-001",
+      "module": "sensitive",
+      "name": "访问 .git 仓库文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-002",
+      "module": "sensitive",
+      "name": "访问 .svn/.hg 版本库文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-003",
+      "module": "sensitive",
+      "name": "访问 .env 环境变量文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-004",
+      "module": "sensitive",
+      "name": "访问系统/IDE 隐藏文件",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-005",
+      "module": "sensitive",
+      "name": "访问编辑器备份/临时文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-006",
+      "module": "sensitive",
+      "name": "下载网站备份压缩包",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-007",
+      "module": "sensitive",
+      "name": "访问 SQL 导出文件",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-008",
+      "module": "sensitive",
+      "name": "访问 SSH/云凭证文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-009",
+      "module": "sensitive",
+      "name": "访问私钥/证书文件",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-010",
+      "module": "sensitive",
+      "name": "访问框架配置文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-011",
+      "module": "sensitive",
+      "name": "访问容器/编排配置文件",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-012",
+      "module": "sensitive",
+      "name": "访问服务器状态页",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-013",
+      "module": "sensitive",
+      "name": "访问 IDE/构建产物目录",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-014",
+      "module": "sensitive",
+      "name": "访问宝塔/面板常见数据文件",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-015",
+      "module": "sensitive",
+      "name": "访问日志文件",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-016",
+      "module": "sensitive",
+      "name": "访问 WordPress 备份/配置残留",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-017",
+      "module": "sensitive",
+      "name": "访问常见数据库管理入口",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-018",
+      "module": "sensitive",
+      "name": "访问 composer/依赖锁文件泄露",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-019",
+      "module": "sensitive",
+      "name": "访问 Spring/Druid 监控台",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-020",
+      "module": "sensitive",
+      "name": "访问 PHPUnit eval-stdin 后门路径",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sensitive-021",
+      "module": "sensitive",
+      "name": "访问网站备份/导出文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-001",
+      "module": "sqli",
+      "name": "时间盲注 sleep/benchmark",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-002",
+      "module": "sqli",
+      "name": "PostgreSQL 时间盲注 pg_sleep",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-003",
+      "module": "sqli",
+      "name": "MSSQL 时间盲注 waitfor delay",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-004",
+      "module": "sqli",
+      "name": "MySQL 报错注入函数 extractvalue/updatexml",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-005",
+      "module": "sqli",
+      "name": "探测 information_schema 元数据",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-006",
+      "module": "sqli",
+      "name": "数据库版本变量探测",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-007",
+      "module": "sqli",
+      "name": "文件读写注入 load_file/outfile",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-008",
+      "module": "sqli",
+      "name": "堆叠 DDL/DML 注入",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-009",
+      "module": "sqli",
+      "name": "MSSQL 命令执行 xp_cmdshell",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-010",
+      "module": "sqli",
+      "name": "char 编码绕过注入",
+      "tier": 2,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-011",
+      "module": "sqli",
+      "name": "NoSQL 注入运算符",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-012",
+      "module": "sqli",
+      "name": "MySQL 版本注释绕过",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-013",
+      "module": "sqli",
+      "name": "Oracle 网络/管道函数",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-014",
+      "module": "sqli",
+      "name": "数据库敏感函数探测",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-015",
+      "module": "sqli",
+      "name": "group_concat/concat 聚合探测",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-016",
+      "module": "sqli",
+      "name": "LDAP 过滤器注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-017",
+      "module": "sqli",
+      "name": "SQL 注入闭合加注释结尾",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-018",
+      "module": "sqli",
+      "name": "SQL 注释截断 payload",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-019",
+      "module": "sqli",
+      "name": "SQL 十六进制/二进制字面量注入",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-020",
+      "module": "sqli",
+      "name": "SQL 注入分隔符 + 语句关键字",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-021",
+      "module": "sqli",
+      "name": "SQL 注入专用探测函数组合",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-sqli-022",
+      "module": "sqli",
+      "name": "JSON 体中的数据库报错探测",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-001",
+      "module": "upload",
+      "name": "上传可执行脚本扩展名",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-002",
+      "module": "upload",
+      "name": "图片扩展名 + 脚本双扩展名",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-003",
+      "module": "upload",
+      "name": "上传 .htaccess 配置文件",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-004",
+      "module": "upload",
+      "name": "上传 .user.ini 配置",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-005",
+      "module": "upload",
+      "name": "上传 web.config",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-006",
+      "module": "upload",
+      "name": "上传文件名包含路径穿越",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-007",
+      "module": "upload",
+      "name": "上传文件名空字节截断",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-008",
+      "module": "upload",
+      "name": "图片上传内嵌 PHP 代码",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-009",
+      "module": "upload",
+      "name": "SVG 上传内嵌脚本",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-010",
+      "module": "upload",
+      "name": "RFC5987 filename* 可疑扩展名",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-011",
+      "module": "upload",
+      "name": "IIS 特殊脚本扩展名上传",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-upload-012",
+      "module": "upload",
+      "name": "上传文件名以点开头（隐藏执行文件）",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-001",
+      "module": "xss",
+      "name": "指针类事件属性注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-002",
+      "module": "xss",
+      "name": "base 标签劫持",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-003",
+      "module": "xss",
+      "name": "iframe srcdoc 注入脚本",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-004",
+      "module": "xss",
+      "name": "meta refresh 跳转 javascript",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-005",
+      "module": "xss",
+      "name": "xlink:href javascript 注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-006",
+      "module": "xss",
+      "name": "data:text/html 脚本载荷",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-007",
+      "module": "xss",
+      "name": "旧版浏览器 moz-binding 注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-008",
+      "module": "xss",
+      "name": "vbscript 协议注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-009",
+      "module": "xss",
+      "name": "实体编码 javascript: 绕过",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-010",
+      "module": "xss",
+      "name": "Angular 模板注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-011",
+      "module": "xss",
+      "name": "Vue 模板注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-012",
+      "module": "xss",
+      "name": "javascript 伪协议位于属性值",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-013",
+      "module": "xss",
+      "name": "expression CSS 注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-014",
+      "module": "xss",
+      "name": "SVG animate 事件注入",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-015",
+      "module": "xss",
+      "name": "form action javascript 注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-016",
+      "module": "xss",
+      "name": "DOM 数据外带 sink 组合",
+      "tier": 1,
+      "score": 5,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-017",
+      "module": "xss",
+      "name": "alert/confirm/prompt 弹窗探测",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-018",
+      "module": "xss",
+      "name": "SVG/MathML 标签注入脚本",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-019",
+      "module": "xss",
+      "name": "Unicode/UTF-7 编码脚本注入",
+      "tier": 1,
+      "score": 4,
+      "src": "ce"
+    },
+    {
+      "id": "ce-xss-020",
+      "module": "xss",
+      "name": "脚本标签拼接绕过",
+      "tier": 2,
+      "score": 3,
+      "src": "ce"
+    }
+  ],
+  "skipped": [
+    {
+      "id": "901001",
+      "reason": "不支持的变量 TX:crs_setup_version（&TX:crs_setup_version）"
+    },
+    {
+      "id": "901100",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901110",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901111",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901115",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901120",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901125",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901130",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901140",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901141",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901142",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901143",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901160",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901162",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901163",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901164",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901165",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901167",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901168",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901169",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901170",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901171",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901320",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901340",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901350",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901360",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901370",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901400",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "901410",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901450",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "901500",
+      "reason": "不支持的变量 TX:detection_paranoia_level（TX:detection_paranoia_level）"
+    },
+    {
+      "id": "901510",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "905100",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "905110",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "911011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "911018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "913018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "920180",
+      "reason": "不支持的变量 REQUEST_PROTOCOL（REQUEST_PROTOCOL）"
+    },
+    {
+      "id": "920190",
+      "reason": "不支持的变量 TX:2（TX:2）"
+    },
+    {
+      "id": "920202",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "920240",
+      "reason": "不支持的变量 REQBODY_PROCESSOR（REQBODY_PROCESSOR）"
+    },
+    {
+      "id": "920250",
+      "reason": "不支持的变量 TX:CRS_VALIDATE_UTF8_ENCODING（TX:CRS_VALIDATE_UTF8_ENCODING）"
+    },
+    {
+      "id": "920273",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "920274",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "920275",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "920360",
+      "reason": "不支持的变量 TX:ARG_NAME_LENGTH（&TX:ARG_NAME_LENGTH）"
+    },
+    {
+      "id": "920370",
+      "reason": "不支持的变量 TX:ARG_LENGTH（&TX:ARG_LENGTH）"
+    },
+    {
+      "id": "920380",
+      "reason": "不支持的变量 TX:MAX_NUM_ARGS（&TX:MAX_NUM_ARGS）"
+    },
+    {
+      "id": "920390",
+      "reason": "不支持的变量 TX:TOTAL_ARG_LENGTH（&TX:TOTAL_ARG_LENGTH）"
+    },
+    {
+      "id": "920400",
+      "reason": "不支持的变量 TX:MAX_FILE_SIZE（&TX:MAX_FILE_SIZE）"
+    },
+    {
+      "id": "920410",
+      "reason": "不支持的变量 TX:COMBINED_FILE_SIZES（&TX:COMBINED_FILE_SIZES）"
+    },
+    {
+      "id": "920420",
+      "reason": "不支持的变量 TX:content_type（TX:content_type）"
+    },
+    {
+      "id": "920430",
+      "reason": "不支持的变量 REQUEST_PROTOCOL（REQUEST_PROTOCOL）"
+    },
+    {
+      "id": "920440",
+      "reason": "不支持的变量 TX:EXTENSION（TX:EXTENSION）"
+    },
+    {
+      "id": "920450",
+      "reason": "不支持的变量 TX:/^header_name_920450_/（TX:/^header_name_920450_/）"
+    },
+    {
+      "id": "920451",
+      "reason": "不支持的变量 TX:/^header_name_920451_/（TX:/^header_name_920451_/）"
+    },
+    {
+      "id": "920460",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "920480",
+      "reason": "不支持的变量 TX:content_type_charset（TX:content_type_charset）"
+    },
+    {
+      "id": "920539",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "920640",
+      "reason": "不支持的变量 REQUEST_BODY_LENGTH（REQUEST_BODY_LENGTH）"
+    },
+    {
+      "id": "920650",
+      "reason": "不支持的变量 TX:allow_method_override_parameter（TX:allow_method_override_parameter）"
+    },
+    {
+      "id": "921011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "921160",
+      "reason": "不支持的变量 ARGS_GET_NAMES（ARGS_GET_NAMES|ARGS_GET）"
+    },
+    {
+      "id": "921170",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "921180",
+      "reason": "不支持的变量 TX:/paramcounter_.*/（TX:/paramcounter_.*/）"
+    },
+    {
+      "id": "921220",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "921250",
+      "reason": "不支持的变量 REQUEST_COOKIES:/\\x22?\\x24Version/（REQUEST_COOKIES:/\\x22?\\x24Version/）"
+    },
+    {
+      "id": "922100",
+      "reason": "不支持的变量 MULTIPART_PART_HEADERS:_charset_（&MULTIPART_PART_HEADERS:_charset_）"
+    },
+    {
+      "id": "922110",
+      "reason": "不支持的变量 TX:/MULTIPART_HEADERS_CONTENT_TYPES_*/（TX:/MULTIPART_HEADERS_CONTENT_TYPES_*/）"
+    },
+    {
+      "id": "922120",
+      "reason": "不支持的变量 MULTIPART_PART_HEADERS（MULTIPART_PART_HEADERS）"
+    },
+    {
+      "id": "922130",
+      "reason": "不支持的变量 MULTIPART_PART_HEADERS（MULTIPART_PART_HEADERS）"
+    },
+    {
+      "id": "922140",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "922150",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "922160",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "930011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "930018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "931130",
+      "reason": "不支持的变量 TX:/rfi_parameter_.*/（TX:/rfi_parameter_.*/）"
+    },
+    {
+      "id": "932011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "932200",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "932205",
+      "reason": "不支持的变量 TX:0（TX:0）"
+    },
+    {
+      "id": "932206",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "932207",
+      "reason": "不支持的变量 TX:0（TX:0）"
+    },
+    {
+      "id": "932240",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "933011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "933150",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "933210",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "933211",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "934011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "934160",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "941010",
+      "reason": "非检测规则（无 block/deny/drop 动作）"
+    },
+    {
+      "id": "941011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "941310",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "942011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "942130",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "942131",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "942160",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "942190",
+      "reason": "不支持的变换 t:removecommentschar"
+    },
+    {
+      "id": "942200",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "942350",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "942421",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "942432",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "942440",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "942521",
+      "reason": "不支持的变量 TX:1（TX:1）"
+    },
+    {
+      "id": "942540",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "942560",
+      "reason": "不支持的变换 t:replacecomments"
+    },
+    {
+      "id": "943011",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943012",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943013",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943014",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943015",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943016",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943017",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943018",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943100",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943110",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "943120",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "944011",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944012",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944013",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944014",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944015",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944016",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944017",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944018",
+      "reason": "PL 门控规则（pass+skipAfter）"
+    },
+    {
+      "id": "944110",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS|XML:/*|XML://@*）"
+    },
+    {
+      "id": "944120",
+      "reason": "不支持的变量 MATCHED_VARS（MATCHED_VARS）"
+    },
+    {
+      "id": "944152",
+      "reason": "paranoia-level/4 未启用（tier 上限 3）"
+    },
+    {
+      "id": "949011",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949012",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949013",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949014",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949015",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949016",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949017",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949018",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949052",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949053",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949054",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949055",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949060",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949061",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949062",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949063",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949110",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949111",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949152",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949153",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949154",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949155",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949160",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949161",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949162",
+      "reason": "规则文件按契约跳过"
+    },
+    {
+      "id": "949163",
+      "reason": "规则文件按契约跳过"
+    }
+  ]
+}

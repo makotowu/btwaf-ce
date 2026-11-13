@@ -1,0 +1,50 @@
+-- 04-ac：Aho-Corasick 多模式匹配（contract §6.5 / §9.3）
+local t = require("mock.framework")
+t.suite("04-ac")
+
+local ac = require("lib.ac")
+
+t.test("build + match 基础（经典失败链用例）", function()
+  local automaton = ac.build({ "he", "she", "his", "hers" })
+  t.eq(ac.match(automaton, "ushers"), "she")
+  t.eq(ac.match(automaton, "his"), "his")
+  t.ok(ac.match(automaton, "xyz") == nil, "未命中应返回 nil")
+end)
+
+t.test("重叠模式都能命中", function()
+  local automaton = ac.build({ "ab", "bc", "abc" })
+  t.ok(ac.match(automaton, "zabc") ~= nil)
+  t.ok(ac.match(automaton, "ab") ~= nil)
+  t.ok(ac.match(automaton, "bc") ~= nil)
+end)
+
+t.test("大小写敏感（契约要求调用方先 lowercase）", function()
+  local automaton = ac.build({ "sqlmap" })
+  t.eq(ac.match(automaton, "SQLMAP"), nil)
+  t.eq(ac.match(automaton, "sqlmap"), "sqlmap")
+  t.eq(ac.match(automaton, "xxsqlmapxx"), "sqlmap")
+  t.eq(ac.match(automaton, ("sqlmap"):lower()), "sqlmap")
+end)
+
+t.test("空自动机/空文本/非法输入安全", function()
+  local automaton = ac.build({})
+  t.eq(ac.match(automaton, "anything"), nil)
+  t.eq(ac.match(automaton, ""), nil)
+  t.eq(ac.match(nil, "x"), nil)
+  t.eq(ac.match(automaton, nil), nil)
+end)
+
+t.test("多词命中（长词优先/词表正确）", function()
+  local words = { "union select", "sqlmap", "nikto", "nmap", "eval(", "base64_decode" }
+  local automaton = ac.build(words)
+  t.eq(ac.match(automaton, "UA: sqlmap/1.5"), "sqlmap")
+  t.eq(ac.match(automaton, "x union select y"), "union select")
+  t.eq(ac.match(automaton, "nikto -h"), "nikto")
+  t.eq(ac.match(automaton, "clean text"), nil)
+end)
+
+t.test("中文/二进制字节匹配不崩溃", function()
+  local automaton = ac.build({ "恶意", "恶意软件" })
+  t.eq(ac.match(automaton, "发现恶意软件"), "恶意")
+  t.eq(ac.match(automaton, "\0\1\2"), nil)
+end)

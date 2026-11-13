@@ -1,0 +1,31 @@
+-- generated_by=tools/import_crs.py  DO NOT EDIT（lib/rules.lua 按此顺序加载规则模块）
+
+return {
+  modules = {
+    "rules.base",
+    "rules.ce_crawler",
+    "rules.ce_java",
+    "rules.ce_lfi",
+    "rules.ce_nday",
+    "rules.ce_php",
+    "rules.ce_protocol",
+    "rules.ce_rce",
+    "rules.ce_scan",
+    "rules.ce_sensitive",
+    "rules.ce_sqli",
+    "rules.ce_upload",
+    "rules.ce_xss",
+    "rules.crs.911_protocol",
+    "rules.crs.913_scan",
+    "rules.crs.920_protocol",
+    "rules.crs.921_protocol",
+    "rules.crs.930_lfi",
+    "rules.crs.931_lfi",
+    "rules.crs.932_rce",
+    "rules.crs.933_php",
+    "rules.crs.934_rce",
+    "rules.crs.941_xss",
+    "rules.crs.942_sqli",
+    "rules.crs.944_java",
+  },
+}

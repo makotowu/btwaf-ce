@@ -1,0 +1,10 @@
+__pycache__/
+*.py[cod]
+dist/
+tests/node_modules/
+tests/.tmp/
+tests/artifacts/
+tests/oracle/
+tools/vendor/
+*.log
+.DS_Store

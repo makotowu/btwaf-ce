@@ -1,0 +1,767 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>宝塔WAF社区版 控制台 · 离线预览</title>
+<script>
+    /* 预览页自检：收集 JS 错误 / 未处理的 Promise 拒绝，显示在顶部工具栏，便于确认"打开无报错" */
+    window.__previewErrors = [];
+    (function () {
+        // ResizeObserver loop 警告是浏览器布局抖动产生的良性提示，不算 JS 报错
+        function benign(msg) { return /ResizeObserver loop/i.test(String(msg)); }
+        function push(msg) {
+            if (benign(msg)) return;
+            window.__previewErrors.push(String(msg));
+            var el = document.getElementById('pv-err');
+            if (el) {
+                el.textContent = 'JS 错误：' + window.__previewErrors.length;
+                el.style.display = 'inline-block';
+            }
+            try { console.error('[preview] ' + msg); } catch (e) { }
+        }
+        window.addEventListener('error', function (e) {
+            push((e && (e.message || (e.error && e.error.message))) || 'unknown error');
+        });
+        window.addEventListener('unhandledrejection', function (e) {
+            var r = e && e.reason;
+            push('unhandled rejection: ' + ((r && (r.message || r.msg)) || r));
+        });
+    })();
+</script>
+<style>
+    /* ===== 仅预览页自身的工具栏/舞台样式；插件后台样式见 static/css/app.css ===== */
+    html, body { margin: 0; padding: 0; }
+    body {
+        font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+        background: var(--el-bg-color-page, #f2f3f5);
+        color: var(--el-text-color-primary, #303133);
+    }
+    .pv-bar {
+        position: sticky; top: 0; z-index: 9999;
+        display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+        padding: 8px 14px;
+        background: var(--el-bg-color-overlay, #ffffff);
+        border-bottom: 1px solid var(--el-border-color-lighter, #ebeef5);
+        box-shadow: 0 1px 4px rgba(0, 0, 0, .06);
+        font-size: 13px;
+    }
+    .pv-title { font-weight: 700; margin-right: 4px; }
+    .pv-note { color: var(--el-text-color-secondary, #909399); font-size: 12px; }
+    .pv-group { display: inline-flex; gap: 4px; align-items: center; }
+    .pv-group > span { color: var(--el-text-color-secondary, #909399); font-size: 12px; }
+    .pv-btn {
+        padding: 3px 10px; border-radius: 4px; cursor: pointer; font-size: 12px;
+        border: 1px solid var(--el-border-color, #dcdfe6);
+        background: var(--el-bg-color, #ffffff);
+        color: var(--el-text-color-regular, #606266);
+    }
+    .pv-btn:hover { color: var(--el-color-primary, #409eff); border-color: var(--el-color-primary, #409eff); }
+    .pv-btn.is-active { color: #ffffff; background: var(--el-color-primary, #409eff); border-color: var(--el-color-primary, #409eff); }
+    .pv-spacer { flex: 1 1 auto; }
+    .pv-err { display: none; color: var(--el-color-danger, #f56c6c); font-size: 12px; font-weight: 700; }
+    .pv-stage {
+        max-width: 1180px; margin: 12px auto 40px;
+        background: var(--el-bg-color, #ffffff);
+        border: 1px solid var(--el-border-color-lighter, #ebeef5);
+        border-radius: 6px;
+        overflow: hidden;
+    }
+    #app { min-height: 620px; }
+
+    /* ===== 离线降级：面板 style.css 不可用时的 Element Plus 最小结构样式（仅预览页） ===== */
+    .el-overlay {
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 2000;
+        background-color: rgba(0, 0, 0, .5); overflow: auto;
+    }
+    .el-overlay-dialog { display: flex; justify-content: center; align-items: flex-start; padding: 10vh 16px 40px; }
+    .el-dialog {
+        position: relative; width: 420px; max-width: 100%;
+        padding: 16px 20px; border-radius: 8px;
+        background: var(--el-bg-color-overlay, #ffffff);
+        color: var(--el-text-color-primary, #303133);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, .2);
+    }
+    .el-dialog__header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+    .el-dialog__title { flex: 1 1 auto; font-size: 14px; font-weight: 600; }
+    .el-dialog__headerbtn { border: none; background: transparent; cursor: pointer; font-size: 16px; color: var(--el-text-color-secondary, #909399); }
+    .el-dialog__body { padding: 2px 0 10px; }
+    .el-dialog__footer { display: flex; justify-content: flex-end; gap: 8px; padding-top: 8px; }
+    .el-message {
+        position: fixed; top: 16px; left: 50%; transform: translateX(-50%); z-index: 30000000;
+        display: flex; align-items: center; gap: 6px;
+        padding: 8px 14px; border-radius: 6px; font-size: 13px;
+        border: 1px solid var(--el-border-color-lighter, #ebeef5);
+        background: var(--el-bg-color-overlay, #ffffff);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, .12);
+    }
+    .el-message--error { color: var(--el-color-danger, #f56c6c); }
+    .el-message--success { color: var(--el-color-success, #67c23a); }
+    .el-message--warning { color: var(--el-color-warning, #e6a23c); }
+    .el-loading-mask { position: absolute; inset: 0; background: rgba(255, 255, 255, .7); }
+</style>
+</head>
+<body>
+
+<div class="pv-bar">
+    <span class="pv-title">宝塔WAF社区版 控制台 · 离线预览</span>
+    <span class="pv-group">
+        <span>数据：</span>
+        <button type="button" class="pv-btn is-active" data-mode="normal">正常</button>
+        <button type="button" class="pv-btn" data-mode="empty">空数据</button>
+        <button type="button" class="pv-btn" data-mode="fail">接口失败</button>
+    </span>
+    <span class="pv-group">
+        <span>视图：</span>
+        <button type="button" class="pv-btn" data-view="overview">概览</button>
+        <button type="button" class="pv-btn" data-view="logs">拦截记录</button>
+        <button type="button" class="pv-btn" data-view="sites">站点防护</button>
+        <button type="button" class="pv-btn" data-view="config">全局配置</button>
+        <button type="button" class="pv-btn" data-view="rules">规则库</button>
+        <button type="button" class="pv-btn" data-view="blocks">封锁记录</button>
+        <button type="button" class="pv-btn" data-view="diagnostics">系统诊断</button>
+    </span>
+    <span class="pv-spacer"></span>
+    <span class="pv-err" id="pv-err"></span>
+    <button type="button" class="pv-btn" id="pv-narrow">窄屏</button>
+    <button type="button" class="pv-btn" id="pv-dark">深色</button>
+</div>
+
+<div class="pv-stage">
+    <div id="app"></div>
+</div>
+
+<link rel="stylesheet" href="static/css/btp-panel.css" data-btp-css="static/css/btp-panel.css">
+<link rel="stylesheet" href="static/css/app.css">
+
+<!-- 离线预览：直接引入本地 vendor，避免 btp.js 再去加载 CDN/面板路径 -->
+<script src="static/vendor/vue.global.prod.js"></script>
+<script src="static/vendor/element-plus.full.min.js"></script>
+<script src="static/js/btp.js"></script>
+<script>
+    /* 预览环境覆盖 btp.js 资源路径（面板内运行时无需这些覆盖）。
+       - panelCss 保持 btp.js 默认的 /static/css/style.css：在面板/本地 HTTP 环境可用，
+         纯 file:// 离线打开时加载失败会被 btp.js 静默忽略，自动降级为无面板样式。
+       - 已显式 link 了 btp-panel.css，这里设成相同相对路径避免重复加载。 */
+    BTP.config.panelDiffCss = 'static/css/btp-panel.css';
+    BTP.config.vue = ['static/vendor/vue.global.prod.js'];
+    BTP.config.elementPlus = ['static/vendor/element-plus.full.min.js'];
+</script>
+<script src="static/js/btp-components.js"></script>
+<script src="static/js/charts.js"></script>
+<script src="static/js/api.js"></script>
+
+<script>
+/*!
+ * =====================================================================
+ * preview.html 内联 mock：整体替换 WafAPI.call，离线打开不请求任何接口。
+ * 支持三种数据状态：normal / empty / fail（由顶部工具栏切换）
+ * ===================================================================== */
+(function () {
+    'use strict';
+
+    var MODE = 'normal';
+    var NOW = Math.floor(Date.now() / 1000);
+
+    function pad2(n) { return n < 10 ? '0' + n : '' + n; }
+    function dayStr(offset) {
+        var d = new Date();
+        d.setDate(d.getDate() + (offset || 0));
+        return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate());
+    }
+    function clone(o) { return o === undefined ? null : JSON.parse(JSON.stringify(o)); }
+    function num(v, def) { var n = Number(v); return isNaN(n) ? (def || 0) : n; }
+
+    /* ---------- 示例数据 ---------- */
+    var HITS_SQLI = [
+        { module: 'sqli', rule: 'crs-942100', name: 'SQL Injection Attack Detected via libinjection', score: 5, tier: 1, src: 'crs' },
+        { module: 'sqli', rule: 'ce-sqli-001', name: 'UNION SELECT 联合查询', score: 5, tier: 1, src: 'ce' }
+    ];
+    var HITS_XSS = [
+        { module: 'xss', rule: 'crs-941100', name: 'XSS Attack Detected via libinjection', score: 5, tier: 1, src: 'crs' }
+    ];
+    var HITS_RCE = [{ module: 'rce', rule: 'ce-rce-003', name: '命令执行：bash -c', score: 5, tier: 1, src: 'ce' }];
+    var HITS_SCAN = [{ module: 'scan', rule: 'ce-scan-002', name: '常见扫描器特征 sqlmap', score: 4, tier: 1, src: 'ce' }];
+
+    function logRow(i, site, ip, area, uri, query, hits, action, score, module) {
+        return {
+            time: NOW - i * 1733,
+            site: site,
+            host: site,
+            ip: ip,
+            area: area,
+            method: i % 3 === 0 ? 'POST' : 'GET',
+            uri: uri,
+            query: query,
+            status: action === 'block' ? 403 : 200,
+            action: action,
+            score: score,
+            sensitivity: 2,
+            hits: hits,
+            ua: 'Mozilla/5.0 (compatible; Nmap Scripting Engine)',
+            referer: 'http://' + site + '/',
+            ctype: i % 3 === 0 ? 'application/x-www-form-urlencoded' : '',
+            body_len: i % 3 === 0 ? 34 : 0,
+            snippet: hits && hits.length ? 'id=1%27%20UNION%20SELECT%20username,password%20FROM%20admin--' : '',
+            block_time: action === 'block' ? 300 : 0,
+            rule_source: hits && hits[0] ? hits[0].src : 'ce',
+            req_id: 'mock-' + (100000 + module * 10 + i),
+            module: module
+        };
+    }
+
+    var ATTACK_ROWS = [
+        logRow(0, 'www.example.com', '45.88.12.34', '美国-加州', '/article.php', 'id=1%27%20UNION%20SELECT', HITS_SQLI, 'block', 10, 1),
+        logRow(1, 'shop.example.com', '103.24.55.9', '中国-香港', '/search', 'q=%3Cscript%3Ealert(1)%3C/script%3E', HITS_XSS, 'block', 5, 2),
+        logRow(2, 'www.example.com', '45.88.12.34', '美国-加州', '/api/run', 'cmd=cat%20/etc/passwd', HITS_RCE, 'block', 10, 3),
+        logRow(3, 'bbs.example.com', '185.220.101.7', '德国-黑森', '/wp-login.php', '', HITS_SCAN, 'block', 4, 4),
+        logRow(4, 'www.example.com', '61.135.169.121', '中国-北京', '/index.php', 'page=2', HITS_SQLI.slice(0, 1), 'allow', 5, 1),
+        logRow(5, 'm.example.com', '192.241.210.33', '美国-纽约', '/.env', '', HITS_SCAN, 'block', 8, 4),
+        logRow(6, 'shop.example.com', '103.24.55.9', '中国-香港', '/product/detail', 'id=1%20or%201=1', HITS_SQLI, 'block', 10, 1),
+        logRow(7, 'www.example.com', '45.88.12.34', '美国-加州', '/admin/login', 'user=admin%27--', HITS_SQLI, 'block', 5, 1)
+    ];
+
+    var SITE_ROWS = [
+        { site_name: 'www.example.com', domains: ['www.example.com', 'example.com'], path: '/www/wwwroot/www.example.com', status: 1, open: true, sensitivity: 2, today_blocks: 42, last_hit: NOW - 120 },
+        { site_name: 'shop.example.com', domains: ['shop.example.com'], path: '/www/wwwroot/shop.example.com', status: 1, open: true, sensitivity: 0, today_blocks: 17, last_hit: NOW - 3200 },
+        { site_name: 'bbs.example.com', domains: ['bbs.example.com', 'bbs2.example.com'], path: '/www/wwwroot/bbs.example.com', status: 1, open: false, sensitivity: 1, today_blocks: 3, last_hit: NOW - 86400 },
+        { site_name: 'm.example.com', domains: ['m.example.com'], path: '/www/wwwroot/m.example.com', status: 1, open: true, sensitivity: 3, today_blocks: 8, last_hit: NOW - 1200 },
+        { site_name: 'api.example.com', domains: ['api.example.com'], path: '/www/wwwroot/api.example.com', status: 1, open: true, sensitivity: 0, today_blocks: 0, last_hit: 0 }
+    ];
+
+    function siteModules(tier) {
+        return {
+            sqli: { open: true, tier: tier || 0 }, xss: { open: true, tier: tier || 0 },
+            rce: { open: true, tier: tier || 0 }, lfi: { open: true, tier: tier || 0 },
+            php: { open: true, tier: tier || 0 }, java: { open: true, tier: tier || 0 },
+            scan: { open: true, tier: tier || 0 }, crawler: { open: true, tier: tier || 0 },
+            sensitive: { open: true, tier: tier || 0 }, upload: { open: true, tier: tier || 0 },
+            protocol: { open: true, tier: tier || 0 }, custom: { open: true, tier: tier || 0 }
+        };
+    }
+    function emptyLists() {
+        return { ip_black: [], ip_white: [], url_black: [], url_white: [], ua_black: [], ua_white: [], param_white: [] };
+    }
+
+    var GLOBAL_LISTS = {
+        ip_black: ['45.88.12.34', '185.220.101.0/24'],
+        ip_white: ['127.0.0.1', '10.0.0.0/8'],
+        url_black: ['^/admin/backup', '~^/\\.git'],
+        url_white: ['^/api/health', '^/static/'],
+        ua_black: ['sqlmap', 'nikto', 'masscan'],
+        ua_white: ['baiduspider', 'googlebot'],
+        param_white: ['__token', '_sign']
+    };
+    var SITE_LISTS = {
+        ip_black: ['66.249.66.1'],
+        ip_white: ['172.16.0.0/12'],
+        url_black: ['^/phpmyadmin'], url_white: ['^/static/'],
+        ua_black: [], ua_white: ['bingbot'], param_white: []
+    };
+
+    function globalConfig(empty) {
+        return {
+            schema: 1, version: '1.0.0', enabled: true, observe: false, sensitivity: 2,
+            block: { status: 403, use_custom: true, page: '<html><body><h1>请求已被拦截</h1></body></html>' },
+            scan: { body_limit: 1048576, arg_limit: 8192, header_limit: 8192, upload_scan_limit: 20971520, max_args: 200 },
+            log: { enabled: true, retain_days: 30, rotate_size: 52428800, snippet: 512 },
+            cc: { open: true, cycle: 60, limit: 120, block_time: 300, status: 444, url_cc: false, skip_static: true },
+            attack_block: { open: true, cycle: 120, limit: 20, block_time: 86400 },
+            modules: siteModules(1),
+            lists: empty ? emptyLists() : clone(GLOBAL_LISTS),
+            rule_exclude: { crs: ['crs-942100', 'crs-941100'], ce: ['ce-scan-002'] },
+            trusted_proxies: ['172.16.0.0/12', '10.0.0.0/8'],
+            crawler: { allow: ['baiduspider', 'googlebot', 'bingbot', 'bytespider', 'sogou'], block_fake: true },
+            fail_open: true, whitelist_first: true, update_time: NOW - 600
+        };
+    }
+
+    var CUSTOM_RULES = [
+        {
+            id: 'custom-1', name: '拦截 sqlmap 扫描器', open: true, priority: 10, scope: 'global', sites: [],
+            field: 'header', header: 'user-agent', operator: 'regexp', value: '(?i)sqlmap',
+            action: 'block', status: 403, score: 5, note: '示例：UA 命中 sqlmap', hits: 12
+        },
+        {
+            id: 'custom-2', name: '后台扫描路径拦截', open: true, priority: 20, scope: 'site', sites: ['www.example.com'],
+            field: 'uri', header: '', operator: 'prefix', value: '/admin/scan',
+            action: 'block', status: 403, score: 5, note: '', hits: 3
+        },
+        {
+            id: 'custom-3', name: '放行健康检查', open: true, priority: 5, scope: 'global', sites: [],
+            field: 'uri', header: '', operator: 'eq', value: '/health',
+            action: 'allow', status: 200, score: 1, note: '', hits: 0
+        }
+    ];
+
+    var RULES = [
+        { id: 'crs-942100', module: 'sqli', name: 'SQL Injection Attack Detected via libinjection', tier: 1, score: 5, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: true, hits: 128 },
+        { id: 'crs-942110', module: 'sqli', name: 'SQL Injection Attack: Common Injection Testing Detected', tier: 1, score: 5, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: false, hits: 12 },
+        { id: 'crs-941100', module: 'xss', name: 'XSS Attack Detected via libinjection', tier: 1, score: 5, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: true, hits: 87 },
+        { id: 'crs-941160', module: 'xss', name: 'NoScript XSS InjectionChecker: HTML Injection', tier: 1, score: 4, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: true, hits: 5 },
+        { id: 'crs-932100', module: 'rce', name: 'Remote Command Execution: Unix Command Injection', tier: 1, score: 5, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: true, hits: 33 },
+        { id: 'crs-930100', module: 'lfi', name: 'Path Traversal Attack (/../)', tier: 1, score: 5, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: true, hits: 21 },
+        { id: 'crs-933100', module: 'php', name: 'PHP Injection Attack: PHP Open Tag Found', tier: 1, score: 5, src: 'crs', source: 'OWASP CRS 4.11.0', enabled: true, hits: 2 },
+        { id: 'ce-sqli-001', module: 'sqli', name: 'UNION SELECT 联合查询', tier: 1, score: 5, src: 'ce', source: '自研 CE 2026.11', enabled: true, hits: 64 },
+        { id: 'ce-xss-003', module: 'xss', name: 'SVG onload 事件注入', tier: 1, score: 5, src: 'ce', source: '自研 CE 2026.11', enabled: true, hits: 14 },
+        { id: 'ce-rce-003', module: 'rce', name: '命令执行：bash -c', tier: 1, score: 5, src: 'ce', source: '自研 CE 2026.11', enabled: true, hits: 6 },
+        { id: 'ce-scan-002', module: 'scan', name: '常见扫描器特征 sqlmap', tier: 1, score: 4, src: 'ce', source: '自研 CE 2026.11', enabled: false, hits: 41 },
+        { id: 'ce-upload-001', module: 'upload', name: '危险后缀上传（php/jsp）', tier: 1, score: 5, src: 'ce', source: '自研 CE 2026.11', enabled: true, hits: 1 },
+        { id: 'ce-sensitive-001', module: 'sensitive', name: '敏感文件探测（.env/.git）', tier: 1, score: 4, src: 'ce', source: '自研 CE 2026.11', enabled: true, hits: 19 }
+    ];
+
+    var SKIPPED = [
+        { id: 'crs-942999', reason: '包含不支持的 ctl 动作（ctl:auditLogParts）' },
+        { id: 'crs-920999', reason: '使用 MATCHED_VAR 多匹配修饰符' },
+        { id: 'crs-934999', reason: '使用 @pmFromFile 且列表超出白名单大小' },
+        { id: 'crs-944999', reason: 'Java 模块的 @detectSQLi 组合暂未移植' }
+    ];
+
+    var ENV_ITEMS = [
+        { name: 'nginx 可执行文件', ok: true, detail: '/www/server/nginx/sbin/nginx · v1.26.2' },
+        { name: 'ngx_http_lua 支持', ok: true, detail: 'lua_module_loaded: 是' },
+        { name: 'btwaf_ce.conf 存在', ok: true, detail: '/www/server/panel/vhost/nginx/btwaf_ce.conf' },
+        { name: '配置文件语法', ok: true, detail: 'nginx -t 通过' },
+        { name: '配置文件内容哈希', ok: true, detail: '与插件发布版本一致' },
+        { name: '数据目录 /www/server/btwaf_ce', ok: true, detail: '可写，剩余 42.6 GB' },
+        { name: '日志目录 /www/wwwlogs/btwaf_ce', ok: true, detail: '可写，最近写入 12 秒前' },
+        { name: 'Lua 规则目录', ok: true, detail: 'CRS 4.11.0 / 自研 CE 2026.11' }
+    ];
+
+    var OP_LOGS = [];
+    for (var i = 0; i < 12; i++) {
+        OP_LOGS.push({
+            time: NOW - i * 3600,
+            content: ['保存全局配置（灵敏度=2）', '站点 www.example.com 开启防护', '同步面板站点：5 个站点 / 7 个域名', '规则排除：crs-942100', '解封 IP 45.88.12.34', '保存自定义规则 custom-1'][i % 6]
+        });
+    }
+
+    function blockRows(history) {
+        var base = [
+            { ip: '45.88.12.34', site: 'www.example.com', reason: 'attack', time: NOW - 600, expire: NOW + 300, block_time: 900, area: '美国-加州' },
+            { ip: '103.24.55.9', site: 'shop.example.com', reason: 'cc', time: NOW - 240, expire: NOW + 60, block_time: 300, area: '中国-香港' },
+            { ip: '185.220.101.7', site: 'bbs.example.com', reason: 'attack', time: NOW - 7200, expire: NOW + 79200, block_time: 86400, area: '德国-黑森' },
+            { ip: '192.241.210.33', site: 'www.example.com', reason: 'attack', time: NOW - 1800, expire: NOW + 1800, block_time: 3600, area: '美国-纽约' }
+        ];
+        if (!history) {
+            base.forEach(function (r) { r.state = 'blocked'; });
+            return base;
+        }
+        return [
+            { ip: '61.135.169.121', site: 'www.example.com', reason: 'cc', time: NOW - 15000, expire: NOW - 14400, block_time: 600, area: '中国-北京', state: 'expired' },
+            { ip: '45.88.12.34', site: 'www.example.com', reason: 'attack', time: NOW - 86400 * 2, expire: NOW - 80000, block_time: 3600, area: '美国-加州', state: 'unbanned', unban_time: NOW - 82000 },
+            { ip: '91.240.118.5', site: 'api.example.com', reason: 'attack', time: NOW - 86400 * 3, expire: NOW - 86000, block_time: 600, area: '俄罗斯-莫斯科', state: 'expired' },
+            { ip: '103.24.55.9', site: 'shop.example.com', reason: 'cc', time: NOW - 86400 * 4, expire: NOW - 86300, block_time: 300, area: '中国-香港', state: 'unbanned', unban_time: NOW - 86300 },
+            { ip: '5.188.206.14', site: 'www.example.com', reason: 'attack', time: NOW - 86400 * 5, expire: NOW - 86300, block_time: 600, area: '荷兰-阿姆斯特丹', state: 'expired' }
+        ];
+    }
+
+    /* ---------- 响应构造 ---------- */
+    function paged(list, params) {
+        var p = num(params.p, 1) || 1;
+        var rows = num(params.rows, 20) || 20;
+        var start = (p - 1) * rows;
+        return { list: list.slice(start, start + rows), total: list.length, page: p, rows: rows };
+    }
+    function filterLogs(params) {
+        return ATTACK_ROWS.filter(function (r) {
+            if (params.date && dayStr(0) !== params.date) return false;
+            if (params.site && r.site !== params.site) return false;
+            if (params.ip && r.ip.indexOf(params.ip) < 0) return false;
+            if (params.type && r.module !== params.type) return false;
+            if (params.action && r.action !== params.action) return false;
+            if (params.keyword) {
+                var kw = String(params.keyword);
+                var text = (r.uri + ' ' + (r.query || '') + ' ' + (r.snippet || ''));
+                if (text.indexOf(kw) < 0) return false;
+            }
+            return true;
+        });
+    }
+
+    function emptyResponse(method, params) {
+        switch (method) {
+            case 'get_attack_logs': return { list: [], total: 0, page: 1, rows: num(params.rows, 20), types: [] };
+            case 'get_sites': return { list: [], total: 0, page: 1, rows: num(params.rows, 20) };
+            case 'get_rules': return { list: [], total: 0, page: 1, rows: num(params.rows, 20), skipped: [] };
+            case 'get_custom_rules': return { list: [], total: 0, page: 1, rows: num(params.rows, 20) };
+            case 'get_block_list': return { list: [], total: 0, page: 1, rows: num(params.rows, 20) };
+            case 'get_logs': return { list: [], total: 0, page: 1, rows: num(params.rows, 20) };
+            case 'get_overview':
+                return {
+                    date: dayStr(0), stats: { blocks: 0, cc_blocks: 0, attack_ips: 0, sites_total: 0, sites_open: 0, requests: null },
+                    trend: [], types: [], top_ips: [], top_urls: [], recent: []
+                };
+            case 'get_engine_status':
+                return {
+                    version: '1.0.0', ready: true, enabled: true, observe: false, sensitivity: 2,
+                    nginx: { bin: '/www/server/nginx/sbin/nginx', lua: true, conf_exists: true, conf_ok: true, conf_hash_ok: true },
+                    dirs: { data: true, logs: true, lua: true, writable: true },
+                    rules: {
+                        crs_version: '4.11.0', total: 0, by_src: { crs: 0, ce: 0, custom: 0 },
+                        skipped: [], skipped_count: 0, generated_at: 0, index_ok: false
+                    },
+                    config_apply_at: 0, last_reload: 0, errors: [], perf: { requests: 0, hits: 0, avg_ms: 0 }
+                };
+            case 'get_plugin_config': return globalConfig(true);
+            case 'get_lists': return { lists: emptyLists() };
+            case 'check_env': return { items: ENV_ITEMS, repairable: true };
+            default: return {};
+        }
+    }
+
+    function makeResponse(method, params) {
+        params = params || {};
+        if (MODE === 'empty') return emptyResponse(method, params);
+
+        switch (method) {
+            case 'get_engine_status':
+                return {
+                    version: '1.0.0', ready: true, enabled: true, observe: false, sensitivity: 2,
+                    nginx: { bin: '/www/server/nginx/sbin/nginx', lua: true, conf_exists: true, conf_ok: true, conf_hash_ok: true },
+                    dirs: { data: true, logs: true, lua: true, writable: true },
+                    rules: {
+                        crs_version: '4.11.0', total: 1355,
+                        by_src: { crs: 1187, ce: 168, custom: CUSTOM_RULES.length },
+                        skipped: SKIPPED, skipped_count: SKIPPED.length,
+                        generated_at: NOW - 86400, index_ok: true
+                    },
+                    config_apply_at: NOW - 300,
+                    last_reload: NOW - 240,
+                    errors: [{ time: NOW - 4800, msg: '规则文件 rules/crs/942_sqli.lua 中 2 条规则编译失败，已跳过（详见 build_report.md）' }],
+                    perf: { requests: 128473, hits: 391, avg_ms: 0.42 }
+                };
+
+            case 'get_overview':
+                return {
+                    date: params.date || dayStr(0),
+                    stats: { blocks: 128, cc_blocks: 31, attack_ips: 47, sites_total: 5, sites_open: 4, requests: 128473 },
+                    trend: [
+                        { date: dayStr(-6), blocks: 96, cc: 22 },
+                        { date: dayStr(-5), blocks: 118, cc: 30 },
+                        { date: dayStr(-4), blocks: 64, cc: 11 },
+                        { date: dayStr(-3), blocks: 143, cc: 41 },
+                        { date: dayStr(-2), blocks: 88, cc: 18 },
+                        { date: dayStr(-1), blocks: 152, cc: 36 },
+                        { date: dayStr(0), blocks: 128, cc: 31 }
+                    ],
+                    types: [
+                        { name: 'SQL注入', module: 'sqli', count: 62 },
+                        { name: '跨站脚本', module: 'xss', count: 34 },
+                        { name: '命令执行', module: 'rce', count: 18 },
+                        { name: '扫描器', module: 'scan', count: 9 },
+                        { name: '文件包含', module: 'lfi', count: 5 }
+                    ],
+                    top_ips: [
+                        { ip: '45.88.12.34', count: 42, area: '美国-加州' },
+                        { ip: '103.24.55.9', count: 27, area: '中国-香港' },
+                        { ip: '185.220.101.7', count: 19, area: '德国-黑森' },
+                        { ip: '192.241.210.33', count: 12, area: '美国-纽约' },
+                        { ip: '61.135.169.121', count: 7, area: '中国-北京' }
+                    ],
+                    top_urls: [
+                        { uri: '/article.php', count: 38 },
+                        { uri: '/search', count: 24 },
+                        { uri: '/api/run', count: 16 },
+                        { uri: '/.env', count: 11 },
+                        { uri: '/admin/login', count: 8 }
+                    ],
+                    recent: ATTACK_ROWS.slice(0, 6)
+                };
+
+            case 'get_attack_logs': {
+                var list = filterLogs(params);
+                var pagedLogs = paged(list, params);
+                pagedLogs.types = [
+                    { module: 'sqli', name: 'SQL注入', count: 62 },
+                    { module: 'xss', name: '跨站脚本', count: 34 },
+                    { module: 'rce', name: '命令执行', count: 18 },
+                    { module: 'scan', name: '扫描器', count: 9 }
+                ];
+                pagedLogs.limited = true;
+                return pagedLogs;
+            }
+
+            case 'get_attack_stat':
+                return {
+                    types: [{ module: 'sqli', name: 'SQL注入', count: 62 }],
+                    sites: [{ site: 'www.example.com', count: 88 }],
+                    ips: [{ ip: '45.88.12.34', count: 42 }],
+                    total: 128
+                };
+
+            case 'get_sites': {
+                var sites = SITE_ROWS.filter(function (s) {
+                    if (!params.keyword) return true;
+                    var kw = String(params.keyword).toLowerCase();
+                    return s.site_name.toLowerCase().indexOf(kw) >= 0 ||
+                        (s.domains || []).join(',').toLowerCase().indexOf(kw) >= 0;
+                });
+                return paged(sites, params);
+            }
+
+            case 'sync_sites':
+                return { sites: SITE_ROWS.length, hosts: 7 };
+
+            case 'get_site_config': {
+                var sn = params.site_name || 'www.example.com';
+                var cfg = {
+                    open: true, sensitivity: 2, observe: null,
+                    modules: siteModules(2),
+                    cc: { open: true, cycle: 60, limit: 150, block_time: 600, status: 444, url_cc: false },
+                    attack_block: { open: null, cycle: 0, limit: 0, block_time: 0 },
+                    cdn: { open: true, headers: ['cf-connecting-ip', 'x-real-ip'], trusted: ['172.16.0.0/12'] },
+                    lists: clone(SITE_LISTS),
+                    rule_exclude: { crs: ['crs-942110'], ce: [] },
+                    disable_php_path: ['^/cache/', '^/config/', '^/runtime/'],
+                    disable_ext: ['sql', 'bak', 'swp', 'git', 'env'],
+                    upload_ext: ['php', 'php5', 'jsp', 'exe', 'sh'],
+                    custom_rules: ['custom-2'],
+                    update_time: NOW - 3600
+                };
+                return { site_name: sn, config: cfg, raw: clone(cfg), global: globalConfig(false) };
+            }
+
+            case 'save_site_config':
+            case 'save_plugin_config':
+            case 'save_modules':
+                return { saved: true, apply_at: NOW };
+
+            case 'set_site_open':
+                return { updated: (JSON.parse(params.site_names || '[]')).length };
+
+            case 'get_plugin_config':
+                return globalConfig(false);
+
+            case 'get_modules':
+                return {
+                    modules: { sqli: { open: true, tier: 1, total: 287, enabled: 280 } },
+                    sensitivity_options: [1, 2, 3]
+                };
+
+            case 'get_lists':
+                return { lists: params.scope === 'site' ? clone(SITE_LISTS) : clone(GLOBAL_LISTS) };
+
+            case 'set_lists':
+                return { saved: true, count: (JSON.parse(params.items || '[]')).length };
+
+            case 'save_block_page':
+                return { saved: true };
+
+            case 'preview_block_page':
+                return {
+                    html: '<!DOCTYPE html><html><head><meta charset="utf-8"><title>已拦截</title></head>' +
+                        '<body style="font-family:sans-serif;text-align:center;padding:80px 20px;background:#f7f7f7">' +
+                        '<h1 style="color:#d93025">请求已被 宝塔WAF社区版 拦截</h1>' +
+                        '<p>如有疑问请联系站点管理员。</p></body></html>',
+                    intercepted: ['<script>', 'onerror=']
+                };
+
+            case 'get_rules': {
+                var rules = RULES.filter(function (r) {
+                    if (params.source && r.src !== params.source) return false;
+                    if (params.module && r.module !== params.module) return false;
+                    if (params.keyword) {
+                        var kw = String(params.keyword).toLowerCase();
+                        if ((r.id + ' ' + r.name).toLowerCase().indexOf(kw) < 0) return false;
+                    }
+                    return true;
+                }).map(function (r) {
+                    var copy = clone(r);
+                    // 与后端约定一致：启用状态由 rule_exclude 推导
+                    var ex = { crs: ['crs-942100', 'crs-941100'], ce: ['ce-scan-002'] };
+                    copy.enabled = (ex[r.src] || []).indexOf(r.id) < 0;
+                    return copy;
+                });
+                var res = paged(rules, params);
+                res.skipped = SKIPPED;
+                return res;
+            }
+
+            case 'set_rule_exclude':
+                return { saved: true };
+
+            case 'get_custom_rules': {
+                var kws = params.keyword ? String(params.keyword).toLowerCase() : '';
+                var customs = CUSTOM_RULES.filter(function (r) {
+                    return !kws || ((r.id + ' ' + r.name).toLowerCase().indexOf(kws) >= 0);
+                });
+                return paged(customs, params);
+            }
+
+            case 'save_custom_rule': {
+                var rule = JSON.parse(params.rule || '{}');
+                return { id: rule.id || 'custom-' + (CUSTOM_RULES.length + 1), saved: true };
+            }
+            case 'del_custom_rule':
+                return { deleted: 1 };
+
+            case 'get_block_list': {
+                var status = params.status || 'current';
+                var rows = status === 'current' ? blockRows(false) : blockRows(true);
+                if (params.site) rows = rows.filter(function (r) { return r.site === params.site; });
+                return paged(rows, params);
+            }
+            case 'unban_ip':
+            case 'unban_all':
+                return { unbanned: 1 };
+
+            case 'check_env':
+                return { items: ENV_ITEMS, repairable: true };
+
+            case 'repair_env':
+                return { actions: ['restore conf', 'restore lua', 'nginx -t', 'reload nginx'], nginx_test: 'ok' };
+
+            case 'get_logs':
+                return paged(OP_LOGS, params);
+            case 'clear_logs':
+                return { cleared: true };
+
+            case 'export_config':
+                return { config: globalConfig(false), site: { 'www.example.com': { open: true } }, custom: { rules: CUSTOM_RULES }, exported_at: NOW };
+            case 'import_config':
+                return { imported: true };
+
+            case 'run_selftest':
+                return { blocked: true, status: 403, hits: HITS_SQLI, request_id: 'mock-selftest-1' };
+
+            default:
+                console.warn('[preview mock] 未实现的方法：' + method);
+                return {};
+        }
+    }
+
+    /* 整体替换 WafAPI.call（WafAPI.data 内部走 WafAPI.call，因此会被一并接管） */
+    WafAPI.call = function (method, params, options) {
+        if (MODE === 'fail') {
+            var err = new Error('模拟接口异常（当前为「接口失败」预览模式）');
+            err.__msgShown = false;
+            return Promise.reject(err);
+        }
+        try {
+            var data = makeResponse(method, params);
+            return Promise.resolve({ status: true, msg: 'mock', data: clone(data) });
+        } catch (e) {
+            return Promise.reject(e);
+        }
+    };
+
+    window.__WAF_PREVIEW__ = {
+        setMode: function (m) { MODE = m; },
+        getMode: function () { return MODE; }
+    };
+})();
+
+/* ===== 预览工具栏（数据状态 / 视图跳转 / 窄屏 / 深色） ===== */
+(function () {
+    'use strict';
+
+    var DARK_VARS = {
+        '--el-bg-color': '#141414',
+        '--el-bg-color-overlay': '#1d1e1f',
+        '--el-bg-color-page': '#0a0a0a',
+        '--el-fill-color': '#303030',
+        '--el-fill-color-light': '#262727',
+        '--el-fill-color-blank': '#141414',
+        '--el-text-color-primary': '#e5eaf3',
+        '--el-text-color-regular': '#cfd3dc',
+        '--el-text-color-secondary': '#a3a6ad',
+        '--el-text-color-placeholder': '#8d9095',
+        '--el-border-color': '#4c4d4f',
+        '--el-border-color-light': '#414243',
+        '--el-border-color-lighter': '#363637',
+        '--el-border-color-extra-light': '#2b2b2c',
+        '--el-color-primary': '#409eff',
+        '--el-color-success': '#67c23a',
+        '--el-color-warning': '#e6a23c',
+        '--el-color-danger': '#f56c6c',
+        '--el-color-info': '#909399'
+    };
+    var dark = false;
+    var narrow = false;
+
+    function app() { return window.__btwafCeApp; }
+    function reload() {
+        var a = app();
+        if (a && a.reloadAll) a.reloadAll();
+    }
+
+    Array.prototype.forEach.call(document.querySelectorAll('.pv-btn[data-mode]'), function (btn) {
+        btn.addEventListener('click', function () {
+            Array.prototype.forEach.call(document.querySelectorAll('.pv-btn[data-mode]'), function (b) { b.classList.remove('is-active'); });
+            btn.classList.add('is-active');
+            window.__WAF_PREVIEW__.setMode(btn.getAttribute('data-mode'));
+            reload();
+        });
+    });
+
+    Array.prototype.forEach.call(document.querySelectorAll('.pv-btn[data-view]'), function (btn) {
+        btn.addEventListener('click', function () {
+            var a = app();
+            if (a && a.switchView) a.switchView(btn.getAttribute('data-view'));
+        });
+    });
+
+    document.getElementById('pv-dark').addEventListener('click', function () {
+        var root = document.documentElement;
+        dark = !dark;
+        this.classList.toggle('is-active', dark);
+        if (dark) {
+            root.classList.add('dark');
+            root.setAttribute('data-theme', 'dark');
+            Object.keys(DARK_VARS).forEach(function (k) { root.style.setProperty(k, DARK_VARS[k]); });
+        } else {
+            root.classList.remove('dark');
+            root.setAttribute('data-theme', '');
+            Object.keys(DARK_VARS).forEach(function (k) { root.style.removeProperty(k); });
+        }
+        if (window.BTP && BTP.theme && BTP.theme.refresh) BTP.theme.refresh();
+    });
+
+    document.getElementById('pv-narrow').addEventListener('click', function () {
+        narrow = !narrow;
+        this.classList.toggle('is-active', narrow);
+        document.documentElement.classList.toggle('waf-force-narrow', narrow);
+        if (window.WafCharts) window.WafCharts.resizeAll();
+    });
+
+    /* 支持 URL 参数，便于自动化/截图验证：
+       preview.html?mode=normal|empty|fail&dark=1&narrow=1&view=rules */
+    (function initFromQuery() {
+        var q = {};
+        try {
+            var s = String(window.location.search || '').replace(/^\?/, '');
+            s.split('&').forEach(function (kv) {
+                if (!kv) return;
+                var i = kv.indexOf('=');
+                q[decodeURIComponent(i < 0 ? kv : kv.slice(0, i))] = i < 0 ? '' : decodeURIComponent(kv.slice(i + 1));
+            });
+        } catch (e) { }
+        if (q.mode) {
+            var target = null;
+            Array.prototype.forEach.call(document.querySelectorAll('.pv-btn[data-mode]'), function (b) {
+                var on = b.getAttribute('data-mode') === q.mode;
+                b.classList.toggle('is-active', on);
+                if (on) target = b;
+            });
+            if (target) window.__WAF_PREVIEW__.setMode(q.mode);
+        }
+        if (q.dark === '1') document.getElementById('pv-dark').click();
+        if (q.narrow === '1') document.getElementById('pv-narrow').click();
+        if (q.view) {
+            var tries = 0;
+            var timer = setInterval(function () {
+                var a = app();
+                if ((a && a.switchView) || tries++ > 60) {
+                    clearInterval(timer);
+                    if (a && a.switchView) a.switchView(q.view);
+                }
+            }, 150);
+        }
+    })();
+})();
+</script>
+
+<script src="static/js/app.js"></script>
+</body>
+</html>
