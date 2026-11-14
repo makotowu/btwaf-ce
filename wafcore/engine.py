@@ -279,7 +279,7 @@ def check_env():
     add(label + " 可执行文件", os.path.isfile(paths.NGINX_BIN), paths.NGINX_BIN)
     detail = server["detail"]
     if not server["lua"]:
-        detail += "；请在 Nginx/OpenResty/Tengine 中编译或加载 lua-nginx-module，动态模块需先启用 load_module（旧 Tengine 为 dso）"
+        detail += "；请启用 HTTP lua-nginx-module 并加载所需动态模块"
     add(label + " Lua 模块", server["lua"], detail)
     add(label + " 配置文件", conf["exists"], paths.CONF_PATH, True)
     add("配置与插件模板一致", conf["hash_ok"], "被修改或缺失时点一键修复即可恢复", True)

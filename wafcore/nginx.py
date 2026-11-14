@@ -16,57 +16,26 @@ else:
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     from wafcore import util
 
-PANEL_ROOTS = ("/www/server/nginx", "/www/server/tengine")
+PANEL_ROOT = "/www/server/nginx"
+PANEL_VHOST_DIR = "/www/server/panel/vhost/nginx"
 
 
-def _active_server_root():
-    """Prefer the server whose systemd/init identity is active when both exist."""
-    active = []
-    for service, root in (("tengine", PANEL_ROOTS[1]), ("nginx", PANEL_ROOTS[0])):
-        try:
-            rc, _out, _err = util.run(["systemctl", "is-active", "--quiet", service], timeout=3)
-            if rc == 0:
-                active.append(root)
-        except Exception:
-            pass
-    return active[0] if len(active) == 1 else ""
-
-
-def _server_root_from_env():
-    root = os.environ.get("BTWAF_CE_SERVER_ROOT")
-    if root:
-        return root
-    binary = os.environ.get("BTWAF_CE_NGINX_BIN")
-    if binary:
-        inferred = os.path.dirname(os.path.dirname(binary))
-        if inferred.replace("\\", "/") not in ("/usr", "/usr/local", "/"):
-            return inferred
-    return ""
+def _test_mode():
+    return os.environ.get("BTWAF_CE_TEST_MODE") == "1"
 
 
 def resolve_paths():
-    nginx_bin = os.environ.get("BTWAF_CE_NGINX_BIN")
-    root = _server_root_from_env()
-    if not root:
-        existing = []
-        for candidate in PANEL_ROOTS:
-            binary = os.path.join(candidate, "sbin", "nginx")
-            if os.path.isfile(binary) and os.access(binary, os.X_OK):
-                existing.append(candidate)
-        complete = [candidate for candidate in existing if os.path.isfile(os.path.join(candidate, "conf", "nginx.conf"))]
-        candidates = complete or existing
-        root = _active_server_root() if len(candidates) > 1 else ""
-        if root not in candidates:
-            root = candidates[0] if candidates else PANEL_ROOTS[0]
-    service = "tengine" if os.path.basename(os.path.normpath(root)) == "tengine" else "nginx"
+    """Use BaoTa's Nginx paths; overrides are enabled only for isolated tests."""
+    test_mode = _test_mode()
+    root = os.environ.get("BTWAF_CE_SERVER_ROOT", PANEL_ROOT) if test_mode else PANEL_ROOT
     return (
-        nginx_bin or os.path.join(root, "sbin", "nginx"),
-        os.environ.get("BTWAF_CE_NGINX_CONF") or os.path.join(root, "conf", "nginx.conf"),
-        os.environ.get("BTWAF_CE_NGINX_INIT") or "/etc/init.d/" + service,
+        (os.environ.get("BTWAF_CE_NGINX_BIN") if test_mode else None) or os.path.join(root, "sbin", "nginx"),
+        (os.environ.get("BTWAF_CE_NGINX_CONF") if test_mode else None) or os.path.join(root, "conf", "nginx.conf"),
+        (os.environ.get("BTWAF_CE_NGINX_INIT") if test_mode else None) or "/etc/init.d/nginx",
     )
 
 
-def _configured_vhost_dir(candidates, nginx_conf):
+def _configured_vhost_dir(nginx_conf):
     if not nginx_conf or not os.path.isfile(nginx_conf):
         return ""
     try:
@@ -79,42 +48,21 @@ def _configured_vhost_dir(candidates, nginx_conf):
             if not (pattern.startswith("/") or os.path.isabs(pattern)):
                 pattern = os.path.join(os.path.dirname(os.path.abspath(nginx_conf)), pattern)
             directory = os.path.normcase(os.path.normpath(os.path.dirname(pattern)))
-            for candidate in candidates:
-                if directory == os.path.normcase(os.path.normpath(candidate)):
-                    return candidate
+            if directory == os.path.normcase(os.path.normpath(PANEL_VHOST_DIR)):
+                return PANEL_VHOST_DIR
     except (OSError, ValueError):
         pass
     return ""
 
 
 def resolve_vhost_dir():
-    override = os.environ.get("BTWAF_CE_VHOST_DIR")
+    """Use the panel's Nginx vhost directory, preferring its HTTP include."""
+    test_mode = _test_mode()
+    override = os.environ.get("BTWAF_CE_VHOST_DIR") if test_mode else None
     if override:
         return override
-    root = _server_root_from_env()
-    if not root:
-        root = os.path.dirname(os.path.dirname(resolve_paths()[0]))
-    is_tengine = os.path.basename(os.path.normpath(root)) == "tengine"
-    candidates = []
-    if is_tengine:
-        candidates.extend((
-            os.path.join(root, "conf", "vhost"),
-            "/www/server/panel/vhost/tengine",
-            "/www/server/panel/vhost/nginx",
-        ))
-    else:
-        candidates.extend((
-            "/www/server/panel/vhost/nginx",
-            os.path.join(root, "conf", "vhost"),
-            "/www/server/panel/vhost/tengine",
-        ))
-    configured = _configured_vhost_dir(candidates, os.environ.get("BTWAF_CE_NGINX_CONF") or os.path.join(root, "conf", "nginx.conf"))
-    if configured:
-        return configured
-    for path in candidates:
-        if os.path.isdir(path):
-            return path
-    return candidates[0]
+    nginx_conf = resolve_paths()[1]
+    return _configured_vhost_dir(nginx_conf) or PANEL_VHOST_DIR
 
 
 def _prefix_from_banner(text):
@@ -298,7 +246,7 @@ def _check_env(nginx_bin, nginx_conf):
         version = re.search(r"\b%s/([^\s]+)" % name, banner, re.I)
         if version:
             result["name"] = name
-            result["version"] = version.group(1)
+            result["version"] = version.group(1).rstrip(")]},;:")
             break
     if rc != 0:
         result["detail"] = "无法执行 Web 服务器：" + util.truncate(banner, 300)

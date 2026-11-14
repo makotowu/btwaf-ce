@@ -52,7 +52,7 @@ jobs:
       - name: Backend tests
         run: python tests/python/test_backend.py
 
-      - name: Nginx and Tengine compatibility
+      - name: Lua module compatibility
         run: |
           bash -n install.sh
           python tests/python/test_nginx.py

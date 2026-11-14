@@ -23,7 +23,7 @@
   "enabled": true,
   "observe": false,
   "sensitivity": 2,
-  "nginx": {"name": "Tengine", "version": "3.1.0", "bin": "/www/server/nginx/sbin/nginx", "lua": true, "lua_detail": "Lua 指令探测通过", "conf_exists": true, "conf_ok": true, "conf_hash_ok": true},
+  "nginx": {"name": "Nginx", "version": "1.24.0", "bin": "/www/server/nginx/sbin/nginx", "lua": true, "lua_detail": "Lua 指令探测通过", "conf_exists": true, "conf_ok": true, "conf_hash_ok": true},
   "dirs": {"data": true, "logs": true, "lua": true, "writable": true},
   "lua_files": 30,
   "rules": {"crs_version": "4.x.y", "total": 0, "by_src": {"crs": 0, "ce": 0, "custom": 0},

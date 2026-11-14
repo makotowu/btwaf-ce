@@ -44,7 +44,11 @@ resolve_server_paths() {
     local discovered
     local -a server_paths
     [ -f "${PLUGIN_DIR}/wafcore/nginx.py" ] || fail "插件文件不完整：缺少 wafcore/nginx.py"
-    discovered="$(py "${PLUGIN_DIR}/wafcore/nginx.py" paths)" || fail "无法发现 Web 服务器路径"
+    if [ "${BTWAF_CE_TEST_MODE:-0}" = "1" ]; then
+        discovered="$(BTWAF_CE_TEST_MODE=1 py "${PLUGIN_DIR}/wafcore/nginx.py" paths)" || fail "无法发现 Web 服务器路径"
+    else
+        discovered="$(env -u BTWAF_CE_TEST_MODE py "${PLUGIN_DIR}/wafcore/nginx.py" paths)" || fail "无法发现 Web 服务器路径"
+    fi
     mapfile -t server_paths <<<"${discovered}"
     [ "${#server_paths[@]}" -eq 4 ] || fail "Web 服务器路径格式错误"
     NGINX_BIN="${server_paths[0]}"
@@ -65,7 +69,7 @@ check_env() {
     local probe
     probe="$(py "${PLUGIN_DIR}/wafcore/nginx.py" check --bin "${NGINX_BIN}" --conf "${NGINX_CONF}" 2>&1)" || {
         log "${probe}"
-        fail "当前 ${SERVICE_NAME} 未启用可用的 Lua 模块；请加载 lua-nginx-module（Tengine 也支持 load_module 或旧版 dso 配置）"
+        fail "当前 ${SERVICE_NAME} 未启用可用的 Lua 模块；请启用 HTTP lua-nginx-module 并加载所需动态模块"
     }
     log "${SERVICE_NAME} Lua 指令检测通过：${probe}"
 }

@@ -2,8 +2,7 @@
 
 ## 未发布
 
-- 兼容 Tengine：安装与诊断共用服务器路径发现及 Lua 指令探测，支持已加载的动态模块与旧式 DSO 配置，不再仅检查 `nginx -V` 编译参数。
-- 系统诊断显示 Nginx / Tengine / OpenResty 类型与版本；独立 Tengine 服务使用对应重载命令。
+- Tengine Lua 模块在 BaoTa Nginx 布局下的附加兼容性验证；面板安装路径仍固定使用 `/www/server/nginx` 与 nginx 服务，未实现面板服务切换支持。
 - 旧 Lua 模块缺少 `ngx.timer.every` 时使用 `ngx.timer.at`，保持配置热更新、解封与统计任务运行，并报告排程失败。
 - 增加 `bash install.sh check`，可在安装前检查环境。
 

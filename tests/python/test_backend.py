@@ -36,6 +36,7 @@ NGINX_CONF = os.path.join(NGINX_ROOT, "conf", "nginx.conf")
 NGINX_INIT = os.path.join(NGINX_ROOT, "init.d", "nginx")
 VHOST_DIR = os.path.join(_TMP_ROOT, "vhost", "nginx")
 
+os.environ["BTWAF_CE_TEST_MODE"] = "1"
 os.environ["BTWAF_CE_DATA_DIR"] = DATA_DIR
 os.environ["BTWAF_CE_LOG_DIR"] = LOG_DIR
 os.environ["BTWAF_CE_NGINX_BIN"] = NGINX_BIN
