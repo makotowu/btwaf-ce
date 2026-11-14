@@ -52,6 +52,11 @@ jobs:
       - name: Backend tests
         run: python tests/python/test_backend.py
 
+      - name: Nginx and Tengine compatibility
+        run: |
+          bash -n install.sh
+          python tests/python/test_nginx.py
+
       - name: Lua tests and corpus gate
         env:
           BTWAF_CE_CORPUS_PER_FILE: "0"

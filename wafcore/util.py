@@ -134,27 +134,35 @@ def run(args, timeout=60, cwd=None):
     except subprocess.TimeoutExpired:
         try:
             p.kill()
+            p.communicate(timeout=1)
         except Exception:
             pass
+        finally:
+            p.stdout.close()
+            p.stderr.close()
         return -1, "", "timeout"
     except Exception as e:
         return -1, "", str(e)
 
 
-def nginx_test(nginx_bin=None, nginx_conf=None):
+def nginx_test(nginx_bin=None, nginx_conf=None, prefix=None):
     nginx_bin = nginx_bin or NGINX_BIN
     nginx_conf = nginx_conf or NGINX_CONF
-    rc, out, err = run([nginx_bin, "-t", "-c", nginx_conf], timeout=30)
+    args = [nginx_bin, "-t"]
+    prefix = prefix or os.environ.get("BTWAF_CE_NGINX_PREFIX")
+    if prefix:
+        args.extend(["-p", prefix])
+    args.extend(["-c", nginx_conf])
+    rc, out, err = run(args, timeout=30)
     text = (out + "\n" + err).strip()
-    ok = rc == 0 and "successful" in text
+    ok = rc == 0 and "successful" in text.lower()
     return ok, text
 
 
-def nginx_lua_supported(nginx_bin=None):
-    nginx_bin = nginx_bin or NGINX_BIN
-    rc, out, err = run([nginx_bin, "-V"], timeout=20)
-    text = (out + "\n" + err).lower()
-    return ("lua_nginx_module" in text) or ("ngx_http_lua" in text) or ("http_lua_module" in text)
+def nginx_lua_supported(nginx_bin=None, nginx_conf=None):
+    from . import nginx
+
+    return nginx.check_env(nginx_bin or NGINX_BIN, nginx_conf or NGINX_CONF)["lua"]
 
 
 def reload_nginx(init_script="/etc/init.d/nginx"):
@@ -164,11 +172,12 @@ def reload_nginx(init_script="/etc/init.d/nginx"):
             return True, out.strip()
         rc2, out2, err2 = run([init_script, "restart"], timeout=60)
         return rc2 == 0, (out.strip() + " " + err.strip() + " " + out2.strip()).strip()
-    rc, out, err = run(["/usr/bin/systemctl", "reload", "nginx"], timeout=40)
+    service = os.path.basename(os.path.normpath(init_script)) or "nginx"
+    rc, out, err = run(["/usr/bin/systemctl", "reload", service], timeout=40)
     if rc == 0:
         return True, out.strip()
-    rc2, out2, err2 = run(["/usr/bin/systemctl", "restart", "nginx"], timeout=60)
-    return rc2 == 0, (out.strip() + " " + err.strip()).strip()
+    rc2, out2, err2 = run(["/usr/bin/systemctl", "restart", service], timeout=60)
+    return rc2 == 0, (out.strip() + " " + err.strip() + " " + out2.strip() + " " + err2.strip()).strip()
 
 
 # ---------------- 校验 ----------------

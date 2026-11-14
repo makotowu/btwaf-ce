@@ -3,15 +3,15 @@
 import hashlib
 import os
 
+from .nginx import resolve_paths, resolve_vhost_dir
+
 PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # 运行期目录（可用环境变量覆盖，便于本地测试）
 DATA_DIR = os.environ.get("BTWAF_CE_DATA_DIR", "/www/server/btwaf_ce")
 LOG_DIR = os.environ.get("BTWAF_CE_LOG_DIR", "/www/wwwlogs/btwaf_ce")
-NGINX_BIN = os.environ.get("BTWAF_CE_NGINX_BIN", "/www/server/nginx/sbin/nginx")
-NGINX_CONF = os.environ.get("BTWAF_CE_NGINX_CONF", "/www/server/nginx/conf/nginx.conf")
-NGINX_INIT = os.environ.get("BTWAF_CE_NGINX_INIT", "/etc/init.d/nginx")
-VHOST_DIR = os.environ.get("BTWAF_CE_VHOST_DIR", "/www/server/panel/vhost/nginx")
+NGINX_BIN, NGINX_CONF, NGINX_INIT = resolve_paths()
+VHOST_DIR = resolve_vhost_dir()
 CONF_PATH = os.path.join(VHOST_DIR, "btwaf_ce.conf")
 
 GLOBAL_CONFIG = os.path.join(DATA_DIR, "config.json")
@@ -28,17 +28,38 @@ WAF_LOG = os.path.join(LOG_DIR, "waf.log")
 
 PLUGIN_LUA = os.path.join(PLUGIN_DIR, "lua")
 PLUGIN_DEFAULTS = os.path.join(PLUGIN_DIR, "defaults")
-RULES_INDEX = os.path.join(DATA_DIR, "lua", "rules", "index.json")
+RUNTIME_LUA_DIR = os.environ.get("BTWAF_CE_LUA_DIR", os.path.join(DATA_DIR, "lua"))
+RULES_INDEX = os.path.join(RUNTIME_LUA_DIR, "rules", "index.json")
 
 VERSION = "0.1.0"
 
-CONF_TEXT = """# 宝塔WAF社区版（btwaf_ce 插件自动生成，请勿手工修改；插件诊断页会自动校验并恢复）
+
+def _lua_quote(value):
+    return '"' + value.replace("\\", "/").replace('"', '\\"').replace("\r", "\\r").replace("\n", "\\n") + '"'
+
+
+def write_runtime_paths():
+    """由入口读取路径表，避免占用宿主的 init_by_lua / lua_package_path。"""
+    from . import util
+
+    text = "return { data_dir = %s, log_dir = %s, lua_dir = %s }\n" % (
+        _lua_quote(DATA_DIR), _lua_quote(LOG_DIR), _lua_quote(RUNTIME_LUA_DIR),
+    )
+    util.atomic_write(os.path.join(RUNTIME_LUA_DIR, "runtime_paths.lua"), text, 0o644)
+
+
+def _conf_text():
+    lua_dir = RUNTIME_LUA_DIR.replace("\\", "/").rstrip("/")
+    return """# 宝塔WAF社区版（btwaf_ce 插件自动生成，请勿手工修改；插件诊断页会自动校验并恢复）
 lua_shared_dict btwaf_ce_cfg 16m;
 lua_shared_dict btwaf_ce_cc 16m;
 lua_shared_dict btwaf_ce_block 8m;
-init_worker_by_lua_file /www/server/btwaf_ce/lua/init.lua;
-access_by_lua_file /www/server/btwaf_ce/lua/access.lua;
-"""
+init_worker_by_lua_file %s;
+access_by_lua_file %s;
+""" % (_lua_quote(lua_dir + "/init.lua"), _lua_quote(lua_dir + "/access.lua"))
+
+
+CONF_TEXT = _conf_text()
 
 
 def conf_hash():
@@ -48,7 +69,7 @@ def conf_hash():
 
 
 def runtime_lua_dir():
-    return os.path.join(DATA_DIR, "lua")
+    return RUNTIME_LUA_DIR
 
 
 def runtime_rule_dir():

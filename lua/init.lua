@@ -15,6 +15,21 @@
 -- ---------------------------------------------------------------------------
 local function setup_package_path()
   local roots = {}
+  -- 安装生成的路径表与入口放在一起，保留宿主自身的 Lua 库路径。
+  local source = debug and debug.getinfo and debug.getinfo(1, "S").source
+  local dir = type(source) == "string" and source:match("^@(.+)/[^/]+$")
+  if dir then
+    local loader = loadfile(dir .. "/runtime_paths.lua")
+    if loader then
+      local ok, runtime = pcall(loader)
+      if ok and type(runtime) == "table" then
+        rawset(_G, "BTWAF_CE_DATA_DIR", runtime.data_dir)
+        rawset(_G, "BTWAF_CE_LOG_DIR", runtime.log_dir)
+        rawset(_G, "BTWAF_CE_LUA_DIR", runtime.lua_dir)
+      end
+    end
+    roots[#roots + 1] = dir
+  end
   -- 测试/宿主可覆盖
   local override = rawget(_G, "BTWAF_CE_LUA_DIR")
   if type(override) == "string" and override ~= "" then
@@ -195,12 +210,14 @@ local function tick()
   end
 end
 
--- 启动定时器（每个 worker 一个）
+-- 启动定时器（每个 worker 一个）。新版本 OpenResty/Tengine 提供 every；
+-- 旧版 Tengine 只有 at 时，用一次性定时器在回调末尾重新排程。
 local function setup_timer()
-  if not ngx or not ngx.timer or not ngx.timer.every then
+  if not ngx or not ngx.timer then
     return false
   end
-  local ok, err = pcall(ngx.timer.every, TIMER_INTERVAL, function(premature)
+
+  local function run_tick(premature)
     if premature then
       return
     end
@@ -208,12 +225,44 @@ local function setup_timer()
     if not ok_tick then
       util.log_error("定时器执行异常: " .. tostring(terr))
     end
-  end)
-  if not ok then
-    util.log_error("定时器启动失败: " .. tostring(err))
+  end
+
+  if ngx.timer.every then
+    local ok, started, err = pcall(ngx.timer.every, TIMER_INTERVAL, run_tick)
+    if ok and started then
+      return true
+    end
+    util.log_error("ngx.timer.every 不可用，尝试 ngx.timer.at: " .. tostring(ok and err or started))
+  end
+
+  if not ngx.timer.at then
+    util.log_error("定时器 API 不可用（需要 ngx.timer.every 或 ngx.timer.at）")
     return false
   end
-  return true
+
+  local function schedule()
+    local ok, started, err = pcall(ngx.timer.at, TIMER_INTERVAL, function(premature)
+      if premature then
+        return
+      end
+      run_tick(false)
+      local exiting = false
+      if ngx.worker and type(ngx.worker.exiting) == "function" then
+        local ok_exit, result = pcall(ngx.worker.exiting)
+        exiting = ok_exit and result == true
+      end
+      if not exiting then
+        schedule()
+      end
+    end)
+    if not ok or not started then
+      util.log_error("定时器排程失败: " .. tostring(ok and err or started))
+      return false
+    end
+    return true
+  end
+
+  return schedule()
 end
 
 -- ---------------------------------------------------------------------------

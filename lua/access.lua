@@ -19,6 +19,20 @@
 -- ---------------------------------------------------------------------------
 local function setup_package_path()
   local roots = {}
+  local source = debug and debug.getinfo and debug.getinfo(1, "S").source
+  local dir = type(source) == "string" and source:match("^@(.+)/[^/]+$")
+  if dir then
+    local loader = not package.loaded["lib.paths"] and loadfile(dir .. "/runtime_paths.lua")
+    if loader then
+      local ok, runtime = pcall(loader)
+      if ok and type(runtime) == "table" then
+        rawset(_G, "BTWAF_CE_DATA_DIR", runtime.data_dir)
+        rawset(_G, "BTWAF_CE_LOG_DIR", runtime.log_dir)
+        rawset(_G, "BTWAF_CE_LUA_DIR", runtime.lua_dir)
+      end
+    end
+    roots[#roots + 1] = dir
+  end
   local override = rawget(_G, "BTWAF_CE_LUA_DIR")
   if type(override) == "string" and override ~= "" then
     roots[#roots + 1] = override

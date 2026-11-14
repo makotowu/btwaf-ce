@@ -1163,7 +1163,7 @@
                     <el-tag v-if="status.observe" size="small" type="primary" style="margin-left:6px">观察模式</el-tag>
                 </el-descriptions-item>
                 <el-descriptions-item label="灵敏度">{{ sensitivityText }}</el-descriptions-item>
-                <el-descriptions-item label="Nginx">{{ status.nginx.bin || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="Web 服务器">{{ status.nginx.name || 'Nginx' }} {{ status.nginx.version || '' }}<br><span class="waf-sub">{{ status.nginx.bin || '-' }}</span></el-descriptions-item>
                 <el-descriptions-item label="Lua 模块">
                     <el-tag size="small" :type="okTag(status.nginx.lua)">{{ okText(status.nginx.lua) }}</el-tag>
                 </el-descriptions-item>

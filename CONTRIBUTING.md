@@ -19,7 +19,7 @@
 
 ## 开发环境
 
-- 宝塔 Linux 面板 + 带 `lua-nginx-module` 的 Nginx（或 OpenResty）；
+- 宝塔 Linux 面板 + 带 HTTP `lua-nginx-module` 的 Nginx / Tengine（或 OpenResty），LuaJIT 及配套库要求见 README；
 - Python 3.7+ 语法兼容，目标运行环境 Python 3.13；
 - Node.js + `wasmoon` 用于离线 Lua 测试；
 - 不需要构建前端：`static/` 是可直接加载的 Vue 3 + Element Plus UMD 资源。
@@ -30,6 +30,7 @@ cd btwaf-ce
 cd tests && npm install && cd ..
 node tests/run.mjs
 python tests/python/test_backend.py
+python tests/python/test_nginx.py
 python tools/check_frontend.py
 python tools/check_lua51.py
 python tools/check_rules.py
@@ -53,6 +54,7 @@ python tools/check_rules.py
 ```bash
 node tests/run.mjs
 python tests/python/test_backend.py
+python tests/python/test_nginx.py
 python tools/check_frontend.py
 python tools/check_lua51.py
 python tools/check_rules.py

@@ -2,7 +2,7 @@
 
 ## 0. 这个项目能做什么
 
-在宝塔面板已有的 Nginx 站点上，以 OpenResty/Lua 内联执行应用层 WAF，不改变站点架构、不额外监听端口、运行期不依赖外网。
+在宝塔面板已有的 Nginx / Tengine 站点上，以 `lua-nginx-module` / OpenResty 内联执行应用层 WAF，不改变站点架构、不额外监听端口、运行期不依赖外网。
 
 它能做：
 
@@ -28,7 +28,7 @@
 
 欢迎通过 Issue 反馈问题、提出建议，也欢迎提交 PR 一起完善项目。提交前请阅读 [贡献指南](CONTRIBUTING.md)。提交问题时请尽量附上：
 
-- 面板版本、PHP/Python 版本、Nginx 版本与 `lua-nginx-module` 情况；
+- 面板版本、PHP/Python 版本、Nginx / Tengine / OpenResty 版本与 `lua-nginx-module` 情况；
 - 复现步骤、期望结果、实际结果；
 - 相关配置（请先脱敏）和日志片段。
 
@@ -60,13 +60,27 @@
 | 项 | 要求 |
 |---|---|
 | 面板 | 宝塔 Linux 面板 9.x / 11.x / 13.x（Python 3.7+ 语法兼容） |
-| Web 服务器 | Nginx 1.22+，需带 `lua-nginx-module`；或 OpenResty |
+| Web 服务器 | Nginx 1.22+、Tengine 2.3+ / 3.x 或 OpenResty；需启用 HTTP `lua-nginx-module` |
+| Lua 运行时 | LuaJIT 2.x；按 Lua 模块版本安装匹配的 `lua-resty-core` / `lua-resty-lrucache` |
 | 磁盘 | 约 10MB（含规则；日志随保留天数增长） |
 | 网络 | 安装后运行不需要外网 |
 
+### Tengine 说明
+
+- 宝塔的 Tengine 通常仍使用 `/www/server/nginx/sbin/nginx`、`/www/server/nginx/conf/nginx.conf` 和 `nginx` 服务；插件保留这一布局，也会检测 `/www/server/tengine`。两套完整安装同时存在时优先选择唯一处于活动状态的服务，否则优先 Nginx 布局。站点配置目录优先匹配主配置中的 HTTP 级 include；独立 Tengine 默认使用 `tengine` 服务，若实际由 `nginx` 服务管理，请显式设置 `BTWAF_CE_NGINX_INIT=/etc/init.d/nginx`。
+- **Tengine 版本号不代表 Lua 已启用**。源码构建可使用 `--with-http_lua_module`，或加入匹配的 `lua-nginx-module`；动态构建需要在主配置中加载模块。Tengine 2.3.0 起使用标准 `load_module`；旧版 `dso { ... }` 配置仍可被检测器识别，但不建议继续使用过时版本。
+- 安装和系统诊断会在临时配置中实际检查 `lua_shared_dict`、`init_worker_by_lua_file` 和 `access_by_lua_file`，继承现有模块加载与 Lua 库路径，不修改主配置、不启动/重载服务。仅有 `--add-dynamic-module` 编译参数但未加载模块时会明确报错。
+- Lua 模块没有 `ngx.timer.every` 时，热更新/解封/统计定时任务会使用 `ngx.timer.at` 重排；仍需要支持 `init_worker_by_lua_file` 和定时器 API 的模块。
+
+从插件目录运行安装前检查（只检测，不安装）：
+
 ```bash
-/www/server/nginx/sbin/nginx -V 2>&1 | grep -i lua_nginx_module
+bash install.sh check
 ```
+
+非标准布局可使用 `BTWAF_CE_SERVER_ROOT`，或分别覆盖 `BTWAF_CE_NGINX_BIN`、`BTWAF_CE_NGINX_CONF`、`BTWAF_CE_NGINX_INIT`、`BTWAF_CE_VHOST_DIR`。这些变量同时用于安装脚本和后端；如用于实际部署，也需配置到面板进程环境，而不只是临时 shell。
+
+模块构建与加载参见 [Tengine Lua 模块文档](https://github.com/alibaba/tengine/blob/master/modules/ngx_http_lua_module/README.markdown) 和 [Tengine DSO / load_module 说明](https://tengine.taobao.org/document_cn/dso_cn.html)。
 
 ## 首次使用
 
@@ -90,6 +104,7 @@
 git clone https://github.com/makotowu/btwaf-ce btwaf-ce && cd btwaf-ce
 node tests/run.mjs
 python tests/python/test_backend.py
+python tests/python/test_nginx.py
 python tools/check_frontend.py
 python tools/check_rules.py
 python tools/build_zip.py --version 0.1.0

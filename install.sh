@@ -1,6 +1,6 @@
 #!/bin/bash
 # 宝塔WAF社区版（btwaf_ce）安装脚本
-# 用法：bash install.sh install|update|uninstall
+# 用法：bash install.sh install|update|uninstall|check
 # 安装会备份并自动禁用冲突的 Nginx Lua 处理链；卸载按清单恢复安装前配置。
 set -u
 
@@ -8,21 +8,23 @@ PATH=/www/server/panel/pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/b
 export PATH
 
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="/www/server/btwaf_ce"
-LOG_DIR="/www/wwwlogs/btwaf_ce"
+DATA_DIR="${BTWAF_CE_DATA_DIR:-/www/server/btwaf_ce}"
+LOG_DIR="${BTWAF_CE_LOG_DIR:-/www/wwwlogs/btwaf_ce}"
+LUA_DIR="${BTWAF_CE_LUA_DIR:-${DATA_DIR}/lua}"
 PRE_DATA="${DATA_DIR}.preinstall"
 PRE_LOG="${LOG_DIR}.preinstall"
 ICON_BACKUP="${DATA_DIR}.icons"
 INSTALL_DIR="${DATA_DIR}/.install"
 CONF_MANIFEST="${INSTALL_DIR}/nginx.json"
 CONF_BACKUP="${INSTALL_DIR}/nginx"
-NGINX_BIN="/www/server/nginx/sbin/nginx"
-NGINX_CONF="/www/server/nginx/conf/nginx.conf"
-VHOST_DIR="/www/server/panel/vhost/nginx"
-VHOST_CONF="${VHOST_DIR}/btwaf_ce.conf"
-PANEL_ROOT="/www/server/panel"
-NGINX_INIT="/etc/init.d/nginx"
-INSTALL_TMP="/tmp/bt_install.pl"
+PANEL_ROOT="${BTWAF_CE_PANEL_ROOT:-/www/server/panel}"
+NGINX_BIN=""
+NGINX_CONF=""
+NGINX_INIT=""
+VHOST_DIR=""
+VHOST_CONF=""
+SERVICE_NAME="nginx"
+INSTALL_TMP="${BTWAF_CE_INSTALL_LOG:-/tmp/bt_install.pl}"
 DATA_EXISTED=0
 LOG_EXISTED=0
 
@@ -38,33 +40,52 @@ py() {
     fi
 }
 
+resolve_server_paths() {
+    local discovered
+    local -a server_paths
+    [ -f "${PLUGIN_DIR}/wafcore/nginx.py" ] || fail "插件文件不完整：缺少 wafcore/nginx.py"
+    discovered="$(py "${PLUGIN_DIR}/wafcore/nginx.py" paths)" || fail "无法发现 Web 服务器路径"
+    mapfile -t server_paths <<<"${discovered}"
+    [ "${#server_paths[@]}" -eq 4 ] || fail "Web 服务器路径格式错误"
+    NGINX_BIN="${server_paths[0]}"
+    NGINX_CONF="${server_paths[1]}"
+    NGINX_INIT="${server_paths[2]}"
+    VHOST_DIR="${server_paths[3]}"
+    VHOST_CONF="${VHOST_DIR}/btwaf_ce.conf"
+    SERVICE_NAME="$(basename "${NGINX_INIT}")"
+}
+
 check_env() {
-    [ -x "${NGINX_BIN}" ] || fail "未找到 Nginx（${NGINX_BIN}）"
-    [ -d "${VHOST_DIR}" ] || fail "未找到面板 Nginx 配置目录：${VHOST_DIR}"
-    [ -f "${NGINX_CONF}" ] || fail "未找到 Nginx 主配置：${NGINX_CONF}"
+    [ -x "${NGINX_BIN}" ] || fail "未找到 Web 服务器（${NGINX_BIN}）"
+    [ -d "${VHOST_DIR}" ] || fail "未找到面板 Web 服务器配置目录：${VHOST_DIR}"
+    [ -f "${NGINX_CONF}" ] || fail "未找到 Web 服务器主配置：${NGINX_CONF}"
     [ -d "${PLUGIN_DIR}/lua" ] || fail "插件文件不完整：缺少 lua/ 目录"
     [ -f "${PLUGIN_DIR}/install_conf.py" ] || fail "插件文件不完整：缺少 install_conf.py"
-    log "正在检测 Nginx Lua 支持..."
-    local nginx_v
-    nginx_v="$(${NGINX_BIN} -V 2>&1)"
-    if ! echo "${nginx_v}" | grep -qiE 'lua_nginx_module|ngx_http_lua|http_lua_module'; then
-        fail "当前 Nginx 未编译 lua-nginx-module"
-    fi
-    log "Nginx Lua 支持检测通过"
+    log "正在检测 ${SERVICE_NAME} Lua 指令支持..."
+    local probe
+    probe="$(py "${PLUGIN_DIR}/wafcore/nginx.py" check --bin "${NGINX_BIN}" --conf "${NGINX_CONF}" 2>&1)" || {
+        log "${probe}"
+        fail "当前 ${SERVICE_NAME} 未启用可用的 Lua 模块；请加载 lua-nginx-module（Tengine 也支持 load_module 或旧版 dso 配置）"
+    }
+    log "${SERVICE_NAME} Lua 指令检测通过：${probe}"
 }
 
 test_nginx() {
     local out rc
-    out="$(${NGINX_BIN} -t -c "${NGINX_CONF}" 2>&1)" || rc=$?
+    local -a args=("${NGINX_BIN}" -t -c "${NGINX_CONF}")
+    if [ -n "${BTWAF_CE_NGINX_PREFIX:-}" ]; then
+        args+=(-p "${BTWAF_CE_NGINX_PREFIX}")
+    fi
+    out="$("${args[@]}" 2>&1)" || rc=$?
     echo "${out}"
     [ "${rc:-0}" -eq 0 ] && echo "${out}" | grep -q 'successful'
 }
 
 reload_nginx() {
     if [ -x "${NGINX_INIT}" ]; then
-        ${NGINX_INIT} reload >/dev/null 2>&1 || ${NGINX_INIT} restart >/dev/null 2>&1
+        "${NGINX_INIT}" reload >/dev/null 2>&1 || "${NGINX_INIT}" restart >/dev/null 2>&1
     else
-        systemctl reload nginx >/dev/null 2>&1 || systemctl restart nginx >/dev/null 2>&1
+        systemctl reload "${SERVICE_NAME}" >/dev/null 2>&1 || systemctl restart "${SERVICE_NAME}" >/dev/null 2>&1
     fi
 }
 
@@ -88,7 +109,7 @@ prepare_conflicts() {
     log "正在检查 Nginx Lua 处理链冲突..."
     if ! py "${PLUGIN_DIR}/install_conf.py" prepare \
         --manifest "${CONF_MANIFEST}" --backup-dir "${CONF_BACKUP}" \
-        --nginx-conf "${NGINX_CONF}" --vhost-dir "${VHOST_DIR}"; then
+        --nginx-conf "${NGINX_CONF}" --vhost-dir "${VHOST_DIR}" --lua-dir "${LUA_DIR}"; then
         fail "处理 Nginx 冲突失败，未修改站点配置；请检查权限或配置格式"
     fi
 }
@@ -100,17 +121,18 @@ restore_conflicts() {
 
 copy_runtime() {
     log "正在部署 Lua 引擎与规则..."
-    mkdir -p "${DATA_DIR}/lua" "${DATA_DIR}/rule" "${DATA_DIR}/data" "${DATA_DIR}/logs"
-    rm -rf "${DATA_DIR}/lua"
-    mkdir -p "${DATA_DIR}/lua"
-    cp -a "${PLUGIN_DIR}/lua/." "${DATA_DIR}/lua/" || fail "复制 lua 目录失败"
+    mkdir -p "${LUA_DIR}" "${DATA_DIR}/rule" "${DATA_DIR}/data" "${DATA_DIR}/logs"
+    rm -rf "${LUA_DIR}"
+    mkdir -p "${LUA_DIR}"
+    cp -a "${PLUGIN_DIR}/lua/." "${LUA_DIR}/" || fail "复制 lua 目录失败"
     if [ -d "${PLUGIN_DIR}/defaults" ]; then
         mkdir -p "${DATA_DIR}/defaults"
         cp -a "${PLUGIN_DIR}/defaults/." "${DATA_DIR}/defaults/" || fail "复制默认配置失败"
     fi
     mkdir -p "${LOG_DIR}"
-    chmod -R 755 "${DATA_DIR}" 2>/dev/null || true
-    find "${DATA_DIR}/lua" -type f -name '*.lua' -exec chmod 644 {} \; 2>/dev/null || true
+    chmod 755 "${DATA_DIR}" 2>/dev/null || true
+    chmod -R 755 "${LUA_DIR}" 2>/dev/null || true
+    find "${LUA_DIR}" -type f -name '*.lua' -exec chmod 644 {} \; 2>/dev/null || true
     chown -R root:root "${DATA_DIR}" 2>/dev/null || true
     chown www:www "${DATA_DIR}/data" 2>/dev/null || true
     chmod 750 "${DATA_DIR}/data" 2>/dev/null || true
@@ -150,15 +172,14 @@ init_data() {
 
 write_conf() {
     log "正在写入 Nginx 配置：${VHOST_CONF}"
-    cat >"${VHOST_CONF}" <<'EOF'
-# 宝塔WAF社区版（btwaf_ce 插件自动生成，请勿手工修改；插件诊断页会自动校验并恢复）
-lua_shared_dict btwaf_ce_cfg 16m;
-lua_shared_dict btwaf_ce_cc 16m;
-lua_shared_dict btwaf_ce_block 8m;
-init_worker_by_lua_file /www/server/btwaf_ce/lua/init.lua;
-access_by_lua_file /www/server/btwaf_ce/lua/access.lua;
-EOF
-    chmod 644 "${VHOST_CONF}"
+    PYTHONPATH="${PLUGIN_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
+        BTWAF_CE_DATA_DIR="${DATA_DIR}" BTWAF_CE_LOG_DIR="${LOG_DIR}" \
+        BTWAF_CE_LUA_DIR="${LUA_DIR}" py - "${VHOST_CONF}" <<'PY' || fail "生成 WAF 配置失败"
+import sys
+from wafcore import paths, util
+paths.write_runtime_paths()
+util.write_text(sys.argv[1], paths.CONF_TEXT, 0o644)
+PY
 }
 
 backup_icons() {
@@ -247,7 +268,10 @@ do_install() {
         test_nginx >/dev/null 2>&1 || true
         fail "Nginx 配置检测失败，已回滚"
     fi
-    reload_nginx
+    if ! reload_nginx; then
+        rollback_install
+        fail "Web 服务器重载失败，已回滚配置和数据"
+    fi
     log "================================================="
     log "安装完成，宝塔WAF社区版已就绪（数据目录：${DATA_DIR}）"
     echo '安装完成' >"${INSTALL_TMP}"
@@ -268,11 +292,11 @@ do_uninstall() {
         reload_nginx
         fail "恢复安装前 Nginx 配置失败，已回到卸载前状态"
     fi
-    reload_nginx
+    reload_nginx || fail "Web 服务器重载失败；保留数据，请检查服务配置后重试卸载"
     restore_icons
     restore_preexisting_dirs
     rm -rf "${INSTALL_DIR}" "${DATA_DIR}.icons"
-    if grep -RIn '/www/server/btwaf_ce' "${VHOST_DIR}" "${NGINX_CONF}" 2>/dev/null | grep -v 'btwaf_ce.conf' >/tmp/btwaf_ce_residual 2>/dev/null; then
+    if grep -RFIn -- "${DATA_DIR}" "${VHOST_DIR}" "${NGINX_CONF}" 2>/dev/null | grep -v 'btwaf_ce.conf' >/tmp/btwaf_ce_residual 2>/dev/null; then
         log "警告：Nginx 配置仍包含 btwaf_ce 引用："
         cat /tmp/btwaf_ce_residual
     fi
@@ -283,7 +307,8 @@ do_uninstall() {
 
 action="${1:-}"
 case "${action}" in
-install | update) do_install ;;
-uninstall) do_uninstall ;;
-*) echo "用法: bash install.sh install|update|uninstall"; exit 1 ;;
+install | update) resolve_server_paths; do_install ;;
+uninstall) resolve_server_paths; do_uninstall ;;
+check) INSTALL_TMP="/dev/null"; resolve_server_paths; check_env ;;
+*) echo "用法: bash install.sh install|update|uninstall|check"; exit 1 ;;
 esac
