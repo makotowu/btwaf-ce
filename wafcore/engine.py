@@ -4,7 +4,7 @@ import os
 import re
 
 from . import config as C
-from . import paths, sites, state, util
+from . import nginx, paths, sites, state, util
 
 
 def _norm(text):
@@ -44,10 +44,11 @@ def nginx_test():
 
 
 def nginx_lua_ok():
-    return util.nginx_lua_supported(paths.NGINX_BIN)
+    return util.nginx_lua_supported(paths.NGINX_BIN, paths.NGINX_CONF)
 
 
 def reload_nginx():
+    nginx.clear_cache()
     ok, detail = util.reload_nginx(paths.NGINX_INIT)
     if ok:
         state.update_state(last_reload=util.now())
@@ -55,8 +56,10 @@ def reload_nginx():
 
 
 def write_conf():
+    paths.write_runtime_paths()
     util.ensure_dir(os.path.dirname(paths.CONF_PATH), 0o755)
     util.write_text(paths.CONF_PATH, paths.CONF_TEXT, 0o644)
+    nginx.clear_cache()
     return True
 
 
@@ -97,6 +100,7 @@ def deploy_runtime():
     dst = paths.runtime_lua_dir()
     try:
         util.copy_tree(src, dst)
+        paths.write_runtime_paths()
         for root, dirs, files in os.walk(dst):
             try:
                 os.chmod(root, 0o755)
@@ -215,7 +219,8 @@ def status():
     cfg = C.load_global()
     conf = conf_status()
     dirs = dirs_status()
-    lua_ok = nginx_lua_ok()
+    server = nginx.check_env(paths.NGINX_BIN, paths.NGINX_CONF, cached=True)
+    lua_ok = server["lua"]
     lua_dir = paths.runtime_lua_dir()
     lua_files = 0
     if os.path.isdir(lua_dir):
@@ -239,9 +244,12 @@ def status():
         "observe": bool(cfg.get("observe")),
         "sensitivity": cfg.get("sensitivity", 2),
         "nginx": {
+            "name": server["name"],
+            "version": server["version"],
             "bin": paths.NGINX_BIN,
             "exists": os.path.isfile(paths.NGINX_BIN),
             "lua": lua_ok,
+            "lua_detail": server["detail"],
             "conf_path": paths.CONF_PATH,
             "conf_exists": conf["exists"],
             "conf_ok": conf["exists"] and conf["hash_ok"],
@@ -266,13 +274,14 @@ def check_env():
     def add(name, ok, detail, repairable=False):
         items.append({"name": name, "ok": bool(ok), "detail": detail, "repairable": bool(repairable)})
 
-    add("Nginx 可执行文件", os.path.isfile(paths.NGINX_BIN), paths.NGINX_BIN)
-    add(
-        "Nginx Lua 模块",
-        nginx_lua_ok(),
-        "已编译 lua-nginx-module" if nginx_lua_ok() else "当前 Nginx 不支持 Lua，请切换 Nginx 1.22–1.24 或 OpenResty",
-    )
-    add("Nginx 配置文件", conf["exists"], paths.CONF_PATH, True)
+    server = nginx.check_env(paths.NGINX_BIN, paths.NGINX_CONF)
+    label = server["name"]
+    add(label + " 可执行文件", os.path.isfile(paths.NGINX_BIN), paths.NGINX_BIN)
+    detail = server["detail"]
+    if not server["lua"]:
+        detail += "；请启用 HTTP lua-nginx-module 并加载所需动态模块"
+    add(label + " Lua 模块", server["lua"], detail)
+    add(label + " 配置文件", conf["exists"], paths.CONF_PATH, True)
     add("配置与插件模板一致", conf["hash_ok"], "被修改或缺失时点一键修复即可恢复", True)
     ok_cfg = True
     try:

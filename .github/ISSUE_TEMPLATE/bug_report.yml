@@ -18,10 +18,10 @@ body:
     id: environment
     attributes:
       label: 环境
-      description: 面板版本、Nginx 版本与 lua-nginx-module、Python 版本、系统版本
+      description: 面板版本、Nginx 版本与 HTTP lua-nginx-module、LuaJIT 版本、Python 版本、系统版本
       placeholder: |
         - 面板:
-        - Nginx:
+        - Nginx / LuaJIT:
         - Python:
         - 系统:
     validations:

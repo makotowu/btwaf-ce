@@ -164,6 +164,7 @@ def prepare(args):
     manifest = load_manifest(args.manifest)
     known = set(os.path.abspath(x.get("path", "")) for x in manifest.get("files", []))
     backup_dir = args.backup_dir
+    lua_marker = args.lua_dir.rstrip("/") + "/"
     if not os.path.isdir(backup_dir):
         os.makedirs(backup_dir)
     changed = []
@@ -171,7 +172,7 @@ def prepare(args):
         for path in iter_conf_files(args.nginx_conf, args.vhost_dir):
             if path in known or os.path.basename(path) == "btwaf_ce.conf":
                 continue
-            edits = scan_file(path, "/www/server/btwaf_ce/")
+            edits = scan_file(path, lua_marker)
             if not edits:
                 continue
             entry = backup_file(path, backup_dir)
@@ -229,6 +230,7 @@ def main():
     a.add_argument("--backup-dir", required=True)
     a.add_argument("--nginx-conf", required=True)
     a.add_argument("--vhost-dir", required=True)
+    a.add_argument("--lua-dir", default="/www/server/btwaf_ce/lua")
     b = sub.add_parser("restore")
     b.add_argument("--manifest", required=True)
     args = p.parse_args()

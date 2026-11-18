@@ -9,6 +9,7 @@ tests/
   run.mjs                 Lua 引擎 + 语料测试入口
   mock/                   ngx 垫片与 suites
   python/                 后端单元测试
+  shell/                  在私有面板目录实际执行安装器的回归（Linux + bubblewrap）
   e2e/                    宝塔面板内 E2E 冒烟
   corpus/                 按来源标注的回归语料
   package.json            wasmoon / vscode-oniguruma 测试依赖
@@ -20,7 +21,16 @@ tests/
 cd tests && npm install && cd ..
 node tests/run.mjs
 python tests/python/test_backend.py
+python tests/python/test_nginx.py
 ```
+
+Python 路径隔离通过 mock 实现，不需要生产代码的测试开关。Linux 安装器回归另需 `bubblewrap` 与 user/mount namespace：
+
+```bash
+python3 tests/shell/test_install_check.py
+```
+
+它会在私有 `/www` fixture 中实际运行未改写的 `bash install.sh check`，不写入宿主面板目录；缺少沙箱依赖时明确失败。
 
 全量语料门禁：
 

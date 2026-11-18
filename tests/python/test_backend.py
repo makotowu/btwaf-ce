@@ -8,9 +8,8 @@
 
 约束：
 - 只依赖标准库（unittest/json/os/...），不 import 面板 `public`。
-- paths.py 在 import 时读取环境变量，因此**先**设置
-  BTWAF_CE_DATA_DIR / BTWAF_CE_LOG_DIR / BTWAF_CE_NGINX_BIN 等指向临时目录，
-  再 import wafcore（本文件顶部顺序不可调换）。
+- 导入业务模块前用 mock.patch 替换 paths.py 的常量与派生路径，
+  使测试只写临时目录，不通过环境变量改变生产代码行为。
 - 每个用例 setUp 清空临时数据/日志目录，保证用例互不污染。
 - 退出码 0 = 全绿；非 0 = 有失败。
 """
@@ -25,7 +24,7 @@ import unittest
 from unittest import mock
 
 # ---------------------------------------------------------------------------
-# 1) 先准备临时目录并写入环境变量（必须在 import wafcore 之前完成）
+# 1) 准备临时目录（业务模块导入前由 mock 替换路径）
 # ---------------------------------------------------------------------------
 _TMP_ROOT = tempfile.mkdtemp(prefix="btwaf_ce_test_")
 DATA_DIR = os.path.join(_TMP_ROOT, "btwaf_data")
@@ -35,13 +34,6 @@ NGINX_BIN = os.path.join(NGINX_ROOT, "sbin", "nginx")
 NGINX_CONF = os.path.join(NGINX_ROOT, "conf", "nginx.conf")
 NGINX_INIT = os.path.join(NGINX_ROOT, "init.d", "nginx")
 VHOST_DIR = os.path.join(_TMP_ROOT, "vhost", "nginx")
-
-os.environ["BTWAF_CE_DATA_DIR"] = DATA_DIR
-os.environ["BTWAF_CE_LOG_DIR"] = LOG_DIR
-os.environ["BTWAF_CE_NGINX_BIN"] = NGINX_BIN
-os.environ["BTWAF_CE_NGINX_CONF"] = NGINX_CONF
-os.environ["BTWAF_CE_NGINX_INIT"] = NGINX_INIT
-os.environ["BTWAF_CE_VHOST_DIR"] = VHOST_DIR
 
 
 def _cleanup_tmp():
@@ -58,10 +50,36 @@ _PLUGIN_DIR = os.path.abspath(os.path.join(_HERE, "..", ".."))
 if _PLUGIN_DIR not in sys.path:
     sys.path.insert(0, _PLUGIN_DIR)
 
+from wafcore import paths as P  # noqa: E402
+
+_lua_dir = os.path.join(DATA_DIR, "lua")
+_path_constants = {
+    "DATA_DIR": DATA_DIR, "LOG_DIR": LOG_DIR, "RUNTIME_LUA_DIR": _lua_dir,
+    "NGINX_BIN": NGINX_BIN, "NGINX_CONF": NGINX_CONF, "NGINX_INIT": NGINX_INIT,
+    "VHOST_DIR": VHOST_DIR, "CONF_PATH": os.path.join(VHOST_DIR, "btwaf_ce.conf"),
+    "GLOBAL_CONFIG": os.path.join(DATA_DIR, "config.json"),
+    "SITE_CONFIG": os.path.join(DATA_DIR, "site.json"),
+    "HOSTS_CONFIG": os.path.join(DATA_DIR, "hosts.json"),
+    "CUSTOM_RULES": os.path.join(DATA_DIR, "rule", "custom.json"),
+    "STATE_FILE": os.path.join(DATA_DIR, "data", "state.json"),
+    "BLOCK_LOG": os.path.join(DATA_DIR, "data", "block.log"),
+    "UNBAN_LOG": os.path.join(DATA_DIR, "data", "unban.log"),
+    "PERF_FILE": os.path.join(DATA_DIR, "data", "perf.json"),
+    "BLOCK_PAGE": os.path.join(DATA_DIR, "data", "blockpage.html"),
+    "PLUGIN_LOG": os.path.join(DATA_DIR, "logs", "plugin.log"),
+    "WAF_LOG": os.path.join(LOG_DIR, "waf.log"),
+    "RULES_INDEX": os.path.join(_lua_dir, "rules", "index.json"),
+}
+_path_patch = mock.patch.multiple(P, **_path_constants)
+_path_patch.start()
+atexit.register(_path_patch.stop)
+_conf_patch = mock.patch.object(P, "CONF_TEXT", P._conf_text())
+_conf_patch.start()
+atexit.register(_conf_patch.stop)
+
 from wafcore import config as C  # noqa: E402
 from wafcore import engine as E  # noqa: E402
 from wafcore import logs as L  # noqa: E402
-from wafcore import paths as P  # noqa: E402
 from wafcore import rules as R  # noqa: E402
 from wafcore import sites as S  # noqa: E402
 from wafcore import state as ST  # noqa: E402
@@ -283,10 +301,10 @@ class BaseCase(unittest.TestCase):
 
 
 # ---------------------------------------------------------------------------
-# 4) paths / 环境变量
+# 4) paths / mock 隔离
 # ---------------------------------------------------------------------------
 class PathsTest(BaseCase):
-    def test_env_override_applied_at_import(self):
+    def test_mock_paths_are_isolated(self):
         self.assertEqual(P.DATA_DIR, DATA_DIR)
         self.assertEqual(P.LOG_DIR, LOG_DIR)
         self.assertEqual(P.NGINX_BIN, NGINX_BIN)
@@ -294,7 +312,7 @@ class PathsTest(BaseCase):
         self.assertEqual(P.WAF_LOG, os.path.join(LOG_DIR, "waf.log"))
         self.assertEqual(P.RULES_INDEX, os.path.join(DATA_DIR, "lua", "rules", "index.json"))
         self.assertEqual(P.CONF_PATH, os.path.join(VHOST_DIR, "btwaf_ce.conf"))
-        self.assertTrue(P.PLUGIN_DIR.endswith("btwaf-ce") or P.PLUGIN_DIR.endswith("btwaf_ce"))
+        self.assertEqual(P.PLUGIN_DIR, _PLUGIN_DIR)
 
     def test_conf_hash_stable_and_normalized(self):
         h1 = P.conf_hash()

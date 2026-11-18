@@ -17,6 +17,7 @@ DIST = os.path.join(ROOT, "dist")
 EXCLUDE_DIRS = {
     "__pycache__",
     ".git",
+    ".claude",
     "node_modules",
     "tests",
     "tools",

@@ -346,16 +346,18 @@ function ngx_.timer.at(delay, fn)
   return true
 end
 
-function mock.run_timers()
-  local count = 0
-  for i = 1, #mock.timers do
-    local t = mock.timers[i]
-    if t.kind == "every" then
-      t.fn(false)
-      count = count + 1
+function mock.run_timers(premature)
+  local pending = mock.timers
+  mock.timers = {}
+  for i = 1, #pending do
+    local timer = pending[i]
+    if timer.kind == "every" and not premature then
+      mock.timers[#mock.timers + 1] = timer
     end
+    -- 本轮只运行原有任务，at 回调重新排程的任务留到下一轮。
+    timer.fn(premature == true)
   end
-  return count
+  return #pending
 end
 
 function mock.timer_count()

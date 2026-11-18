@@ -2,7 +2,7 @@
 
 ## 0. 这个项目能做什么
 
-在宝塔面板已有的 Nginx 站点上，以 OpenResty/Lua 内联执行应用层 WAF，不改变站点架构、不额外监听端口、运行期不依赖外网。
+在宝塔面板已有的 Nginx 站点上，以 `lua-nginx-module` / OpenResty 内联执行应用层 WAF，不改变站点架构、不额外监听端口、运行期不依赖外网。
 
 它能做：
 
@@ -60,12 +60,15 @@
 | 项 | 要求 |
 |---|---|
 | 面板 | 宝塔 Linux 面板 9.x / 11.x / 13.x（Python 3.7+ 语法兼容） |
-| Web 服务器 | Nginx 1.22+，需带 `lua-nginx-module`；或 OpenResty |
+| Web 服务器 | Nginx 1.22+，需带 HTTP `lua-nginx-module`；或 OpenResty |
+| Lua 运行时 | LuaJIT 2.x；按 Lua 模块版本安装匹配的 `lua-resty-core` / `lua-resty-lrucache` |
 | 磁盘 | 约 10MB（含规则；日志随保留天数增长） |
 | 网络 | 安装后运行不需要外网 |
 
+从插件目录运行安装前检查（只检测，不安装）：
+
 ```bash
-/www/server/nginx/sbin/nginx -V 2>&1 | grep -i lua_nginx_module
+bash install.sh check
 ```
 
 ## 首次使用
@@ -90,6 +93,7 @@
 git clone https://github.com/makotowu/btwaf-ce btwaf-ce && cd btwaf-ce
 node tests/run.mjs
 python tests/python/test_backend.py
+python tests/python/test_nginx.py
 python tools/check_frontend.py
 python tools/check_rules.py
 python tools/build_zip.py --version 0.1.0

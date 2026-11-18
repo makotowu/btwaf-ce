@@ -52,6 +52,17 @@ jobs:
       - name: Backend tests
         run: python tests/python/test_backend.py
 
+      - name: Lua module compatibility
+        run: |
+          bash -n install.sh
+          python tests/python/test_nginx.py
+
+      - name: Installer shell regression
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bubblewrap
+          python3 tests/shell/test_install_check.py
+
       - name: Lua tests and corpus gate
         env:
           BTWAF_CE_CORPUS_PER_FILE: "0"
