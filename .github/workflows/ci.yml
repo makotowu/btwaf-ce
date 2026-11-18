@@ -61,7 +61,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y bubblewrap
-          sudo "$(command -v python3)" tests/shell/test_install_check.py
+          python3 tests/shell/test_install_check.py
 
       - name: Lua tests and corpus gate
         env:

@@ -21,7 +21,7 @@ python tools/check_rules.py
 | Lua 引擎 | `node tests/run.mjs` | 用 wasmoon 加载真实的 `lua/**`，注入 `ngx` 垫片，不需要 nginx/LuaJIT |
 | 后端 | `python tests/python/test_backend.py` | 配置、日志、规则、站点、HTTP 控制器等纯函数/模块测试 |
 | 服务器探测 | `python tests/python/test_nginx.py` | `-V` 名称/版本显示、Lua 指令探测、动态模块/DSO 解析；路径测试确认 Tengine 版本标记仍映射到宝塔 Nginx 布局 |
-| 安装器 shell | `sudo python3 tests/shell/test_install_check.py` | Linux + bubblewrap；在私有 `/www` fixtures 中实际执行原始 `bash install.sh check`，覆盖系统/面板 Python、缺二进制/主配置/Lua 模块和旧环境变量残留 |
+| 安装器 shell | `python3 tests/shell/test_install_check.py` | Linux + bubblewrap；在私有 `/www` fixtures 中实际执行原始 `bash install.sh check`，覆盖系统/面板 Python、缺二进制/主配置/Lua 模块和旧环境变量残留 |
 | 前端检查 | `python tools/check_frontend.py` | 版本、资源加载、命名、主题等静态检查 |
 | Lua 兼容 | `python tools/check_lua51.py` | 扫描 Lua 5.1/5.4 公共子集禁用构造 |
 | 规则检查 | `python tools/check_rules.py` | 规则 ID/模块/分值/变换/索引一致性 |
@@ -32,7 +32,7 @@ Python 测试通过 `mock.patch` 替换路径常量或调用依赖，覆盖全�
 安装器 shell 回归需要 Linux 的 user/mount namespace 和 `bubblewrap`（Debian/Ubuntu：`sudo apt-get install bubblewrap`），可在 Linux 或 WSL 中执行：
 
 ```bash
-sudo python3 tests/shell/test_install_check.py
+python3 tests/shell/test_install_check.py
 ```
 
 该测试在 tmpfs 根目录中只读挂载运行库和原始仓库，将临时 fixture 挂载到 `/www`，不会写宿主的面板目录。fixture 提供模拟 Nginx 可执行文件，验证安装脚本、Python 包装函数、真实探测器及错误返回之间的集成，不声称验证真实 Lua 模块。CI 必须执行此回归，缺少依赖或沙箱不可用时失败，不静默跳过；`bash -n install.sh` 仍保留为独立语法检查。

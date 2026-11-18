@@ -27,7 +27,7 @@ python tests/python/test_nginx.py
 Python 路径隔离通过 mock 实现，不需要生产代码的测试开关。Linux 安装器回归另需 `bubblewrap` 与 user/mount namespace：
 
 ```bash
-sudo python3 tests/shell/test_install_check.py
+python3 tests/shell/test_install_check.py
 ```
 
 它会在私有 `/www` fixture 中实际运行未改写的 `bash install.sh check`，不写入宿主面板目录；缺少沙箱依赖时明确失败。
