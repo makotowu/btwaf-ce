@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none" role="img" aria-label="WAF CE Community Edition">
+ <title>WAF CE - Community Edition</title>
+ <path d="M256 46 L407 117 V268 C407 364 345 424 256 467 C167 424 105 364 105 268 V117 Z" stroke="#20A53A" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"/>
+ <text x="256" y="260" text-anchor="middle" font-family="Arial,DejaVu Sans,sans-serif" font-size="113" font-weight="800" letter-spacing="-6" fill="#20A53A">WAF</text>
+ <path d="M192 298 H320" stroke="#20A53A" stroke-width="9" stroke-linecap="round"/>
+ <text x="256" y="386" text-anchor="middle" font-family="Noto Sans CJK SC,sans-serif" font-size="86" font-weight="700" letter-spacing="0" fill="#20A53A">CE</text>
+ </svg>

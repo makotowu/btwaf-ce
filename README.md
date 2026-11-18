@@ -1,4 +1,10 @@
+<p align="center">
+  <img src="icon.png" width="96" height="96" alt="宝塔WAF社区版">
+</p>
+
 # 宝塔WAF社区版（btwaf_ce）
+
+<p align="center"><sub>面向宝塔面板的社区版 Web 应用防火墙插件</sub></p>
 
 ## 0. 这个项目能做什么
 
