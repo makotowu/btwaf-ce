@@ -8,23 +8,23 @@ PATH=/www/server/panel/pyenv/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/b
 export PATH
 
 PLUGIN_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-DATA_DIR="${BTWAF_CE_DATA_DIR:-/www/server/btwaf_ce}"
-LOG_DIR="${BTWAF_CE_LOG_DIR:-/www/wwwlogs/btwaf_ce}"
-LUA_DIR="${BTWAF_CE_LUA_DIR:-${DATA_DIR}/lua}"
+DATA_DIR="/www/server/btwaf_ce"
+LOG_DIR="/www/wwwlogs/btwaf_ce"
+LUA_DIR="${DATA_DIR}/lua"
 PRE_DATA="${DATA_DIR}.preinstall"
 PRE_LOG="${LOG_DIR}.preinstall"
 ICON_BACKUP="${DATA_DIR}.icons"
 INSTALL_DIR="${DATA_DIR}/.install"
 CONF_MANIFEST="${INSTALL_DIR}/nginx.json"
 CONF_BACKUP="${INSTALL_DIR}/nginx"
-PANEL_ROOT="${BTWAF_CE_PANEL_ROOT:-/www/server/panel}"
-NGINX_BIN=""
-NGINX_CONF=""
-NGINX_INIT=""
-VHOST_DIR=""
-VHOST_CONF=""
+PANEL_ROOT="/www/server/panel"
+NGINX_BIN="/www/server/nginx/sbin/nginx"
+NGINX_CONF="/www/server/nginx/conf/nginx.conf"
+NGINX_INIT="/etc/init.d/nginx"
+VHOST_DIR="${PANEL_ROOT}/vhost/nginx"
+VHOST_CONF="${VHOST_DIR}/btwaf_ce.conf"
 SERVICE_NAME="nginx"
-INSTALL_TMP="${BTWAF_CE_INSTALL_LOG:-/tmp/bt_install.pl}"
+INSTALL_TMP="/tmp/bt_install.pl"
 DATA_EXISTED=0
 LOG_EXISTED=0
 
@@ -38,25 +38,6 @@ py() {
     else
         python3 "$@"
     fi
-}
-
-resolve_server_paths() {
-    local discovered
-    local -a server_paths
-    [ -f "${PLUGIN_DIR}/wafcore/nginx.py" ] || fail "插件文件不完整：缺少 wafcore/nginx.py"
-    if [ "${BTWAF_CE_TEST_MODE:-0}" = "1" ]; then
-        discovered="$(BTWAF_CE_TEST_MODE=1 py "${PLUGIN_DIR}/wafcore/nginx.py" paths)" || fail "无法发现 Web 服务器路径"
-    else
-        discovered="$(env -u BTWAF_CE_TEST_MODE py "${PLUGIN_DIR}/wafcore/nginx.py" paths)" || fail "无法发现 Web 服务器路径"
-    fi
-    mapfile -t server_paths <<<"${discovered}"
-    [ "${#server_paths[@]}" -eq 4 ] || fail "Web 服务器路径格式错误"
-    NGINX_BIN="${server_paths[0]}"
-    NGINX_CONF="${server_paths[1]}"
-    NGINX_INIT="${server_paths[2]}"
-    VHOST_DIR="${server_paths[3]}"
-    VHOST_CONF="${VHOST_DIR}/btwaf_ce.conf"
-    SERVICE_NAME="$(basename "${NGINX_INIT}")"
 }
 
 check_env() {
@@ -77,9 +58,6 @@ check_env() {
 test_nginx() {
     local out rc
     local -a args=("${NGINX_BIN}" -t -c "${NGINX_CONF}")
-    if [ -n "${BTWAF_CE_NGINX_PREFIX:-}" ]; then
-        args+=(-p "${BTWAF_CE_NGINX_PREFIX}")
-    fi
     out="$("${args[@]}" 2>&1)" || rc=$?
     echo "${out}"
     [ "${rc:-0}" -eq 0 ] && echo "${out}" | grep -q 'successful'
@@ -177,8 +155,7 @@ init_data() {
 write_conf() {
     log "正在写入 Nginx 配置：${VHOST_CONF}"
     PYTHONPATH="${PLUGIN_DIR}${PYTHONPATH:+:${PYTHONPATH}}" \
-        BTWAF_CE_DATA_DIR="${DATA_DIR}" BTWAF_CE_LOG_DIR="${LOG_DIR}" \
-        BTWAF_CE_LUA_DIR="${LUA_DIR}" py - "${VHOST_CONF}" <<'PY' || fail "生成 WAF 配置失败"
+        py - "${VHOST_CONF}" <<'PY' || fail "生成 WAF 配置失败"
 import sys
 from wafcore import paths, util
 paths.write_runtime_paths()
@@ -311,8 +288,8 @@ do_uninstall() {
 
 action="${1:-}"
 case "${action}" in
-install | update) resolve_server_paths; do_install ;;
-uninstall) resolve_server_paths; do_uninstall ;;
-check) INSTALL_TMP="/dev/null"; resolve_server_paths; check_env ;;
+install | update) do_install ;;
+uninstall) do_uninstall ;;
+check) INSTALL_TMP="/dev/null"; check_env ;;
 *) echo "用法: bash install.sh install|update|uninstall|check"; exit 1 ;;
 esac

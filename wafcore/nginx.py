@@ -20,18 +20,12 @@ PANEL_ROOT = "/www/server/nginx"
 PANEL_VHOST_DIR = "/www/server/panel/vhost/nginx"
 
 
-def _test_mode():
-    return os.environ.get("BTWAF_CE_TEST_MODE") == "1"
-
-
 def resolve_paths():
-    """Use BaoTa's Nginx paths; overrides are enabled only for isolated tests."""
-    test_mode = _test_mode()
-    root = os.environ.get("BTWAF_CE_SERVER_ROOT", PANEL_ROOT) if test_mode else PANEL_ROOT
+    """宝塔安装的 Nginx 与 Tengine 使用同一组路径和 nginx 服务。"""
     return (
-        (os.environ.get("BTWAF_CE_NGINX_BIN") if test_mode else None) or os.path.join(root, "sbin", "nginx"),
-        (os.environ.get("BTWAF_CE_NGINX_CONF") if test_mode else None) or os.path.join(root, "conf", "nginx.conf"),
-        (os.environ.get("BTWAF_CE_NGINX_INIT") if test_mode else None) or "/etc/init.d/nginx",
+        os.path.join(PANEL_ROOT, "sbin", "nginx"),
+        os.path.join(PANEL_ROOT, "conf", "nginx.conf"),
+        "/etc/init.d/nginx",
     )
 
 
@@ -57,10 +51,6 @@ def _configured_vhost_dir(nginx_conf):
 
 def resolve_vhost_dir():
     """Use the panel's Nginx vhost directory, preferring its HTTP include."""
-    test_mode = _test_mode()
-    override = os.environ.get("BTWAF_CE_VHOST_DIR") if test_mode else None
-    if override:
-        return override
     nginx_conf = resolve_paths()[1]
     return _configured_vhost_dir(nginx_conf) or PANEL_VHOST_DIR
 
@@ -261,7 +251,7 @@ def _check_env(nginx_bin, nginx_conf):
             text += "\n".join(http) + "\naccess_log off;\nlua_shared_dict btwaf_ce_lua_probe 64k;\n"
             text += "init_by_lua_file %s;\ninit_worker_by_lua_file %s;\naccess_by_lua_file %s;\n}\n" % ((_quote(lua_file),) * 3)
             util.write_text(conf_file, text)
-            prefix = os.environ.get("BTWAF_CE_NGINX_PREFIX") or _prefix_from_banner(banner) or None
+            prefix = _prefix_from_banner(banner) or None
             ok, detail = util.nginx_test(nginx_bin, conf_file, prefix=prefix)
             result["lua"] = ok
             result["detail"] = (
@@ -292,7 +282,7 @@ def _file_stamp(path):
 
 def check_env(nginx_bin, nginx_conf, cached=False):
     """状态刷新复用短期结果；安装和手动诊断强制重新探测。"""
-    key = (nginx_bin, nginx_conf, os.environ.get("BTWAF_CE_NGINX_PREFIX", ""))
+    key = (nginx_bin, nginx_conf)
     stamp = (_file_stamp(nginx_bin), _file_stamp(nginx_conf))
     with _ENV_LOCK:
         entry = _ENV_CACHE.get(key)

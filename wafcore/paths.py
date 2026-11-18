@@ -7,9 +7,9 @@ from .nginx import resolve_paths, resolve_vhost_dir
 
 PLUGIN_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# 运行期目录（可用环境变量覆盖，便于本地测试）
-DATA_DIR = os.environ.get("BTWAF_CE_DATA_DIR", "/www/server/btwaf_ce")
-LOG_DIR = os.environ.get("BTWAF_CE_LOG_DIR", "/www/wwwlogs/btwaf_ce")
+# 宝塔运行期目录固定；隔离测试通过 mock 这些常量替换路径。
+DATA_DIR = "/www/server/btwaf_ce"
+LOG_DIR = "/www/wwwlogs/btwaf_ce"
 NGINX_BIN, NGINX_CONF, NGINX_INIT = resolve_paths()
 VHOST_DIR = resolve_vhost_dir()
 CONF_PATH = os.path.join(VHOST_DIR, "btwaf_ce.conf")
@@ -28,7 +28,7 @@ WAF_LOG = os.path.join(LOG_DIR, "waf.log")
 
 PLUGIN_LUA = os.path.join(PLUGIN_DIR, "lua")
 PLUGIN_DEFAULTS = os.path.join(PLUGIN_DIR, "defaults")
-RUNTIME_LUA_DIR = os.environ.get("BTWAF_CE_LUA_DIR", os.path.join(DATA_DIR, "lua"))
+RUNTIME_LUA_DIR = os.path.join(DATA_DIR, "lua")
 RULES_INDEX = os.path.join(RUNTIME_LUA_DIR, "rules", "index.json")
 
 VERSION = "0.1.0"

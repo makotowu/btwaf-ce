@@ -149,7 +149,6 @@ def nginx_test(nginx_bin=None, nginx_conf=None, prefix=None):
     nginx_bin = nginx_bin or NGINX_BIN
     nginx_conf = nginx_conf or NGINX_CONF
     args = [nginx_bin, "-t"]
-    prefix = prefix or os.environ.get("BTWAF_CE_NGINX_PREFIX")
     if prefix:
         args.extend(["-p", prefix])
     args.extend(["-c", nginx_conf])

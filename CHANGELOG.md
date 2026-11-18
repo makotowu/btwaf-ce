@@ -4,6 +4,7 @@
 
 - Tengine Lua 模块在 BaoTa Nginx 布局下的附加兼容性验证；面板安装路径仍固定使用 `/www/server/nginx` 与 nginx 服务，未实现面板服务切换支持。
 - 旧 Lua 模块缺少 `ngx.timer.every` 时使用 `ngx.timer.at`，保持配置热更新、解封与统计任务运行，并报告排程失败。
+- 移除生产路径的测试模式与环境覆盖，安装器直接使用固定宝塔路径；补充沙箱内实际执行 `bash install.sh check` 的 shell 回归，覆盖 Python 包装函数调用及失败路径。
 - 增加 `bash install.sh check`，可在安装前检查环境。
 
 ## 0.1.0（2026-11-13）

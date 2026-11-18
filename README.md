@@ -71,8 +71,6 @@
 bash install.sh check
 ```
 
-在隔离回归测试中，可设置 `BTWAF_CE_TEST_MODE=1` 并显式覆盖 `BTWAF_CE_NGINX_BIN`、`BTWAF_CE_NGINX_CONF`、`BTWAF_CE_NGINX_INIT` 和 `BTWAF_CE_VHOST_DIR`。该模式仅供自动化测试；面板安装固定使用 `/www/server/nginx`、`/etc/init.d/nginx` 和 `/www/server/panel/vhost/nginx`。
-
 ## 首次使用
 
 1. 安装后进入插件 → 系统诊断，确认环境正常；

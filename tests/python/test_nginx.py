@@ -2,6 +2,7 @@
 """Nginx/OpenResty/Tengine Lua capability probe and BaoTa path regression tests."""
 import contextlib
 import io
+import json
 import os
 import subprocess
 import sys
@@ -16,90 +17,73 @@ from wafcore import util as U
 
 
 class PathsTest(unittest.TestCase):
-    def resolve(self, env=None, banner="", test_mode=True):
-        values = {"BTWAF_CE_TEST_MODE": "1"} if test_mode else {}
-        values.update(env or {})
-        with mock.patch.dict(os.environ, values, clear=True), \
-                mock.patch.object(U, "run", return_value=(0, "", banner)):
-            return tuple(path.replace("\\", "/") for path in N.resolve_paths())
-
-    def test_baota_paths_remain_nginx_layout_for_tengine_version(self):
-        files = (
-            "/www/server/nginx/sbin/nginx", "/www/server/nginx/conf/nginx.conf",
-            "/www/server/tengine/sbin/nginx", "/www/server/tengine/conf/nginx.conf",
-            "/etc/init.d/nginx", "/etc/init.d/tengine",
-        )
-        self.assertEqual(self.resolve(env={
-            "BTWAF_CE_NGINX_BIN": "/tmp/manual/tengine/sbin/nginx",
-            "BTWAF_CE_NGINX_INIT": "/etc/init.d/tengine",
-        }, banner="Tengine/3.1.0", test_mode=False), (
-            "/www/server/nginx/sbin/nginx", "/www/server/nginx/conf/nginx.conf", "/etc/init.d/nginx",
-        ))
-        with mock.patch.dict(os.environ, {"BTWAF_CE_TEST_MODE": "1"}, clear=True), \
-                mock.patch.object(N.os.path, "isfile", side_effect=lambda path: path.replace("\\", "/") in files), \
-                mock.patch.object(N.os, "access", return_value=True), \
-                mock.patch.object(U, "run", return_value=(0, "", "Tengine/3.1.0")):
+    def test_baota_paths_remain_fixed_without_filesystem_or_service_discovery(self):
+        with mock.patch.object(U, "run") as run:
             self.assertEqual(tuple(path.replace("\\", "/") for path in N.resolve_paths()), (
                 "/www/server/nginx/sbin/nginx", "/www/server/nginx/conf/nginx.conf", "/etc/init.d/nginx",
             ))
+            run.assert_not_called()
+        with mock.patch.object(N.os.path, "isfile", return_value=False):
             self.assertEqual(N.resolve_vhost_dir(), "/www/server/panel/vhost/nginx")
 
-    def test_production_mode_ignores_path_overrides_but_test_mode_accepts_them(self):
-        values = {
-            "BTWAF_CE_NGINX_BIN": "/tmp/manual/tengine/sbin/nginx",
-            "BTWAF_CE_NGINX_CONF": "/tmp/manual/tengine/conf/nginx.conf",
-            "BTWAF_CE_NGINX_INIT": "/etc/init.d/tengine",
-            "BTWAF_CE_SERVER_ROOT": "/tmp/manual/tengine",
-        }
-        self.assertEqual(tuple(path.replace("\\", "/") for path in self.resolve(env=values, test_mode=False)), (
-            "/www/server/nginx/sbin/nginx", "/www/server/nginx/conf/nginx.conf", "/etc/init.d/nginx",
-        ))
-        with mock.patch.dict(os.environ, dict(values, BTWAF_CE_TEST_MODE="1"), clear=True):
-            self.assertEqual(tuple(path.replace("\\", "/") for path in N.resolve_paths()), (
-                "/tmp/manual/tengine/sbin/nginx", "/tmp/manual/tengine/conf/nginx.conf", "/etc/init.d/tengine",
-            ))
-
-    def test_explicit_binary_and_config_overrides_are_preserved_for_isolated_tests(self):
-        self.assertEqual(self.resolve(env={
-            "BTWAF_CE_NGINX_BIN": "/tmp/tengine/sbin/nginx",
-            "BTWAF_CE_NGINX_CONF": "/tmp/tengine/conf/nginx.conf",
-        }), ("/tmp/tengine/sbin/nginx", "/tmp/tengine/conf/nginx.conf", "/etc/init.d/nginx"))
-
-    def test_explicit_service_and_vhost_overrides_are_preserved(self):
+    def test_old_environment_variables_cannot_change_production_paths(self):
         env = {
-            "BTWAF_CE_TEST_MODE": "1", "BTWAF_CE_NGINX_BIN": "/tmp/nginx",
-            "BTWAF_CE_NGINX_CONF": "/tmp/nginx.conf", "BTWAF_CE_NGINX_INIT": "/tmp/nginx-init",
-            "BTWAF_CE_VHOST_DIR": "/tmp/vhost",
+            "BTWAF_CE_TEST_MODE": "1", "BTWAF_CE_SERVER_ROOT": "/manual/tengine",
+            "BTWAF_CE_NGINX_BIN": "/manual/nginx", "BTWAF_CE_NGINX_CONF": "/manual/nginx.conf",
+            "BTWAF_CE_NGINX_INIT": "/manual/init", "BTWAF_CE_VHOST_DIR": "/manual/vhost",
+            "BTWAF_CE_DATA_DIR": "/manual/data", "BTWAF_CE_LOG_DIR": "/manual/logs",
+            "BTWAF_CE_LUA_DIR": "/manual/lua", "BTWAF_CE_NGINX_PREFIX": "/manual/prefix",
         }
-        with mock.patch.dict(os.environ, env, clear=True):
-            self.assertEqual(N.resolve_paths(), ("/tmp/nginx", "/tmp/nginx.conf", "/tmp/nginx-init"))
-            self.assertEqual(N.resolve_vhost_dir(), "/tmp/vhost")
+        code = (
+            "import json; from wafcore import paths as P; "
+            "print(json.dumps([P.NGINX_BIN,P.NGINX_CONF,P.NGINX_INIT,P.VHOST_DIR,"
+            "P.DATA_DIR,P.LOG_DIR,P.RUNTIME_LUA_DIR]))"
+        )
+        result = subprocess.run([sys.executable, "-c", code], env=dict(os.environ, **env),
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, cwd=ROOT)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual([path.replace("\\", "/") for path in json.loads(result.stdout)], [
+            "/www/server/nginx/sbin/nginx", "/www/server/nginx/conf/nginx.conf", "/etc/init.d/nginx",
+            "/www/server/panel/vhost/nginx", "/www/server/btwaf_ce", "/www/wwwlogs/btwaf_ce",
+            "/www/server/btwaf_ce/lua",
+        ])
 
-    def test_vhost_prefers_panel_nginx_include_or_fixed_panel_fallback(self):
+    def test_panel_constants_can_be_mocked_without_a_production_test_branch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = os.path.join(tmp, "nginx")
+            vhost = os.path.join(tmp, "panel", "vhost", "nginx")
+            os.makedirs(os.path.join(root, "conf"))
+            with open(os.path.join(root, "conf", "nginx.conf"), "w", encoding="utf-8") as handle:
+                handle.write('events {} http { include "%s/*.conf"; }' % vhost.replace("\\", "/"))
+            with mock.patch.multiple(N, PANEL_ROOT=root, PANEL_VHOST_DIR=vhost):
+                self.assertEqual(N.resolve_paths(), (
+                    os.path.join(root, "sbin", "nginx"), os.path.join(root, "conf", "nginx.conf"), "/etc/init.d/nginx",
+                ))
+                self.assertEqual(N._configured_vhost_dir(N.resolve_paths()[1]), vhost)
+                self.assertEqual(N.resolve_vhost_dir(), vhost)
+
+    def test_panel_vhost_include_is_only_matched_in_http_scope(self):
         with tempfile.TemporaryDirectory() as tmp:
             conf = os.path.join(tmp, "nginx.conf")
-            with open(conf, "w", encoding="utf-8") as handle:
-                handle.write('http { include "/www/server/panel/vhost/nginx/*.conf"; }')
-            with mock.patch.dict(os.environ, {
-            "BTWAF_CE_TEST_MODE": "1", "BTWAF_CE_NGINX_CONF": conf,
-        }, clear=True):
-                self.assertEqual(N.resolve_vhost_dir(), "/www/server/panel/vhost/nginx")
-        with mock.patch.dict(os.environ, {}, clear=True), mock.patch.object(N.os.path, "isfile", return_value=False):
-            self.assertEqual(N.resolve_vhost_dir(), "/www/server/panel/vhost/nginx")
+            for text, expected in (
+                ('http { include "/www/server/panel/vhost/nginx/*.conf"; }', N.PANEL_VHOST_DIR),
+                ('http { server { include "/www/server/panel/vhost/nginx/*.conf"; } }', ""),
+                ('http { include "/www/server/panel/vhost/tengine/*.conf"; }', ""),
+            ):
+                with open(conf, "w", encoding="utf-8") as handle:
+                    handle.write(text)
+                self.assertEqual(N._configured_vhost_dir(conf), expected)
 
-    def test_custom_paths_generate_metadata_without_claiming_host_lua_directives(self):
+    def test_mocked_paths_generate_metadata_without_claiming_host_lua_directives(self):
+        from wafcore import paths as P
         with tempfile.TemporaryDirectory() as tmp:
             lua = os.path.join(tmp, "lua dir")
-            env = dict(os.environ, BTWAF_CE_TEST_MODE="1", BTWAF_CE_DATA_DIR=tmp,
-                       BTWAF_CE_LOG_DIR=os.path.join(tmp, "logs"),
-                       BTWAF_CE_LUA_DIR=lua, PYTHONIOENCODING="utf-8")
-            code = "from wafcore import paths; paths.write_runtime_paths(); print(paths.CONF_TEXT)"
-            result = subprocess.run([sys.executable, "-c", code], env=env, stdout=subprocess.PIPE,
-                                    stderr=subprocess.PIPE, encoding="utf-8")
-            self.assertEqual(result.returncode, 0, result.stderr)
-            self.assertIn('"' + lua.replace("\\", "/") + '/init.lua"', result.stdout)
-            self.assertNotIn("init_by_lua", result.stdout)
-            self.assertNotIn("lua_package_path", result.stdout)
+            with mock.patch.multiple(P, DATA_DIR=tmp, LOG_DIR=os.path.join(tmp, "logs"), RUNTIME_LUA_DIR=lua):
+                P.write_runtime_paths()
+                text = P._conf_text()
+            self.assertIn('"' + lua.replace("\\", "/") + '/init.lua"', text)
+            self.assertNotIn("init_by_lua", text)
+            self.assertNotIn("lua_package_path", text)
             with open(os.path.join(lua, "runtime_paths.lua"), encoding="utf-8") as handle:
                 metadata = handle.read()
             self.assertIn(tmp.replace("\\", "/"), metadata)
@@ -242,12 +226,12 @@ events {} http {}
         ):
             self.assertEqual(N._prefix_from_banner("configure arguments: " + value), expected)
 
-    def test_runtime_prefix_overrides_build_prefix(self):
+    def test_path_environment_does_not_override_build_prefix(self):
         with mock.patch.dict(os.environ, {"BTWAF_CE_NGINX_PREFIX": "/srv/runtime"}), \
                 mock.patch.object(U, "run", return_value=(0, "", "Tengine/3.1.0 --prefix=/build")), \
                 mock.patch.object(U, "nginx_test", return_value=(True, "successful")) as probe:
             self.assertTrue(N.check_env("/opt/nginx", self.conf)["lua"])
-            self.assertEqual(probe.call_args[1]["prefix"], "/srv/runtime")
+            self.assertEqual(probe.call_args[1]["prefix"], "/build")
 
     def test_status_cache_expires_and_diagnostics_always_reprobes(self):
         result = {"name": "Tengine", "version": "3.1.0", "lua": True, "detail": "ok"}
@@ -284,21 +268,21 @@ events {} http {}
 
 
 class CommandTest(unittest.TestCase):
-    def test_cli_paths_uses_same_resolver(self):
-        env = dict(os.environ, BTWAF_CE_NGINX_BIN="/tmp/tengine/sbin/nginx", BTWAF_CE_NGINX_CONF="/tmp/tengine/conf/nginx.conf",
-                   BTWAF_CE_NGINX_INIT="/tmp/nginx-init", BTWAF_CE_VHOST_DIR="/tmp/vhost")
-        env.update({"BTWAF_CE_TEST_MODE": "1"})
+    def test_cli_paths_uses_fixed_panel_paths(self):
         result = subprocess.run([sys.executable, os.path.join(ROOT, "wafcore", "nginx.py"), "paths"],
-                                env=env, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertEqual(result.stdout.splitlines(), ["/tmp/tengine/sbin/nginx", "/tmp/tengine/conf/nginx.conf", "/tmp/nginx-init", "/tmp/vhost"])
+        self.assertEqual([path.replace("\\", "/") for path in result.stdout.splitlines()], [
+            "/www/server/nginx/sbin/nginx", "/www/server/nginx/conf/nginx.conf", "/etc/init.d/nginx",
+            "/www/server/panel/vhost/nginx",
+        ])
 
     def test_cli_failed_check_returns_failure(self):
         with tempfile.TemporaryDirectory() as tmp:
             result = subprocess.run([sys.executable, os.path.join(ROOT, "wafcore", "nginx.py"), "check",
                                      "--bin", os.path.join(tmp, "absent-nginx"), "--conf", os.path.join(tmp, "nginx.conf")],
                                     stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                    env=dict(os.environ, BTWAF_CE_TEST_MODE="1", PYTHONIOENCODING="utf-8"))
+                                    env=dict(os.environ, PYTHONIOENCODING="utf-8"))
         self.assertEqual(result.returncode, 1)
         output = result.stdout.decode("utf-8")
         self.assertIn("无法执行", output)
