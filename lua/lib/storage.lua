@@ -293,6 +293,7 @@ end
 -- 自定义拦截页（缓存读取，每 30 秒最多读一次文件）
 -- ---------------------------------------------------------------------------
 local page_cache = { content = nil, loaded_at = 0, tried = false }
+local default_page_cache = { content = nil, loaded_at = 0, tried = false }
 
 function storage.block_page()
   local now = util.now()
@@ -310,10 +311,29 @@ function storage.block_page()
   return page_cache.content
 end
 
+function storage.default_block_page()
+  local now = util.now()
+  if default_page_cache.tried and (now - default_page_cache.loaded_at) < 30 then
+    return default_page_cache.content
+  end
+  default_page_cache.tried = true
+  default_page_cache.loaded_at = now
+  local data = fs.read(paths.default_block_page())
+  if type(data) == "string" and data ~= "" then
+    default_page_cache.content = data
+  else
+    default_page_cache.content = nil
+  end
+  return default_page_cache.content
+end
+
 function storage.reset_cache()
   page_cache.content = nil
   page_cache.loaded_at = 0
   page_cache.tried = false
+  default_page_cache.content = nil
+  default_page_cache.loaded_at = 0
+  default_page_cache.tried = false
   last_retention_day = nil
 end
 

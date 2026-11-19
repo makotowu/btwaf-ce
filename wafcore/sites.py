@@ -187,6 +187,16 @@ def default_data_files():
         util.write_json(paths.STATE_FILE, {})
     if not os.path.isfile(paths.PLUGIN_LOG):
         util.write_text(paths.PLUGIN_LOG, "", 0o644)
+    default_page = paths.default_file("blockpage.html")
+    if os.path.isfile(default_page) and (
+        not os.path.isfile(paths.default_block_page())
+        or os.path.getsize(paths.default_block_page()) == 0
+    ):
+        util.write_text(
+            paths.default_block_page(),
+            util.read_text(default_page, ""),
+            0o644,
+        )
     return True
 
 

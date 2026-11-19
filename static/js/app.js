@@ -383,6 +383,7 @@
             version: '', ready: false, enabled: true, observe: false, sensitivity: 2,
             nginx: {}, dirs: {},
             geo: { open: false, available: false, source: '', source_release: '', license: '', records: 0 },
+            default_block_page: '',
             rules: {
                 crs_version: '', total: 0, crs_total: 0, crs_enabled: 0, ce_total: 0,
                 custom_total: 0, skipped_count: 0, skipped: [], generated_at: 0, index_ok: false
@@ -2500,9 +2501,14 @@
                 this.cfgLoading = true;
                 this.errors.config = '';
                 try {
+                    if (!this.status.version) await this.loadStatus();
                     var d = await WafAPI.data('get_plugin_config');
                     this.cfg = normalizeGlobalConfig(d || {});
-                    this.blockPageText = (this.cfg.block && this.cfg.block.page) || '';
+                    var defaultPage = this.status.default_block_page || '';
+                    var useCustom = !!(this.cfg.block && this.cfg.block.use_custom);
+                    this.blockPageText = useCustom
+                        ? ((this.cfg.block && this.cfg.block.page) || defaultPage)
+                        : defaultPage;
                     this.excludeText.crs = joinLines((this.cfg.rule_exclude && this.cfg.rule_exclude.crs) || []);
                     this.excludeText.ce = joinLines((this.cfg.rule_exclude && this.cfg.rule_exclude.ce) || []);
                     this.crawlerText = joinLines((this.cfg.crawler && this.cfg.crawler.allow) || []);

@@ -59,6 +59,10 @@ function P.block_page()
   return P.DATA_DIR .. "/data/blockpage.html"
 end
 
+function P.default_block_page()
+  return P.DATA_DIR .. "/defaults/blockpage.html"
+end
+
 function P.waf_log()
   return P.LOG_DIR .. "/waf.log"
 end

@@ -202,6 +202,13 @@ def read_block_page():
     return util.read_text(paths.BLOCK_PAGE, "")
 
 
+def default_block_page():
+    page = util.read_text(paths.default_file("blockpage.html"), "")
+    if not page:
+        page = util.read_text(paths.default_block_page(), "")
+    return page
+
+
 def dirs_status():
     checks = {
         "data": paths.DATA_DIR,
@@ -270,6 +277,7 @@ def status():
         "rules": rules,
         "panel_cdn": nginx.panel_cdn_status(),
         "geo": dict(G.status(), open=bool((cfg.get("geo") or {}).get("open"))),
+        "default_block_page": default_block_page(),
         "config_apply_at": util.safe_int(st.get("config_apply_at"), 0),
         "last_reload": util.safe_int(st.get("last_reload"), 0),
         "errors": state.read_error_log_tail(20),

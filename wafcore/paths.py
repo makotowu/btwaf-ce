@@ -80,5 +80,9 @@ def geo_dir():
     return os.path.join(DATA_DIR, "geo")
 
 
+def default_block_page():
+    return os.path.join(DATA_DIR, "defaults", "blockpage.html")
+
+
 def default_file(name):
     return os.path.join(PLUGIN_DEFAULTS, name)

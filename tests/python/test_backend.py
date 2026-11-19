@@ -1657,6 +1657,27 @@ class GeoConfigTest(BaseCase):
         self.assertEqual(rec["reason"], "仅允许中国大陆访问")
 
 
+class BlockPageDefaultsTest(BaseCase):
+    def test_default_block_page_is_file_backed(self):
+        page = E.default_block_page()
+        self.assertIn("请求被拦截", page)
+        self.assertIn("宝塔WAF社区版", page)
+        self.assertIn("提供安全防护", page)
+        self.assertIn("https://github.com/makotowu/btwaf-ce", page)
+        self.assertNotIn("<script", page.lower())
+        self.assertEqual(C.load_global()["block"]["page"], "")
+        self.assertEqual(E.status()["default_block_page"], page)
+        clean, removed = U.sanitize_block_page(page)
+        self.assertEqual(removed, [])
+        self.assertEqual(clean, page)
+
+    def test_default_block_page_is_seeded_into_data_dir(self):
+        S.default_data_files()
+        self.assertTrue(os.path.isfile(P.default_block_page()))
+        self.assertIn("github.com/makotowu/btwaf-ce",
+                      U.read_text(P.default_block_page(), ""))
+
+
 # ---------------------------------------------------------------------------
 # 12) 汇总入口
 # ---------------------------------------------------------------------------

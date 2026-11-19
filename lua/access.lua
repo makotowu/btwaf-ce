@@ -93,18 +93,6 @@ local ALLOWED_METHODS = {
   DELETE = true, OPTIONS = true, PATCH = true,
 }
 
-local DEFAULT_BLOCK_PAGE = [[
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head><meta charset="utf-8"><title>请求被拦截</title>
-<style>body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;background:#f7f8fa;color:#222;text-align:center;padding:80px 20px}h1{font-size:28px;margin-bottom:12px}p{color:#666;font-size:14px;line-height:1.8}</style>
-</head>
-<body><h1>请求被拦截</h1>
-<p>您的请求包含不安全的内容，已被安全策略拦截。</p>
-<p>如属误拦截，请联系网站管理员。</p>
-</body></html>
-]]
-
 -- ---------------------------------------------------------------------------
 -- 工具
 -- ---------------------------------------------------------------------------
@@ -583,14 +571,14 @@ local function respond(ctx, decision)
       page = storage.block_page()
     end
     if type(page) ~= "string" or page == "" then
-      page = DEFAULT_BLOCK_PAGE
+      page = storage.default_block_page()
     end
     ngx.status = status
     if ngx.header then
       ngx.header["Content-Type"] = "text/html; charset=utf-8"
       ngx.header["X-BtWaf-Blocked"] = "1"
     end
-    if ngx.say then
+    if ngx.say and type(page) == "string" and page ~= "" then
       pcall(ngx.say, page)
     end
     if ngx.exit then
@@ -723,7 +711,10 @@ local function safe_run()
           ngx.header["Content-Type"] = "text/html; charset=utf-8"
         end
         if ngx.say then
-          ngx.say(DEFAULT_BLOCK_PAGE)
+          local page = storage.default_block_page()
+          if ngx.say and type(page) == "string" and page ~= "" then
+            ngx.say(page)
+          end
         end
         if ngx.exit then
           ngx.exit(403)
