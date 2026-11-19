@@ -71,6 +71,7 @@
                         use_custom: !!(c.block && c.block.use_custom),
                         page: this.blockPageText || ''
                     }, scan: c.scan, log: c.log, cc: c.cc, attack_block: c.attack_block,
+                    protocol: { from_data: !!(c.protocol && c.protocol.from_data) },
                     crawler: {
                         allow: splitLines(this.crawlerText),
                         block_fake: !!(c.crawler && c.crawler.block_fake)

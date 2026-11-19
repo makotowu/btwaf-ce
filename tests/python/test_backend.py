@@ -419,6 +419,7 @@ class ConfigDefaultsTest(BaseCase):
         self.assertEqual(cfg["sensitivity"], 2)
         self.assertEqual(cfg["block"], {"status": 403, "use_custom": False, "page": ""})
         self.assertEqual(cfg["scan"]["body_limit"], 1048576)
+        self.assertEqual(cfg["protocol"], {"from_data": False})
         self.assertEqual(cfg["cc"]["status"], 444)
         self.assertEqual(cfg["attack_block"]["block_time"], 1800)
         self.assertEqual(set(cfg["modules"].keys()), set(C.MODULE_KEYS))
@@ -435,6 +436,11 @@ class ConfigDefaultsTest(BaseCase):
         self.assertIs(cfg["fail_open"], True)
         self.assertIs(cfg["whitelist_first"], True)
         self.assertEqual(cfg["update_time"], 0)
+
+    def test_protocol_from_data_default_and_override(self):
+        self.assertIs(C.clean_global({})[0]["protocol"]["from_data"], False)
+        cfg, _warnings = C.clean_global({"protocol": {"from_data": 1}})
+        self.assertIs(cfg["protocol"]["from_data"], True)
 
     def test_clean_global_range_validation(self):
         cfg, warnings = C.clean_global(

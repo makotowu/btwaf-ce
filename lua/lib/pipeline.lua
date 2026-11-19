@@ -342,6 +342,85 @@ local function parse_multipart(ctx, body, content_type, max_args)
   end
 end
 
+-- 取 multipart boundary；返回原始大小写，不修改 boundary 值。
+local function multipart_boundary(content_type)
+  local lower = (content_type or ""):lower()
+  local start = lower:find("boundary=", 1, true)
+  if not start then
+    return nil
+  end
+  local rest = (content_type or ""):sub(start + 9)
+  rest = rest:gsub("^%s+", "")
+  local boundary = rest:match('^"([^"]*)"') or rest:match("^([^;%s]+)")
+  if not boundary or boundary == "" or #boundary > 70 then
+    return nil
+  end
+  if boundary:find("[%c%s]") then
+    return nil
+  end
+  return boundary
+end
+
+-- From-data 规范校验：只检查结构，不改变参数采集结果。
+local function validate_multipart(body, content_type, max_args)
+  local boundary = multipart_boundary(content_type)
+  if not boundary then
+    return false, "missing boundary"
+  end
+  local delim = "--" .. boundary
+  if body:sub(1, #delim) ~= delim then
+    return false, "body does not start with boundary"
+  end
+  local closing = delim .. "--"
+  local tail = body:gsub("\r\n$", "")
+  if tail:sub(-#closing) ~= closing then
+    return false, "missing closing boundary"
+  end
+  local parts = util.split(body, delim)
+  local count = 0
+  local closed = false
+  for i = 2, #parts do
+    local part = parts[i]
+    if part:sub(1, 2) == "--" then
+      closed = true
+      if i ~= #parts then
+        return false, "data after closing boundary"
+      end
+      break
+    end
+    count = count + 1
+    if count > max_args then
+      return false, "too many parts"
+    end
+    local clean = part:gsub("^\r\n", "", 1)
+    local head, _content = clean:match("^(.-)\r\n\r\n(.*)$")
+    if not head or head == "" then
+      return false, "missing part headers"
+    end
+    for line in head:gmatch("[^\r\n]+") do
+      if not line:find(":", 1, true) then
+        return false, "invalid part header"
+      end
+      if line:find("%z") then
+        return false, "invalid part header"
+      end
+    end
+    local lower = head:lower()
+    if not lower:find("content%-disposition:%s*form%-data") then
+      return false, "missing form-data disposition"
+    end
+    local name = head:match('[Nn]ame%s*=%s*"([^"]*)"')
+      or head:match("[Nn]ame%s*=%s*([^;%s]+)")
+    if not name or name == "" then
+      return false, "missing part name"
+    end
+  end
+  if not closed or count == 0 then
+    return false, "missing multipart part"
+  end
+  return true
+end
+
 -- 轻量 XML 解析：提取属性值与文本节点的值到 ARGS（kind="xml"）。
 -- 契约未定义 XML 变量；将 XML 内容作为参数值参与 ARGS/ARGS_NAMES 扫描，
 -- 覆盖 SOAP/XML 回放语料（LFI/RCE/XSS/SQLi 均可能出现在属性值中）。
@@ -408,11 +487,24 @@ function pipeline.collect(ctx, site_cfg, opts)
   end
   if need_body then
     read_body(ctx, site_cfg)
+    local raw_ctype = ctx.headers["content-type"] or ""
+    local ctype = raw_ctype:lower()
+    local from_data = opts.from_data == true
+    if from_data and ctype:find("multipart/form-data", 1, true)
+      and not ctx.body_skipped and not ctx.body_truncated then
+      if type(ctx.body) ~= "string" or ctx.body == "" then
+        ctx.from_data_error = "empty multipart body"
+      else
+        local ok, err = validate_multipart(ctx.body, raw_ctype, max_args)
+        if not ok then
+          ctx.from_data_error = err or "invalid multipart body"
+        end
+      end
+    end
     if type(ctx.body) == "string" and ctx.body ~= "" then
-      local ctype = (ctx.headers["content-type"] or ""):lower()
       if ctype:find("multipart/form-data", 1, true) then
         -- multipart/form-data：表单字段进 ARGS，文件元数据进 ctx.files
-        parse_multipart(ctx, ctx.body, ctype, max_args)
+        parse_multipart(ctx, ctx.body, raw_ctype, max_args)
       elseif ctype:find("json", 1, true) then
         -- JSON（含 application/vnd.api+json、application/x-amz-json-1.1 等厂商类型）：
         -- 只展开字符串叶子；解析失败/非字符串内容仍由 REQUEST_BODY 扫描

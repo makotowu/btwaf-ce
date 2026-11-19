@@ -65,11 +65,12 @@
 ## 2. 全局配置
 
 ### `get_plugin_config`
-参数：无。返回 `data = <config.json 完整对象>`（含 `rule_exclude`）。
+参数：无。返回 `data = <config.json 完整对象>`（含 `rule_exclude`、`protocol.from_data`）。
 
 ### `save_plugin_config`
 参数：`config`（JSON 字符串，完整对象或部分字段；后端做 schema 合并与字段校验）
 返回 `data = {"saved": true, "apply_at": 1730000000}`
+`protocol.from_data` 为布尔值，默认 `false`；开启后校验 `multipart/form-data` 结构。
 
 ### `get_modules`
 参数：无。返回 `data = {"modules": {"sqli": {"open": true, "tier": 1, "total": 0, "enabled": 0}, ...}, "sensitivity_options": [1,2,3]}`

@@ -46,6 +46,7 @@ local DEFAULT_GLOBAL = {
     upload_scan_limit = 20971520,
     max_args = 200,
   },
+  protocol = { from_data = false },
   log = { enabled = true, retain_days = 30, rotate_size = 52428800, snippet = 512 },
   cc = {
     open = true,
@@ -570,6 +571,7 @@ local function merge_site(site_name)
   merged.custom_rules = collect_custom_rules(site_name, raw)
   -- 全局共享项（站点级无对应字段）
   merged.scan = global.scan
+  merged.protocol = global.protocol
   merged.log = global.log
   merged.crawler = global.crawler
   merged.fail_open = global.fail_open

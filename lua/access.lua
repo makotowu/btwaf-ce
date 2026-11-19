@@ -406,8 +406,16 @@ local function evaluate(ctx)
   end
 
   -- 5) 取参（按需读 body；GET 无 body 时不读）
-  pipeline.collect(ctx, site, { want_body = nil })
+  local from_data_open = site.protocol and site.protocol.from_data == true
+  pipeline.collect(ctx, site, { want_body = nil, from_data = from_data_open })
   filter_param_white(ctx, lists.param_white)
+
+  local from_data_bad = false
+  if from_data_open and ctx.from_data_error then
+    from_data_bad = true
+    hits[#hits + 1] = config_hit("protocol", "ce-config-from-data", "From-data 协议异常", 5)
+    extra_score = extra_score + 5
+  end
 
   -- 6) 上传检查（multipart 文件后缀，schema: upload_ext）
   local upload_open = mods.upload == nil or mods.upload.open ~= false
@@ -468,6 +476,10 @@ local function evaluate(ctx)
   if custom_allow then
     -- 自定义 allow 规则：显式白名单放行
     return nil
+  end
+
+  if from_data_bad and not forced then
+    forced = { status = status_block, rule = "ce-config-from-data" }
   end
 
   -- 内置规则响应码：最高分命中规则的 rule_status 覆盖默认；自定义 status 优先。

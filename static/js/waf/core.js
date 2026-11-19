@@ -439,6 +439,7 @@
             block: { status: 403, use_custom: false, page: '' },
             geo: { open: false, mode: 'allow', regions: ['CN'], unknown: 'allow', status: 403 },
             scan: { body_limit: 1048576, arg_limit: 8192, header_limit: 8192, upload_scan_limit: 20971520, max_args: 200 },
+            protocol: { from_data: false },
             log: { enabled: true, retain_days: 30, rotate_size: 52428800, snippet: 512 },
             cc: { open: true, cycle: 60, limit: 120, block_time: 300, status: 444, url_cc: false, skip_static: true },
             attack_block: { open: true, cycle: 120, limit: 20, block_time: 1800 },

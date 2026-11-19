@@ -182,6 +182,110 @@ t.test("collect multipart：参数 + 文件名/扩展名", function()
   t.eq(ctx.files[1].ext, "php", "扩展名应小写")
 end)
 
+t.test("from_data：合法 multipart 无错误", function()
+  local boundary = "----btwafboundary"
+  local body = table.concat({
+    "--" .. boundary,
+    'Content-Disposition: form-data; name="title"',
+    "",
+    "hello",
+    "--" .. boundary .. "--",
+    "",
+  }, "\r\n")
+  mock.set_request({
+    method = "POST", uri = "/upload.php", body = body,
+    headers = {
+      ["Content-Type"] = "multipart/form-data; boundary=" .. boundary,
+      ["Content-Length"] = tostring(#body),
+    },
+  })
+  local ctx = pipeline.new(ngx.var, {})
+  pipeline.collect(ctx, { scan = { max_args = 100 } }, { want_body = true, from_data = true })
+  t.eq(ctx.from_data_error, nil)
+end)
+
+t.test("from_data：缺少结束 boundary 报错", function()
+  local boundary = "b"
+  local body = table.concat({
+    "--" .. boundary,
+    'Content-Disposition: form-data; name="title"',
+    "",
+    "hello",
+  }, "\r\n")
+  mock.set_request({
+    method = "POST", uri = "/x", body = body,
+    headers = {
+      ["Content-Type"] = "multipart/form-data; boundary=" .. boundary,
+      ["Content-Length"] = tostring(#body),
+    },
+  })
+  local ctx = pipeline.new(ngx.var, {})
+  pipeline.collect(ctx, { scan = { max_args = 100 } }, { want_body = true, from_data = true })
+  t.ok(ctx.from_data_error ~= nil)
+end)
+
+t.test("from_data：缺少 disposition 报错，关闭时不报错", function()
+  local boundary = "b"
+  local body = table.concat({
+    "--" .. boundary,
+    "Content-Type: text/plain",
+    "",
+    "x",
+    "--" .. boundary .. "--",
+    "",
+  }, "\r\n")
+  mock.set_request({
+    method = "POST", uri = "/x", body = body,
+    headers = {
+      ["Content-Type"] = "multipart/form-data; boundary=" .. boundary,
+      ["Content-Length"] = tostring(#body),
+    },
+  })
+  local ctx = pipeline.new(ngx.var, {})
+  pipeline.collect(ctx, { scan = { max_args = 100 } }, { want_body = true, from_data = true })
+  t.ok(ctx.from_data_error ~= nil)
+  local ctx2 = pipeline.new(ngx.var, {})
+  pipeline.collect(ctx2, { scan = { max_args = 100 } }, { want_body = true, from_data = false })
+  t.eq(ctx2.from_data_error, nil)
+end)
+
+t.test("from_data：缺少 part name 报错", function()
+  local boundary = "b"
+  local body = table.concat({
+    "--" .. boundary,
+    "Content-Disposition: form-data",
+    "",
+    "x",
+    "--" .. boundary .. "--",
+    "",
+  }, "\r\n")
+  mock.set_request({
+    method = "POST", uri = "/x", body = body,
+    headers = {
+      ["Content-Type"] = "multipart/form-data; boundary=" .. boundary,
+      ["Content-Length"] = tostring(#body),
+    },
+  })
+  local ctx = pipeline.new(ngx.var, {})
+  pipeline.collect(ctx, { scan = { max_args = 100 } }, { want_body = true, from_data = true })
+  t.ok(ctx.from_data_error ~= nil)
+end)
+
+t.test("from_data：body 截断时跳过校验", function()
+  local body = "--b\r\nContent-Disposition: form-data; name=\"a\"\r\n\r\nxxxxxxxx\r\n--b--\r\n"
+  mock.set_request({
+    method = "POST", uri = "/x", body = body,
+    headers = {
+      ["Content-Type"] = "multipart/form-data; boundary=b",
+      ["Content-Length"] = tostring(#body),
+    },
+  })
+  local ctx = pipeline.new(ngx.var, {})
+  pipeline.collect(ctx, { scan = { max_args = 100, body_limit = 10 } }, { want_body = true, from_data = true })
+  t.eq(ctx.body_truncated, true)
+  t.eq(ctx.from_data_error, nil)
+end)
+
 t.test("body_limit 截断与标记", function()
   mock.set_request({
     method = "POST", uri = "/x", body = "abcdefghij",

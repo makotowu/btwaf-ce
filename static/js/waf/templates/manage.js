@@ -125,6 +125,9 @@
                     <el-form-item label="参数数量上限">
                         <el-input-number v-model="cfg.scan.max_args" :min="0" :step="10" size="small" controls-position="right"></el-input-number>
                     </el-form-item>
+                    <el-form-item label="From-data">
+                        <el-switch v-model="cfg.protocol.from_data"></el-switch>
+                    </el-form-item>
                 </el-form>
             </el-tab-pane>
 

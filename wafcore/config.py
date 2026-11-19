@@ -44,6 +44,7 @@ DEFAULT_GLOBAL = {
         "upload_scan_limit": 20971520,
         "max_args": 200,
     },
+    "protocol": {"from_data": False},
     "log": {"enabled": True, "retain_days": 30, "rotate_size": 52428800, "snippet": 512},
     "cc": {
         "open": True,
@@ -288,6 +289,8 @@ def clean_global(data):
         "upload_scan_limit": util.safe_int(scan.get("upload_scan_limit"), 20971520, 0, 104857600),
         "max_args": util.safe_int(scan.get("max_args"), 200, 1, 5000),
     }
+    protocol = _as_dict(cfg.get("protocol"))
+    cfg["protocol"] = {"from_data": _bool(protocol.get("from_data"), False)}
 
     log = _as_dict(cfg.get("log"))
     cfg["log"] = {

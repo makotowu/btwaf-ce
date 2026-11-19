@@ -61,6 +61,7 @@ local function setup(opts)
     cc = opts.cc or { open = false },
     attack_block = opts.attack_block or { open = false },
     block = { status = opts.global_block_status or 403, use_custom = false, page = "" },
+    protocol = { from_data = opts.from_data == true },
   }
   local site = {
     open = true,
@@ -394,6 +395,70 @@ t.test("POST body 参与检测（需要读 body）", function()
   t.eq(res.blocked, true)
   t.ok(mock.body_read_count() > 0, "POST 应读取 body")
   t.eq(last_log().obj.action, "block")
+end)
+
+t.test("From-data 开启：非法 multipart 强制拦截", function()
+  setup({ from_data = true })
+  local body = table.concat({
+    "--b",
+    'Content-Disposition: form-data; name="title"',
+    "",
+    "hello",
+  }, "\r\n")
+  local res = request({
+    method = "POST", uri = "/upload.php", body = body,
+    headers = { ["content-type"] = "multipart/form-data; boundary=b" },
+  })
+  t.eq(res.blocked, true)
+  t.eq(res.status, 403)
+  local obj = last_log().obj
+  t.eq(obj.action, "block")
+  t.eq(obj.hits[1].rule, "ce-config-from-data")
+end)
+
+t.test("From-data 开启：合法 multipart 放行", function()
+  setup({ from_data = true })
+  local body = table.concat({
+    "--b",
+    'Content-Disposition: form-data; name="title"',
+    "",
+    "hello",
+    "--b--",
+    "",
+  }, "\r\n")
+  local res = request({
+    method = "POST", uri = "/upload.php", body = body,
+    headers = { ["content-type"] = "multipart/form-data; boundary=b" },
+  })
+  t.eq(res.blocked, false)
+end)
+
+t.test("From-data 关闭：非法 multipart 不拦截", function()
+  setup({ from_data = false })
+  local body = table.concat({
+    "--b",
+    'Content-Disposition: form-data; name="title"',
+    "",
+    "hello",
+  }, "\r\n")
+  local res = request({
+    method = "POST", uri = "/upload.php", body = body,
+    headers = { ["content-type"] = "multipart/form-data; boundary=b" },
+  })
+  t.eq(res.blocked, false)
+end)
+
+t.test("From-data 观察模式：只记录不拦截", function()
+  setup({ from_data = true, observe = true })
+  local body = "--b\r\nContent-Type: text/plain\r\n\r\nx\r\n--b--\r\n"
+  local res = request({
+    method = "POST", uri = "/upload.php", body = body,
+    headers = { ["content-type"] = "multipart/form-data; boundary=b" },
+  })
+  t.eq(res.status, 200)
+  local obj = last_log().obj
+  t.eq(obj.action, "allow")
+  t.eq(obj.hits[1].rule, "ce-config-from-data")
 end)
 
 t.test("fail_open=true：引擎异常时放行", function()
