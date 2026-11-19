@@ -68,6 +68,8 @@ if "import_lists" not in appjs or "onImportGlobalList" not in appjs or "exportGl
     problems.append("app.js missing IP list import/export UI")
 if "protocol.from_data" not in appjs:
     problems.append("app.js missing From-data setting")
+if "openSiteLogs" not in appjs or "get_log_dates" not in appjs:
+    problems.append("app.js missing per-site log viewer")
 if "logRows: 10" not in appjs or "siteRows: 10" not in appjs: problems.append("table default rows not 10")
 if "page-sizes=\"[10, 20, 50, 100]\"" not in appjs: problems.append("page size options missing 10")
 if line_count("static/js/app.js") > 600:

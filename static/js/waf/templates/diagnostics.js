@@ -132,6 +132,46 @@
     </main>
 </div>
 
+<el-drawer v-model="siteLogVisible" :title="siteLogSite ? siteLogSite + ' 日志' : '站点日志'" size="760px" append-to-body>
+    <div class="waf-teleport">
+        <div class="waf-filters">
+            <el-select v-model="siteLogDate" size="small" style="width:160px" @change="siteLogDateChange">
+                <el-option v-for="d in siteLogDates" :key="d" :label="d" :value="d"></el-option>
+            </el-select>
+            <el-button size="small" :loading="siteLogLoading" @click="loadSiteLogs">刷新</el-button>
+        </div>
+        <div class="waf-error" v-if="siteLogError">
+            <span>{{ siteLogError }}</span>
+            <el-button link type="primary" size="small" @click="loadSiteLogs">重试</el-button>
+        </div>
+        <el-table :data="siteLogList" size="small" border stripe v-loading="siteLogLoading" empty-text="暂无日志" @row-click="openLogDetail" class="waf-clickable-table">
+            <el-table-column label="时间" width="150">
+                <template #default="s"><span class="waf-mono">{{ fmtTime(s.row.time) }}</span></template>
+            </el-table-column>
+            <el-table-column label="IP / 归属" min-width="160">
+                <template #default="s">
+                    <div class="waf-cell-stack">
+                        <span class="waf-mono">{{ s.row.ip }}</span>
+                        <span class="waf-sub waf-ellipsis">{{ s.row.area || '-' }}</span>
+                    </div>
+                </template>
+            </el-table-column>
+            <el-table-column label="请求" min-width="220">
+                <template #default="s"><span class="waf-mono waf-ellipsis">{{ (s.row.method || '') + ' ' + (s.row.uri || '') }}</span></template>
+            </el-table-column>
+            <el-table-column label="命中规则" min-width="180">
+                <template #default="s"><span class="waf-sub waf-ellipsis">{{ hitsText(s.row.hits) }}</span></template>
+            </el-table-column>
+            <el-table-column label="动作" width="88">
+                <template #default="s"><el-tag size="small" :type="actionTag(s.row.action)">{{ actionLabel(s.row.action) }}</el-tag></template>
+            </el-table-column>
+        </el-table>
+        <div class="waf-pager">
+            <el-pagination background small layout="total, sizes, prev, pager, next" :total="siteLogTotal" :page-size="siteLogRows" :current-page="siteLogPage" :page-sizes="[10, 20, 50, 100]" @current-change="onSiteLogPageChange" @size-change="onSiteLogSizeChange"></el-pagination>
+        </div>
+    </div>
+</el-drawer>
+
 <el-drawer v-model="logDetailVisible" title="命中详情" size="640px" append-to-body>
     <div v-if="logDetail" class="waf-detail waf-teleport">
         <el-descriptions :column="2" size="small" border>

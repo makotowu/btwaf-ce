@@ -83,10 +83,65 @@
                 this.beforeCloseSite(function () { self.siteDialog.visible = false; });
             },
             viewSiteLogs: function (row) {
-                this.logFilter.site = row.site_name;
-                this.logPage = 1;
-                this.switchView('logs');
-                this.loadLogs();
+                this.openSiteLogs(row);
+            },
+            openSiteLogs: async function (row) {
+                if (!row || !row.site_name) return;
+                this.siteLogSite = row.site_name;
+                this.siteLogDate = todayStr();
+                this.siteLogDates = [];
+                this.siteLogList = [];
+                this.siteLogTotal = 0;
+                this.siteLogPage = 1;
+                this.siteLogError = '';
+                this.siteLogVisible = true;
+                await this.loadSiteLogDates();
+                await this.loadSiteLogs();
+            },
+            loadSiteLogDates: async function () {
+                try {
+                    var d = await WafAPI.data('get_log_dates');
+                    var dates = (d && Array.isArray(d.dates)) ? d.dates : [];
+                    if (!dates.length) dates = [todayStr()];
+                    this.siteLogDates = dates;
+                    if (dates.indexOf(this.siteLogDate) < 0) this.siteLogDate = dates[0];
+                } catch (e) {
+                    this.siteLogDates = [todayStr()];
+                    this.siteLogDate = todayStr();
+                }
+            },
+            loadSiteLogs: async function () {
+                if (!this.siteLogSite) return;
+                this.siteLogLoading = true;
+                this.siteLogError = '';
+                try {
+                    var d = await WafAPI.data('get_attack_logs', {
+                        site: this.siteLogSite, date: this.siteLogDate || todayStr(),
+                        p: this.siteLogPage, rows: this.siteLogRows
+                    });
+                    d = d || {};
+                    this.siteLogList = Array.isArray(d.list) ? d.list : [];
+                    this.siteLogTotal = num(d.total);
+                } catch (e) {
+                    this.siteLogError = errText(e);
+                    this.siteLogList = [];
+                    this.siteLogTotal = 0;
+                } finally {
+                    this.siteLogLoading = false;
+                }
+            },
+            siteLogDateChange: function () {
+                this.siteLogPage = 1;
+                this.loadSiteLogs();
+            },
+            onSiteLogPageChange: function (p) {
+                this.siteLogPage = p;
+                this.loadSiteLogs();
+            },
+            onSiteLogSizeChange: function (n) {
+                this.siteLogRows = n;
+                this.siteLogPage = 1;
+                this.loadSiteLogs();
             },
             openSiteDialog: function (row) {
                 var self = this;

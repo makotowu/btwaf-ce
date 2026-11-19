@@ -1612,6 +1612,11 @@ class ControllerReadOnlyTest(BaseCase):
         self.assertIs(res2["status"], True)
         self.assertEqual(res2["data"]["status"], "all")
 
+    def test_get_log_dates(self):
+        res = self._envelope(self.ctrl.get_log_dates(None))
+        self.assertIs(res["status"], True)
+        self.assertIn(U.date_str(), res["data"]["dates"])
+
     def test_get_custom_rules(self):
         res = self._envelope(self.ctrl.get_custom_rules(None))
         self.assertIs(res["status"], True)

@@ -389,6 +389,7 @@
     function emptyResponse(method, params) {
         switch (method) {
             case 'get_attack_logs': return { list: [], total: 0, page: 1, rows: num(params.rows, 20), types: [] };
+            case 'get_log_dates': return { dates: [dayStr(0), dayStr(-1)] };
             case 'get_sites': return { list: [], total: 0, page: 1, rows: num(params.rows, 20) };
             case 'get_rules': return { list: [], total: 0, page: 1, rows: num(params.rows, 20), skipped: [] };
             case 'get_custom_rules': return { list: [], total: 0, page: 1, rows: num(params.rows, 20) };
@@ -476,6 +477,8 @@
                     recent: ATTACK_ROWS.slice(0, 6)
                 };
 
+            case 'get_log_dates':
+                return { dates: [dayStr(0), dayStr(-1), dayStr(-2)] };
             case 'get_attack_logs': {
                 var list = filterLogs(params);
                 var pagedLogs = paged(list, params);

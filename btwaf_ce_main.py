@@ -489,6 +489,10 @@ class btwaf_ce_main(object):
         return res
 
     @_api
+    def get_log_dates(self, get):
+        return {"dates": L.available_days(60)}
+
+    @_api
     def get_attack_stat(self, get):
         date = self._date(get)
         site = str(self._p(get, "site", "") or "").strip()

@@ -160,6 +160,10 @@
 
 ## 4. 拦截记录 / 封锁
 
+### `get_log_dates`
+参数：无
+返回 `data = {"dates": ["2026-11-19", "2026-11-18"]}`，用于站点日志的日期选择。
+
 ### `get_attack_logs`
 参数：`site`、`date`（`YYYY-MM-DD`，默认今天）、`keyword`、`type`（module）、`ip`、`log_action`（`block|allow|...`；**不能叫 `action`**，会与面板路由的 `action=a` 冲突并返回 `ARGS_ERR`）、`p=1, rows=20`
 返回分页：

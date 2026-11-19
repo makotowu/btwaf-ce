@@ -58,8 +58,13 @@
         <el-table-column label="最近命中" width="150">
             <template #default="s"><span class="waf-mono waf-sub">{{ s.row.last_hit ? fmtTime(s.row.last_hit) : '-' }}</span></template>
         </el-table-column>
-        <el-table-column label="操作" width="110" fixed="right">
-            <template #default="s"><el-button size="small" type="primary" plain @click.stop="openSiteDialog(s.row)">配置</el-button></template>
+        <el-table-column label="操作" width="170" fixed="right">
+            <template #default="s">
+                <div class="waf-row-actions">
+                    <el-button link type="primary" size="small" @click.stop="viewSiteLogs(s.row)">日志</el-button>
+                    <el-button size="small" type="primary" plain @click.stop="openSiteDialog(s.row)">配置</el-button>
+                </div>
+            </template>
         </el-table-column>
         <template #empty>
             <div class="waf-empty">

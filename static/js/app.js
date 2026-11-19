@@ -58,6 +58,9 @@
                 logList: [], logTotal: 0, logPage: 1, logRows: 10,
                 logTypes: [], logLimited: false, logLoading: false,
                 logDetail: null, logDetailVisible: false,
+                siteLogVisible: false, siteLogSite: '', siteLogDate: '', siteLogDates: [],
+                siteLogList: [], siteLogTotal: 0, siteLogPage: 1, siteLogRows: 10,
+                siteLogLoading: false, siteLogError: '',
 
                 siteKeyword: '', siteStatus: '', siteList: [], siteTotal: 0, sitePage: 1, siteRows: 10,
                 siteLoading: false, siteSelection: [],
