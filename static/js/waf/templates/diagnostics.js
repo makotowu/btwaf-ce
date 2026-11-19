@@ -320,7 +320,10 @@
                     <el-select v-model="siteListType" size="small" style="width:180px">
                         <el-option v-for="m in listMeta" :key="m.key" :label="m.label" :value="m.key"></el-option>
                     </el-select>
-                    
+                    <el-upload v-if="isIpList(siteListType)" :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportSiteList">
+                        <el-button size="small" :loading="listImporting">导入</el-button>
+                    </el-upload>
+                    <el-button v-if="isIpList(siteListType)" size="small" @click="exportSiteList">导出</el-button>
                 </div>
                 <el-input v-model="siteText[siteListType]" type="textarea" :rows="10" class="waf-mono" placeholder="一行一条"></el-input>
             </el-tab-pane>

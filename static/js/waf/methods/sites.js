@@ -197,6 +197,52 @@
                     c.modules[m.key].tier = num(c.modules[m.key].tier);
                 });
             },
+            onImportSiteList: function (uploadFile) {
+                var self = this;
+                var file = uploadFile && uploadFile.raw;
+                var type = this.siteListType;
+                var site = this.siteDialog.site_name;
+                if (!file || !site || !this.isIpList(type)) return;
+                if (file.size > 1024 * 1024) { BTP.msg('名单文件不能超过 1MB', 'error'); return; }
+                this.listImporting = true;
+                var reader = new FileReader();
+                reader.onload = async function () {
+                    try {
+                        var base = splitLines(self.siteText[type]);
+                        var d = await WafAPI.data('import_lists', {
+                            scope: 'site', site_name: site, type: type,
+                            base: JSON.stringify(base),
+                            text: String(reader.result || '')
+                        });
+                        self.siteDialog.config.lists = self.siteDialog.config.lists || {};
+                        self.siteDialog.config.lists[type] = (d && d.items) || [];
+                        self.siteText[type] = joinLines(self.siteDialog.config.lists[type]);
+                        BTP.msg(self.importListMessage(d), 'success');
+                    } catch (e) {
+                        if (!e || !e.__msgShown) BTP.msg(errText(e), 'error');
+                    } finally {
+                        self.listImporting = false;
+                    }
+                };
+                reader.onerror = function () {
+                    self.listImporting = false;
+                    BTP.msg('读取文件失败', 'error');
+                };
+                reader.readAsText(file, 'utf-8');
+            },
+            exportSiteList: function () {
+                var type = this.siteListType;
+                var site = this.siteDialog.site_name;
+                if (!site || !this.isIpList(type)) return;
+                var items = splitLines(this.siteText[type]);
+                if (!items.length) { BTP.msg('名单为空', 'info'); return; }
+                var safe = String(site).replace(/[^A-Za-z0-9._-]/g, '_');
+                this.downloadTextFile(
+                    'btwaf_ce-' + safe + '-' + type + '-' + todayStr().replace(/-/g, '') + '.txt',
+                    items.join('\n') + '\n'
+                );
+                BTP.msg('已导出 ' + items.length + ' 条', 'success');
+            },
             saveSiteConfig: async function () {
                 var d = this.siteDialog;
                 if (!d.site_name) return;

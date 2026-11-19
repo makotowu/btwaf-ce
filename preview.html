@@ -551,6 +551,14 @@
             case 'set_lists':
                 return { saved: true, count: (JSON.parse(params.items || '[]')).length };
 
+            case 'import_lists': {
+                var lines = String(params.text || '').split(/\r?\n/).map(function (x) { return x.trim(); }).filter(function (x) { return x && x.charAt(0) !== '#'; });
+                var base = [];
+                try { base = JSON.parse(params.base || '[]'); } catch (e) { }
+                var all = base.concat(lines).filter(function (x, i, a) { return a.indexOf(x) === i; });
+                return { saved: true, added: lines.length, duplicates: 0, invalid: 0, total: all.length, truncated: false, items: all };
+            }
+
             case 'save_block_page':
                 return { saved: true };
 

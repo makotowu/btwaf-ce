@@ -1545,6 +1545,54 @@ class ControllerReadOnlyTest(BaseCase):
         res2 = self._envelope(self.ctrl.get_lists({"scope": "site"}))
         self.assertIs(res2["status"], False)
 
+    def test_import_lists_global(self):
+        text = "\ufeff# 注释\n1.2.3.4\n192.0.2.0/24\n1.2.3.4\nbad-entry\n"
+        res = self._envelope(self.ctrl.import_lists({
+            "scope": "global", "type": "ip_black",
+            "base": json.dumps(["9.9.9.9"]), "text": text,
+        }))
+        self.assertIs(res["status"], True)
+        data = res["data"]
+        self.assertEqual(data["added"], 2)
+        self.assertEqual(data["duplicates"], 1)
+        self.assertEqual(data["invalid"], 1)
+        self.assertEqual(data["total"], 3)
+        self.assertIn("1.2.3.4", data["items"])
+        self.assertEqual(
+            C.load_global()["lists"]["ip_black"],
+            ["9.9.9.9", "1.2.3.4", "192.0.2.0/24"],
+        )
+
+    def test_import_lists_site(self):
+        res = self._envelope(self.ctrl.import_lists({
+            "scope": "site", "site_name": "a.com", "type": "ip_white",
+            "base": "[]", "text": "1.2.3.4\n5.6.7.0/24\n",
+        }))
+        self.assertIs(res["status"], True)
+        self.assertEqual(res["data"]["added"], 2)
+        self.assertEqual(
+            C.load_sites()["a.com"]["lists"]["ip_white"],
+            ["1.2.3.4", "5.6.7.0/24"],
+        )
+
+    def test_import_lists_rejects_non_ip(self):
+        res = self._envelope(self.ctrl.import_lists({
+            "scope": "global", "type": "url_black", "text": "/admin\n",
+        }))
+        self.assertIs(res["status"], False)
+
+    def test_import_lists_rejects_all_invalid(self):
+        res = self._envelope(self.ctrl.import_lists({
+            "scope": "global", "type": "ip_black", "text": "bad\n",
+        }))
+        self.assertIs(res["status"], False)
+
+    def test_import_lists_rejects_empty(self):
+        res = self._envelope(self.ctrl.import_lists({
+            "scope": "global", "type": "ip_black", "text": "# only comments\n\n",
+        }))
+        self.assertIs(res["status"], False)
+
     def test_get_block_list(self):
         res = self._envelope(self.ctrl.get_block_list(None))
         self.assertIs(res["status"], True)

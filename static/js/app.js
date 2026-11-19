@@ -80,6 +80,7 @@
                 cfgLoading: false, cfgSaving: false, cfgSearch: '', cfgSearchEmpty: false, cfgSnapshot: '',
                 globalLists: emptyLists(),
                 globalListType: 'ip_black',
+                listImporting: false,
                 globalListText: {
                     ip_black: '', ip_white: '', url_black: '', url_white: '', ua_black: '', ua_white: '', param_white: ''
                 },

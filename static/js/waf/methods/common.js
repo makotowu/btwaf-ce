@@ -9,6 +9,30 @@
             fmtTime: fmtTime,
             fmtDate: fmtDate,
             num: num,
+            isIpList: function (type) {
+                return type === 'ip_black' || type === 'ip_white';
+            },
+            importListMessage: function (d) {
+                var msg = '已导入 ' + num(d && d.added) + ' 条';
+                var duplicates = num(d && d.duplicates);
+                var invalid = num(d && d.invalid);
+                if (duplicates) msg += '，重复 ' + duplicates + ' 条';
+                if (invalid) msg += '，忽略 ' + invalid + ' 条无效项';
+                if (d && d.truncated) msg += '，已到达 2000 条上限';
+                return msg;
+            },
+            downloadTextFile: function (filename, text) {
+                var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+                var url = URL.createObjectURL(blob);
+                var a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(function () {
+                    try { URL.revokeObjectURL(url); a.parentNode.removeChild(a); } catch (e) { }
+                }, 800);
+            },
             showConfirm: function (title, content) {
                 var self = this;
                 return new Promise(function (resolve) {

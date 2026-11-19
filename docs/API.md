@@ -224,6 +224,13 @@
 - 校验：ip 支持单 IP/CIDR/IP 范围（`start-end`）；url 支持 `^` 前缀或正则（以 `~` 开头）；ua 字符串；param 名称
 返回 `data = {"saved": true, "count": 3}`
 
+### `import_lists`
+参数：`scope`、`site_name`（scope=site 必填）、`type`（`ip_black|ip_white`）、`base`（当前编辑区，JSON 数组）、`text`（文件内容）
+- 文本一行一条，支持单 IP/CIDR/IP 范围，空行和 `#` 注释忽略
+- 追加到 `base`，去重；无效行跳过并返回数量
+- 文件最大 1MB、最多 10000 行；最终名单受 2000 条上限约束
+返回 `data = {"saved": true, "added": 3, "duplicates": 1, "invalid": 0, "total": 10, "truncated": false, "items": [...]}`
+
 ## 6. 自定义规则
 
 ### `get_custom_rules`

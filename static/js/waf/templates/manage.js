@@ -199,7 +199,10 @@
                     <el-select v-model="globalListType" size="small" style="width:180px">
                         <el-option v-for="m in listMeta" :key="m.key" :label="m.label" :value="m.key"></el-option>
                     </el-select>
-                    
+                    <el-upload v-if="isIpList(globalListType)" :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportGlobalList">
+                        <el-button size="small" :loading="listImporting">导入</el-button>
+                    </el-upload>
+                    <el-button v-if="isIpList(globalListType)" size="small" @click="exportGlobalList">导出</el-button>
                 </div>
                 <el-input v-model="globalListText[globalListType]" type="textarea" :rows="10" class="waf-mono" placeholder="一行一条"></el-input>
                 <div class="waf-pane-actions">

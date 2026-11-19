@@ -119,6 +119,49 @@
                     this.refreshStatusAfterSave();
                 } catch (e) { }
             },
+            onImportGlobalList: function (uploadFile) {
+                var self = this;
+                var file = uploadFile && uploadFile.raw;
+                var type = this.globalListType;
+                if (!file || !this.isIpList(type)) return;
+                if (file.size > 1024 * 1024) { BTP.msg('名单文件不能超过 1MB', 'error'); return; }
+                this.listImporting = true;
+                var reader = new FileReader();
+                reader.onload = async function () {
+                    try {
+                        var base = splitLines(self.globalListText[type]);
+                        var d = await WafAPI.data('import_lists', {
+                            scope: 'global', type: type,
+                            base: JSON.stringify(base),
+                            text: String(reader.result || '')
+                        });
+                        self.globalLists[type] = (d && d.items) || [];
+                        self.globalListText[type] = joinLines(self.globalLists[type]);
+                        BTP.msg(self.importListMessage(d), 'success');
+                        self.refreshStatusAfterSave();
+                    } catch (e) {
+                        if (!e || !e.__msgShown) BTP.msg(errText(e), 'error');
+                    } finally {
+                        self.listImporting = false;
+                    }
+                };
+                reader.onerror = function () {
+                    self.listImporting = false;
+                    BTP.msg('读取文件失败', 'error');
+                };
+                reader.readAsText(file, 'utf-8');
+            },
+            exportGlobalList: function () {
+                var type = this.globalListType;
+                if (!this.isIpList(type)) return;
+                var items = splitLines(this.globalListText[type]);
+                if (!items.length) { BTP.msg('名单为空', 'info'); return; }
+                this.downloadTextFile(
+                    'btwaf_ce-' + type + '-' + todayStr().replace(/-/g, '') + '.txt',
+                    items.join('\n') + '\n'
+                );
+                BTP.msg('已导出 ' + items.length + ' 条', 'success');
+            },
             saveBlockPage: async function () {
                 try {
                     await WafAPI.data('save_block_page', {

@@ -600,6 +600,25 @@ class btwaf_ce_main(object):
             lists = C.load_global().get("lists") or {}
         return {"lists": lists, "scope": scope}
 
+    def _save_lists(self, scope, type_key, site_name, items):
+        clean = C.clean_lists({type_key: items})[type_key]
+        if scope == "site":
+            self._check_site_exists(site_name)
+            cfg_sites = C.load_sites()
+            entry = cfg_sites.get(site_name) or C.default_site_entry()
+            entry.setdefault("lists", {})
+            entry["lists"][type_key] = clean
+            entry["update_time"] = util.now()
+            cfg_sites[site_name] = entry
+            C.save_sites(cfg_sites)
+        else:
+            cfg = C.load_global()
+            cfg.setdefault("lists", {})
+            cfg["lists"][type_key] = clean
+            C.save_global(cfg)
+        E.apply_config("set_lists")
+        return clean
+
     @_api
     def set_lists(self, get):
         scope = str(self._p(get, "scope", "global") or "global")
@@ -609,25 +628,79 @@ class btwaf_ce_main(object):
         items = self._obj_param(get, "items", [])
         if not isinstance(items, list):
             raise ValueError("items 必须是数组")
-        clean = C.clean_lists({type_key: items})[type_key]
-        if scope == "site":
-            name = self._site_name(get)
-            self._check_site_exists(name)
-            cfg_sites = C.load_sites()
-            entry = cfg_sites.get(name) or C.default_site_entry()
-            entry.setdefault("lists", {})
-            entry["lists"][type_key] = clean
-            entry["update_time"] = util.now()
-            cfg_sites[name] = entry
-            C.save_sites(cfg_sites)
-        else:
-            cfg = C.load_global()
-            cfg.setdefault("lists", {})
-            cfg["lists"][type_key] = clean
-            C.save_global(cfg)
-        E.apply_config("set_lists")
+        site_name = self._site_name(get) if scope == "site" else ""
+        clean = self._save_lists(scope, type_key, site_name, items)
         self._audit("更新%s：%s，%d 条" % (scope, type_key, len(clean)))
         return {"saved": True, "count": len(clean)}
+
+    @_api
+    def import_lists(self, get):
+        scope = str(self._p(get, "scope", "global") or "global")
+        if scope not in ("global", "site"):
+            raise ValueError("名单作用域不支持")
+        type_key = str(self._p(get, "type", "") or "").strip()
+        if type_key not in ("ip_black", "ip_white"):
+            raise ValueError("仅支持 IP 名单")
+        base = self._obj_param(get, "base", [])
+        if not isinstance(base, list):
+            raise ValueError("base 必须是数组")
+        text = str(self._p(get, "text", "") or "")
+        if len(text.encode("utf-8")) > 1024 * 1024:
+            raise ValueError("名单文件不能超过 1MB")
+        lines = text.replace("\ufeff", "").splitlines()
+        if len(lines) > 10000:
+            raise ValueError("名单文件不能超过 10000 行")
+        site_name = self._site_name(get) if scope == "site" else ""
+        clean_base = C.clean_lists({type_key: [str(x) for x in base]})[type_key]
+        seen = set(clean_base)
+        entries = []
+        invalid = []
+        duplicates = 0
+        has_line = False
+        for number, line in enumerate(lines, 1):
+            value = line.strip()
+            if not value or value.startswith("#"):
+                continue
+            has_line = True
+            if len(value) > 1024:
+                invalid.append({"line": number, "value": value[:120]})
+                continue
+            if not util.valid_ip_or_cidr_range(value):
+                invalid.append({"line": number, "value": value[:120]})
+                continue
+            if value in seen:
+                duplicates += 1
+                continue
+            seen.add(value)
+            entries.append(value)
+        if not has_line:
+            raise ValueError("名单文件为空")
+        if invalid and not entries:
+            raise ValueError("没有可导入的有效 IP")
+        merged = clean_base + entries
+        clean = C.clean_lists({type_key: merged})[type_key]
+        base_set = set(clean_base)
+        added = sum(1 for item in clean if item not in base_set)
+        truncated = len(clean) < len(merged)
+        if added == 0 and invalid:
+            raise ValueError("没有可导入的有效 IP")
+        clean = self._save_lists(scope, type_key, site_name, clean)
+        self._audit(
+            "导入%s IP 名单：新增 %d 条，重复 %d 条，无效 %d 条"
+            % (scope, added, duplicates, len(invalid))
+        )
+        return {
+            "saved": True,
+            "scope": scope,
+            "type": type_key,
+            "added": added,
+            "duplicates": duplicates,
+            "invalid": len(invalid),
+            "total": len(clean),
+            "truncated": truncated,
+            "invalid_lines": invalid[:20],
+            "items": clean,
+        }
 
     # ---------------- 自定义规则 ----------------
     @_api
