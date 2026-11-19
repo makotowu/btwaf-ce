@@ -1,5 +1,6 @@
 {
   "version": "0.1.0",
+  "asset": "dev",
   "schema": 1,
   "built_for": "btwaf_ce"
 }

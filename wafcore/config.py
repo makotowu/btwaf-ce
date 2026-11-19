@@ -30,6 +30,13 @@ DEFAULT_GLOBAL = {
     "observe": False,
     "sensitivity": 2,
     "block": {"status": 403, "use_custom": False, "page": ""},
+    "geo": {
+        "open": False,
+        "mode": "allow",
+        "regions": ["CN"],
+        "unknown": "allow",
+        "status": 403,
+    },
     "scan": {
         "body_limit": 1048576,
         "arg_limit": 8192,
@@ -86,6 +93,22 @@ DEFAULT_CDN = {
     "trusted": [],
 }
 
+DEFAULT_GEO = {
+    "open": False,
+    "mode": "allow",
+    "regions": ["CN"],
+    "unknown": "allow",
+    "status": 403,
+}
+
+DEFAULT_SITE_GEO = {
+    "open": None,
+    "mode": None,
+    "regions": None,
+    "unknown": None,
+    "status": 0,
+}
+
 
 def default_site_entry():
     entry = {
@@ -93,6 +116,13 @@ def default_site_entry():
         "sensitivity": 0,
         "observe": None,
         "block": {"status": 0},
+        "geo": {
+            "open": None,
+            "mode": None,
+            "regions": None,
+            "unknown": None,
+            "status": 0,
+        },
         "modules": dict([(k, {"open": True, "tier": 0}) for k in MODULE_KEYS]),
         "cc": {
             "open": None,
@@ -155,6 +185,72 @@ def _clean_bool_maybe(v):
     return _bool(v, False)
 
 
+def _clean_regions(value, site=False):
+    if value is None:
+        return None if site else ["CN"]
+    if not isinstance(value, list):
+        return None if site else ["CN"]
+    out = []
+    for item in value:
+        code = str(item).strip().upper()
+        if code and code not in out:
+            out.append(code)
+    if not out:
+        return None if site else ["CN"]
+    # The bundled data only contains the China range file. Keep the API generic,
+    # but reject unsupported codes instead of silently producing an empty policy.
+    out = [code for code in out if code == "CN"]
+    return out or (None if site else ["CN"])
+
+
+def clean_geo(value, site=False):
+    src = _as_dict(value)
+    warnings = []
+    if site:
+        open_value = _clean_bool_maybe(src.get("open"))
+        mode = src.get("mode")
+        mode = mode if mode in ("allow", "block") else None
+        unknown = src.get("unknown")
+        unknown = unknown if unknown in ("allow", "block") else None
+        status = util.safe_int(src.get("status"), 0, 0)
+        if status not in (0,) + BLOCK_STATUSES:
+            status = 0
+        regions = _clean_regions(src.get("regions"), site=True)
+        return {
+            "open": open_value,
+            "mode": mode,
+            "regions": regions,
+            "unknown": unknown,
+            "status": status,
+        }, warnings
+
+    open_value = _bool(src.get("open"), False)
+    mode = src.get("mode")
+    if mode not in ("allow", "block"):
+        warnings.append("地区访问模式不支持，已回退 allow")
+        mode = "allow"
+    unknown = src.get("unknown")
+    if unknown not in ("allow", "block"):
+        warnings.append("未识别地区策略不支持，已回退 allow")
+        unknown = "allow"
+    status = util.safe_int(src.get("status"), 403)
+    if status not in BLOCK_STATUSES:
+        warnings.append("地区访问状态码不支持，已回退 403")
+        status = 403
+    regions = _clean_regions(src.get("regions"), site=False)
+    raw_regions = src.get("regions")
+    if isinstance(raw_regions, list) and raw_regions:
+        if any(str(x).strip().upper() not in ("CN",) for x in raw_regions):
+            warnings.append("当前仅内置 CN 地区范围，其它地区已忽略")
+    return {
+        "open": open_value,
+        "mode": mode,
+        "regions": regions,
+        "unknown": unknown,
+        "status": status,
+    }, warnings
+
+
 def clean_global(data):
     """合并默认值并做范围校验，返回 (cfg, warnings)。"""
     warnings = []
@@ -180,6 +276,9 @@ def clean_global(data):
         "use_custom": _bool(blk.get("use_custom"), False),
         "page": page,
     }
+    geo, geo_warnings = clean_geo(cfg.get("geo"), site=False)
+    cfg["geo"] = geo
+    warnings.extend(geo_warnings)
 
     scan = _as_dict(cfg.get("scan"))
     cfg["scan"] = {
@@ -337,6 +436,7 @@ def clean_site(data):
     blk = _as_dict(entry.get("block"))
     block_status = util.safe_int(blk.get("status"), 0, 0, 599)
     entry["block"] = {"status": block_status if block_status in BLOCK_STATUSES else 0}
+    entry["geo"], _geo_warnings = clean_geo(entry.get("geo"), site=True)
 
     cc = _as_dict(entry.get("cc"))
     entry["cc"] = {
@@ -550,6 +650,19 @@ def effective_site(global_cfg, site_cfg):
     out["cdn"] = deep_merge(DEFAULT_CDN, _as_dict(s.get("cdn")))
     out["rule_status"] = dict(_as_dict(g.get("rule_status")))
     out["rule_status"].update(_as_dict(s.get("rule_status")))
+    ggeo = _as_dict(g.get("geo"))
+    sgeo = _as_dict(s.get("geo"))
+    geo = {}
+    for key in ("open", "mode", "regions", "unknown"):
+        value = sgeo.get(key)
+        if value is None:
+            value = ggeo.get(key, DEFAULT_GEO.get(key))
+        geo[key] = copy.deepcopy(value)
+    site_status = util.safe_int(sgeo.get("status"), 0)
+    geo["status"] = site_status if site_status in BLOCK_STATUSES else util.safe_int(
+        ggeo.get("status"), 403
+    )
+    out["geo"] = geo
     out["modules"] = {}
     gmods = _as_dict(g.get("modules"))
     smods = _as_dict(s.get("modules"))

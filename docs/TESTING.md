@@ -39,6 +39,8 @@ python3 tests/shell/test_install_check.py
 
 面板 CDN 冲突需要额外手工验证：分别开启面板全局 CDN（`real_cdn_ip.conf`）和站点 CDN（`extension/<site>/proxy_real_ip.conf`），确认插件不再读取 Header、直接使用 `$remote_addr`；关闭面板 CDN 后再验证站点 CDN 预设和 IP 范围。
 
+地区访问使用 `lua/geo/cn.ranges` 离线数据。开发时可用 `python tools/build_geoip.py --refresh --strict` 刷新；打包时 `tools/build_zip.py` 默认自动刷新，下载失败或数据超过 45 天会拒绝打包。测试使用临时 fixture，不依赖公网归属地。
+
 ## 3. Lua 测试环境变量
 
 | 变量 | 默认 | 含义 |

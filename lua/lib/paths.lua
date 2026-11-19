@@ -63,6 +63,18 @@ function P.waf_log()
   return P.LOG_DIR .. "/waf.log"
 end
 
+function P.geo_dir()
+  return P.DATA_DIR .. "/geo"
+end
+
+function P.geo_file()
+  return P.geo_dir() .. "/cn.ranges"
+end
+
+function P.geo_meta_file()
+  return P.geo_dir() .. "/meta.json"
+end
+
 function P.error_log()
   return P.DATA_DIR .. "/logs/error.log"
 end

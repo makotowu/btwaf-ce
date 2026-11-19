@@ -67,6 +67,7 @@ local config = safe_require("lib.config")
 local util = safe_require("lib.util")
 local pipeline = safe_require("lib.pipeline")
 local ipmod = safe_require("lib.ip")
+local geo = safe_require("lib.geo")
 local cc = safe_require("lib.cc")
 local matcher = safe_require("lib.matcher")
 local rules_mod = safe_require("lib.rules")
@@ -256,6 +257,9 @@ local function make_decision(ctx, opts)
     sensitivity = tonumber(opts.sensitivity) or
       (ctx.site and ctx.site.sensitivity) or 2,
     snippet = opts.snippet or pick_snippet(ctx),
+    country = opts.country,
+    geo_source = opts.geo_source,
+    reason = opts.reason,
     log = opts.log ~= false,
   }
 end
@@ -310,7 +314,32 @@ local function evaluate(ctx)
     return nil
   end
 
-  -- 2) CC 限流
+  -- 2) 地区访问控制（IP 白名单之后；数据不可用时 fail-open）
+  local geo_cfg = site.geo or {}
+  if geo and geo_cfg.open == true then
+    local ok_geo, geo_result = pcall(geo.check, ip, geo_cfg)
+    if not ok_geo then
+      util.log_error("geo 检查异常: " .. tostring(geo_result))
+    elseif geo_result and geo_result.blocked then
+      local geo_status = tonumber(geo_cfg.status) or status_block
+      if observe then
+        return make_decision(ctx, {
+          action = "allow", status = 200, hits = {}, score = 0,
+          block_time = 0, rule_source = "ce", sensitivity = sensitivity,
+          snippet = "", country = geo_result.country,
+          geo_source = geo_result.geo_source, reason = geo_result.reason,
+        })
+      end
+      return make_decision(ctx, {
+        action = "geo", status = geo_status, hits = {}, score = 0,
+        block_time = 0, rule_source = "ce", sensitivity = sensitivity,
+        snippet = "", country = geo_result.country,
+        geo_source = geo_result.geo_source, reason = geo_result.reason,
+      })
+    end
+  end
+
+  -- 3) CC 限流
   local cc_blocked = cc.check(ctx)
   if cc_blocked and not observe then
     local ccfg = site.cc or {}
@@ -538,7 +567,7 @@ local function respond(ctx, decision)
   end
 
   local action = decision.action
-  if action == "block" or action == "cc" or action == "blacklist" then
+  if action == "block" or action == "cc" or action == "blacklist" or action == "geo" then
     local status = tonumber(decision.status) or 403
     if status == 444 then
       -- 444：nginx 直接断开连接，无响应体
@@ -663,7 +692,7 @@ local function run()
   -- 注意：必须放在 respond 之前，否则 ngx.exit 会中止后续 Lua 代码，
   -- 导致 blocked/req 计数永远不更新（真机 perf.json 长时间不刷新的根因）。
   local blocked = decision ~= nil and
-    (decision.action == "block" or decision.action == "cc" or decision.action == "blacklist")
+    (decision.action == "block" or decision.action == "cc" or decision.action == "blacklist" or decision.action == "geo")
   pcall(perf.record, util.now_ms() - started, decision ~= nil, blocked)
 
   -- 响应 + 日志

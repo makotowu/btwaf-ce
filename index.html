@@ -57,7 +57,11 @@
         }
         fetch(BASE + '/static/version.json?t=' + Date.now(), { cache: 'no-store' })
             .then(function (r) { return r.ok ? r.json() : {}; })
-            .then(function (d) { if (d && d.version) VERSION = String(d.version); })
+            .then(function (d) {
+                if (d && d.version) VERSION = String(d.version);
+                if (d && d.asset) VERSION = String(d.asset);
+                return d;
+            })
             .then(function () { window.__BTWAF_ASSET_VERSION = VERSION; })
             .catch(function () { /* 保留内置版本号 */ })
             .then(boot);

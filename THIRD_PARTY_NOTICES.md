@@ -9,6 +9,7 @@
 | [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings) | MIT | 测试语料（`tests/corpus/pat/`，精选） | `licenses/MIT.txt` |
 | [DOMPurify](https://github.com/cure53/DOMPurify) | Apache-2.0 | 测试语料（`tests/corpus/dompurify/`，XSS 绕过向量） | `licenses/Apache-2.0.txt` |
 | [aaWAF / BT-WAF](https://github.com/aaPanel/aaWAF) | AGPL-3.0 | 仅使用仓库内 `Payload.md` 作为测试语料（`tests/corpus/aaWAF/`）；仅参考设计思想，未使用其安装包中的 Lua/.so/规则 | 与本项目相同（AGPL-3.0） |
+| [DB-IP Lite Country](https://db-ip.com/db/download/ip-to-country-lite) | CC BY 4.0 | 构建期生成 `lua/geo/cn.ranges`，用于离线中国 IPv4 地区访问控制；署名见 `lua/geo/NOTICE` | https://creativecommons.org/licenses/by/4.0/ |
 | Vue 3 / Element Plus | MIT | 前端运行时（`static/vendor/`，Vue 3 / Element Plus 官方 MIT 版本） | `licenses/MIT.txt` |
 
 ## 规则文件归属

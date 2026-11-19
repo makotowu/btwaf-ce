@@ -4,6 +4,7 @@ import os
 import re
 
 from . import config as C
+from . import geo as G
 from . import nginx, paths, sites, state, util
 
 
@@ -100,6 +101,15 @@ def deploy_runtime():
     dst = paths.runtime_lua_dir()
     try:
         util.copy_tree(src, dst)
+        geo_src = os.path.join(src, "geo")
+        if os.path.isdir(geo_src):
+            util.copy_tree(geo_src, paths.geo_dir())
+            for name in ("cn.ranges", "meta.json"):
+                target = os.path.join(paths.geo_dir(), name)
+                try:
+                    os.chmod(target, 0o644)
+                except OSError:
+                    pass
         paths.write_runtime_paths()
         for root, dirs, files in os.walk(dst):
             try:
@@ -259,6 +269,7 @@ def status():
         "lua_files": lua_files,
         "rules": rules,
         "panel_cdn": nginx.panel_cdn_status(),
+        "geo": dict(G.status(), open=bool((cfg.get("geo") or {}).get("open"))),
         "config_apply_at": util.safe_int(st.get("config_apply_at"), 0),
         "last_reload": util.safe_int(st.get("last_reload"), 0),
         "errors": state.read_error_log_tail(20),
@@ -289,6 +300,14 @@ def check_env():
         True,
         ("已开启（%s，Header=%s），插件站点 CDN 设置将让位于面板" % (panel_cdn["scope"], panel_cdn["header"]))
         if panel_cdn["open"] else "未开启",
+    )
+    geo_status = G.status()
+    geo_enabled = bool((cfg.get("geo") or {}).get("open"))
+    add(
+        "地区 IP 数据",
+        geo_status["available"] or not geo_enabled,
+        ("%s %s，%d 个范围" % (geo_status["source"], geo_status["source_release"], geo_status["records"]))
+        if geo_status["available"] else "不可用；地区访问开启时会 fail-open，请重新安装或修复运行目录",
     )
     add("配置与插件模板一致", conf["hash_ok"], "被修改或缺失时点一键修复即可恢复", True)
     ok_cfg = True

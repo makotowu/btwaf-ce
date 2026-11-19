@@ -44,6 +44,8 @@ if "网站防护" not in appjs: problems.append("app.js missing 网站防护 lab
 if "oplogs" not in appjs or "set_rule_status" not in appjs: problems.append("app.js missing P0 operation/rule status UI")
 if "CDN_PRESETS" not in appjs or "panelCdnOpen" not in appjs: problems.append("app.js missing CDN presets/panel CDN warning")
 if "IP 范围" not in appjs: problems.append("app.js missing IP range hint")
+if "geoModeOptions" not in appjs or "地区访问" not in appjs or "countryLabel" not in appjs:
+    problems.append("app.js missing geo access UI")
 if "waf-grid-3" not in appjs: problems.append("app.js missing top sites grid")
 if "logRows: 10" not in appjs or "siteRows: 10" not in appjs: problems.append("table default rows not 10")
 if "page-sizes=\"[10, 20, 50, 100]\"" not in appjs: problems.append("page size options missing 10")

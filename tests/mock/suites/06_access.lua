@@ -7,6 +7,7 @@ local config = require("lib.config")
 local matcher = require("lib.matcher")
 local paths = require("lib.paths")
 local cc = require("lib.cc")
+local geo = require("lib.geo")
 
 -- 加载真实 access.lua，但不自动执行（由用例显式调用）
 rawset(_G, "BTWAF_CE_ACCESS_AUTORUN", false)
@@ -56,6 +57,7 @@ local function setup(opts)
     modules = { sqli = { open = true, tier = 1 } },
     lists = opts.global_lists or {},
     rule_status = opts.global_status or {},
+    geo = opts.geo or { open = false },
     cc = opts.cc or { open = false },
     attack_block = opts.attack_block or { open = false },
     block = { status = opts.global_block_status or 403, use_custom = false, page = "" },
@@ -64,9 +66,15 @@ local function setup(opts)
     open = true,
     lists = opts.site_lists or {},
     rule_status = opts.site_status or {},
+    geo = opts.site_geo or {},
     block = { status = opts.site_block_status or 0 },
     custom_rules = {},
   }
+  if opts.geo or opts.site_geo then
+    mock.file_write(paths.geo_file(),
+      "1.2.3.0 1.2.3.255\n114.114.114.0 114.114.114.255\n")
+    geo.reset()
+  end
   local custom = opts.custom or { rules = {} }
   mock.boot(global, { ["www.example.com"] = site }, { ["www.example.com"] = "www.example.com" }, custom)
   matcher.reset()
@@ -437,3 +445,55 @@ t.test("性能计数写入共享字典（含 blocked，且在 ngx.exit 前记录
   t.ok(type(blocked) == "number" and blocked >= 1, "被拦截请求也应计数（ngx.exit 前记录）")
 end)
 
+
+t.test("地区访问：非中国大陆拦截并记录国家", function()
+  setup({ geo = { open = true, mode = "allow", regions = { "CN" }, unknown = "allow", status = 403 } })
+  local res = request({ uri = "/", remote_addr = "8.8.8.8" })
+  t.eq(res.status, 403)
+  local obj = last_log().obj
+  t.eq(obj.action, "geo")
+  t.eq(obj.country, "OTHER")
+  t.eq(obj.geo_source, "builtin-cn")
+end)
+
+t.test("地区访问：中国大陆放行", function()
+  setup({ geo = { open = true, mode = "allow", regions = { "CN" }, unknown = "allow", status = 403 } })
+  local res = request({ uri = "/", remote_addr = "1.2.3.4" })
+  t.eq(res.status, 200)
+  t.eq(log_count(), 0)
+end)
+
+t.test("地区访问：IP 白名单优先", function()
+  setup({
+    geo = { open = true, mode = "allow", regions = { "CN" }, unknown = "allow", status = 403 },
+    global_lists = { ip_white = { "8.8.8.8" } },
+  })
+  local res = request({ uri = "/", remote_addr = "8.8.8.8" })
+  t.eq(res.status, 200)
+end)
+
+t.test("地区访问：observe 只记录不拦截", function()
+  setup({ observe = true, geo = { open = true, mode = "allow", regions = { "CN" }, unknown = "allow", status = 403 } })
+  local res = request({ uri = "/", remote_addr = "8.8.8.8" })
+  t.eq(res.status, 200)
+  local obj = last_log().obj
+  t.eq(obj.action, "allow")
+  t.eq(obj.country, "OTHER")
+  t.eq(obj.reason, "仅允许中国大陆访问")
+end)
+
+t.test("地区访问：站点关闭覆盖全局", function()
+  setup({
+    geo = { open = true, mode = "allow", regions = { "CN" }, unknown = "allow", status = 403 },
+    site_geo = { open = false },
+  })
+  local res = request({ uri = "/", remote_addr = "8.8.8.8" })
+  t.eq(res.status, 200)
+end)
+
+t.test("地区访问：内网按 unknown 策略", function()
+  setup({ geo = { open = true, mode = "allow", regions = { "CN" }, unknown = "block", status = 429 } })
+  local res = request({ uri = "/", remote_addr = "10.1.2.3" })
+  t.eq(res.status, 429)
+  t.eq(last_log().obj.country, "PRIVATE")
+end)

@@ -79,6 +79,7 @@ atexit.register(_conf_patch.stop)
 
 from wafcore import config as C  # noqa: E402
 from wafcore import engine as E  # noqa: E402
+from wafcore import geo as G  # noqa: E402
 from wafcore import logs as L  # noqa: E402
 from wafcore import nginx as N  # noqa: E402
 from wafcore import rules as R  # noqa: E402
@@ -1604,6 +1605,56 @@ class P0OperationLogTest(BaseCase):
         d = ctrl.get_logs({"keyword": "全局配置"})
         d = d.get("data", d)
         self.assertEqual(d["total"], 1)
+
+
+class GeoConfigTest(BaseCase):
+    def test_geo_defaults_and_validation(self):
+        cfg = C.clean_global({})[0]
+        self.assertEqual(cfg["geo"], {
+            "open": False, "mode": "allow", "regions": ["CN"],
+            "unknown": "allow", "status": 403,
+        })
+        cfg, warnings = C.clean_global({"geo": {
+            "open": True, "mode": "bad", "regions": ["US"], "unknown": "bad", "status": 200,
+        }})
+        self.assertEqual(cfg["geo"]["mode"], "allow")
+        self.assertEqual(cfg["geo"]["unknown"], "allow")
+        self.assertEqual(cfg["geo"]["status"], 403)
+        self.assertEqual(cfg["geo"]["regions"], ["CN"])
+        self.assertTrue(warnings)
+
+    def test_site_geo_inherit_and_override(self):
+        site = C.clean_site({"geo": {
+            "open": True, "mode": "block", "regions": ["CN"], "unknown": "block", "status": 404,
+        }})
+        self.assertEqual(site["geo"], {
+            "open": True, "mode": "block", "regions": ["CN"],
+            "unknown": "block", "status": 404,
+        })
+        global_cfg = C.clean_global({"geo": {
+            "open": True, "mode": "allow", "regions": ["CN"], "unknown": "allow", "status": 403,
+        }})[0]
+        inherited = C.clean_site({"geo": {"open": None}})
+        effective = C.effective_site(global_cfg, inherited)
+        self.assertEqual(effective["geo"]["open"], True)
+        self.assertEqual(effective["geo"]["mode"], "allow")
+        self.assertEqual(effective["geo"]["status"], 403)
+        disabled = C.effective_site(global_cfg, C.clean_site({"geo": {"open": False}}))
+        self.assertEqual(disabled["geo"]["open"], False)
+
+    def test_geo_data_status_and_log_fields(self):
+        status = G.status()
+        self.assertTrue(status["available"])
+        self.assertEqual(status["source"], "DB-IP Lite Country")
+        self.assertGreater(status["records"], 1000)
+        rec = L.parse_line(json.dumps({
+            "time": 1, "ip": "8.8.8.8", "site": "a", "action": "geo",
+            "status": 403, "country": "OTHER", "geo_source": "builtin-cn",
+            "reason": "仅允许中国大陆访问",
+        }, ensure_ascii=False))
+        self.assertEqual(rec["country"], "OTHER")
+        self.assertEqual(rec["geo_source"], "builtin-cn")
+        self.assertEqual(rec["reason"], "仅允许中国大陆访问")
 
 
 # ---------------------------------------------------------------------------

@@ -172,7 +172,8 @@
         { value: 'block', label: '拦截' },
         { value: 'allow', label: '记录/放行' },
         { value: 'cc', label: 'CC 拦截' },
-        { value: 'blacklist', label: '黑名单' }
+        { value: 'blacklist', label: '黑名单' },
+        { value: 'geo', label: '地区限制' }
     ];
     var RULE_SOURCE_OPTIONS = [
         { value: '', label: '全部来源' },
@@ -217,6 +218,15 @@
     var RULE_STATUS_OPTIONS = [{ value: 0, label: '继承' }].concat(BLOCK_STATUS_OPTIONS.map(function (v) {
         return { value: v, label: String(v) };
     }));
+    var GEO_REGION_OPTIONS = [{ value: 'CN', label: '中国大陆' }];
+    var GEO_MODE_OPTIONS = [
+        { value: 'allow', label: '仅允许选中地区' },
+        { value: 'block', label: '拒绝选中地区' }
+    ];
+    var GEO_UNKNOWN_OPTIONS = [
+        { value: 'allow', label: '放行' },
+        { value: 'block', label: '拦截' }
+    ];
     var CDN_PRESETS = [
         { value: 'generic', label: '通用 CDN / 反代', headers: ['x-real-ip', 'x-forwarded-for'] },
         { value: 'cloudflare', label: 'Cloudflare', headers: ['cf-connecting-ip', 'x-forwarded-for', 'x-real-ip'] },
@@ -372,6 +382,7 @@
         return {
             version: '', ready: false, enabled: true, observe: false, sensitivity: 2,
             nginx: {}, dirs: {},
+            geo: { open: false, available: false, source: '', source_release: '', license: '', records: 0 },
             rules: {
                 crs_version: '', total: 0, crs_total: 0, crs_enabled: 0, ce_total: 0,
                 custom_total: 0, skipped_count: 0, skipped: [], generated_at: 0, index_ok: false
@@ -398,6 +409,7 @@
         if (!s.perf || typeof s.perf !== 'object') s.perf = { requests: 0, hits: 0, avg_ms: 0 };
         if (!s.nginx || typeof s.nginx !== 'object') s.nginx = {};
         if (!s.dirs || typeof s.dirs !== 'object') s.dirs = {};
+        if (!s.geo || typeof s.geo !== 'object') s.geo = { open: false, available: false };
         return s;
     }
     function emptyOverview() {
@@ -423,6 +435,7 @@
         return {
             schema: 1, version: '0.1.0', enabled: true, observe: false, sensitivity: 2,
             block: { status: 403, use_custom: false, page: '' },
+            geo: { open: false, mode: 'allow', regions: ['CN'], unknown: 'allow', status: 403 },
             scan: { body_limit: 1048576, arg_limit: 8192, header_limit: 8192, upload_scan_limit: 20971520, max_args: 200 },
             log: { enabled: true, retain_days: 30, rotate_size: 52428800, snippet: 512 },
             cc: { open: true, cycle: 60, limit: 120, block_time: 300, status: 444, url_cc: false, skip_static: true },
@@ -443,6 +456,7 @@
         return {
             open: true, sensitivity: 0, observe: null,
             block: { status: 0 },
+            geo: { open: null, mode: null, regions: null, unknown: null, status: 0 },
             modules: defaultSiteModules(),
             cc: { open: null, cycle: 0, limit: 0, block_time: 0, status: 0, url_cc: null },
             attack_block: { open: null, cycle: 0, limit: 0, block_time: 0 },
@@ -900,6 +914,32 @@
                 </div>
             </el-tab-pane>
 
+            <el-tab-pane label="地区访问" name="geo">
+                <el-form label-width="150px" size="small" class="waf-form">
+                    <el-form-item label="地区访问开关"><el-switch v-model="cfg.geo.open"></el-switch></el-form-item>
+                    <el-form-item label="模式">
+                        <el-radio-group v-model="cfg.geo.mode">
+                            <el-radio v-for="o in geoModeOptions" :key="o.value" :label="o.value">{{ o.label }}</el-radio>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="地区">
+                        <el-checkbox-group v-model="cfg.geo.regions">
+                            <el-checkbox v-for="o in geoRegionOptions" :key="o.value" :label="o.value">{{ o.label }}</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item label="未识别 IP / 内网">
+                        <el-select v-model="cfg.geo.unknown" size="small" style="width:150px">
+                            <el-option v-for="o in geoUnknownOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="拦截状态码">
+                        <el-select v-model="cfg.geo.status" size="small" style="width:150px">
+                            <el-option v-for="v in blockStatusOptions" :key="v" :label="String(v)" :value="v"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+            </el-tab-pane>
+
             <el-tab-pane label="拦截页面" name="blockpage">
                 <el-input v-model="blockPageText" type="textarea" :rows="12" class="waf-mono" placeholder="自定义拦截页面 HTML（≤ 64KB，后端会过滤 script / on* / javascript:）"></el-input>
                 <div class="waf-pane-actions">
@@ -1328,6 +1368,8 @@
             </el-descriptions-item>
             <el-descriptions-item label="状态码">{{ logDetail.status || '-' }}</el-descriptions-item>
             <el-descriptions-item label="规则来源">{{ sourceLabel(logDetail.rule_source) }}</el-descriptions-item>
+            <el-descriptions-item label="地区">{{ countryLabel(logDetail.country) }}</el-descriptions-item>
+            <el-descriptions-item label="原因">{{ logDetail.reason || (logDetail.action === 'geo' ? '地区限制' : '-') }}</el-descriptions-item>
             <el-descriptions-item label="req_id">
                 <span class="waf-mono">{{ logDetail.req_id || '-' }}</span>
             </el-descriptions-item>
@@ -1402,6 +1444,39 @@
                 </el-table>
             </el-tab-pane>
 
+            <el-tab-pane label="地区访问" name="geo">
+                <el-form label-width="150px" size="small" class="waf-form">
+                    <el-form-item label="本站点地区控制">
+                        <el-select v-model="siteTri.geo_open" size="small" style="width:170px">
+                            <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="模式">
+                        <el-select v-model="siteTri.geo_mode" size="small" style="width:220px">
+                            <el-option label="继承全局" value="inherit"></el-option>
+                            <el-option v-for="o in geoModeOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="地区">
+                        <el-checkbox-group v-model="siteDialog.config.geo.regions">
+                            <el-checkbox v-for="o in geoRegionOptions" :key="o.value" :label="o.value">{{ o.label }}</el-checkbox>
+                        </el-checkbox-group>
+                    </el-form-item>
+                    <el-form-item label="未识别 IP / 内网">
+                        <el-select v-model="siteTri.geo_unknown" size="small" style="width:170px">
+                            <el-option label="继承全局" value="inherit"></el-option>
+                            <el-option v-for="o in geoUnknownOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="拦截状态码">
+                        <el-select v-model="siteDialog.config.geo.status" size="small" style="width:150px">
+                            <el-option label="继承全局" :value="0"></el-option>
+                            <el-option v-for="v in blockStatusOptions" :key="v" :label="String(v)" :value="v"></el-option>
+                        </el-select>
+                    </el-form-item>
+                </el-form>
+            </el-tab-pane>
+
             <el-tab-pane label="CC / 攻击拦截" name="cc">
                 <el-form label-width="150px" size="small" class="waf-form">
                     <el-form-item label="CC 防护">
@@ -1455,7 +1530,6 @@
                     <el-form-item label="CDN 模式"><el-switch v-model="siteDialog.config.cdn.open" :disabled="panelCdnOpen()"></el-switch></el-form-item>
                     <el-form-item label="真实 IP 头">
                         <el-input v-model="siteText.cdn_headers" type="textarea" :rows="4" class="waf-mono" :disabled="panelCdnOpen()" placeholder="一行一个请求头，如 cf-connecting-ip"></el-input>
-                        <div class="waf-hint">选择预设只填 Header；仍需按服务商文档填写可信回源 IP。面板 CDN 开启时，插件会让位于面板解析。</div>
                     </el-form-item>
                     <el-form-item label="可信代理 IP">
                         <el-input v-model="siteText.cdn_trusted" type="textarea" :rows="4" class="waf-mono" :disabled="panelCdnOpen()" placeholder="一行一个 IP / CIDR / IP 范围"></el-input>
@@ -1620,6 +1694,10 @@
                 customScopeOptions: CUSTOM_SCOPE_OPTIONS,
                 cdnPresets: CDN_PRESETS,
                 ruleStatusOptions: RULE_STATUS_OPTIONS,
+                blockStatusOptions: BLOCK_STATUS_OPTIONS,
+                geoRegionOptions: GEO_REGION_OPTIONS,
+                geoModeOptions: GEO_MODE_OPTIONS,
+                geoUnknownOptions: GEO_UNKNOWN_OPTIONS,
 
                 view: 'overview',
                 isDark: false,
@@ -1648,7 +1726,7 @@
                     site_name: '', config: defaultSiteConfig(), raw: null, global: {},
                     panelCdn: null, cdnPreset: 'custom'
                 },
-                siteTri: { observe: 'inherit', cc_open: 'inherit', url_cc: 'inherit', attack_open: 'inherit' },
+                siteTri: { observe: 'inherit', cc_open: 'inherit', url_cc: 'inherit', attack_open: 'inherit', geo_open: 'inherit', geo_mode: 'inherit', geo_unknown: 'inherit' },
                 siteText: {
                     ip_black: '', ip_white: '', url_black: '', url_white: '', ua_black: '', ua_white: '',
                     param_white: '', disable_php_path: '', disable_ext: '', upload_ext: '',
@@ -1694,7 +1772,6 @@
 
         computed: {
             pluginVersion: function () {
-                try { if (window.__BTWAF_ASSET_VERSION) return window.__BTWAF_ASSET_VERSION; } catch (e) { }
                 return this.status.version || '0.1.0';
             },
             readyTagType: function () { return this.status.ready ? 'success' : 'danger'; },
@@ -1830,11 +1907,11 @@
                 return v === 0 ? '继承' : ('PL' + v);
             },
             actionLabel: function (a) {
-                var map = { block: '拦截', allow: '记录/放行', cc: 'CC 拦截', blacklist: '黑名单', log: '记录' };
+                var map = { block: '拦截', allow: '记录/放行', cc: 'CC 拦截', blacklist: '黑名单', geo: '地区限制', log: '记录' };
                 return map[a] || a || '-';
             },
             actionTag: function (a) {
-                var map = { block: 'danger', allow: 'info', cc: 'warning', blacklist: 'danger', log: 'info' };
+                var map = { block: 'danger', allow: 'info', cc: 'warning', blacklist: 'danger', geo: 'danger', log: 'info' };
                 return map[a] || 'info';
             },
             stateLabel: function (s) {
@@ -1846,7 +1923,7 @@
                 return map[s] || 'info';
             },
             reasonLabel: function (r) {
-                var map = { cc: 'CC 超限', attack: '攻击拦截', blacklist: '黑名单', upload: '上传拦截' };
+                var map = { cc: 'CC 超限', attack: '攻击拦截', blacklist: '黑名单', upload: '上传拦截', geo: '地区限制' };
                 return map[r] || r || '-';
             },
             reasonTag: function (r) { return r === 'cc' ? 'warning' : 'danger'; },
@@ -1859,6 +1936,10 @@
             sourceLabel: function (src) {
                 var map = { crs: 'CRS', ce: 'CE', custom: '自定义' };
                 return map[src] || (src || '-');
+            },
+            countryLabel: function (c) {
+                var map = { CN: '中国大陆', OTHER: '中国大陆以外', PRIVATE: '内网/保留地址', UNKNOWN: '无法识别' };
+                return map[c] || (c || '-');
             },
             listLabel: function (key) {
                 var found = null;
@@ -2331,8 +2412,13 @@
                     observe: toTri(c.observe),
                     cc_open: toTri(c.cc && c.cc.open),
                     url_cc: toTri(c.cc && c.cc.url_cc),
-                    attack_open: toTri(c.attack_block && c.attack_block.open)
+                    attack_open: toTri(c.attack_block && c.attack_block.open),
+                    geo_open: toTri(c.geo && c.geo.open),
+                    geo_mode: (c.geo && c.geo.mode) || 'inherit',
+                    geo_unknown: (c.geo && c.geo.unknown) || 'inherit'
                 };
+                c.geo = c.geo || {};
+                if (!Array.isArray(c.geo.regions)) c.geo.regions = [];
             },
             applySiteTexts: function () {
                 var c = this.siteDialog.config;
@@ -2358,6 +2444,12 @@
                 c.attack_block.cycle = num(c.attack_block.cycle);
                 c.attack_block.limit = num(c.attack_block.limit);
                 c.attack_block.block_time = num(c.attack_block.block_time);
+                c.geo = c.geo || {};
+                c.geo.open = fromTri(this.siteTri.geo_open);
+                c.geo.mode = this.siteTri.geo_mode === 'inherit' ? null : this.siteTri.geo_mode;
+                c.geo.unknown = this.siteTri.geo_unknown === 'inherit' ? null : this.siteTri.geo_unknown;
+                c.geo.regions = (Array.isArray(c.geo.regions) && c.geo.regions.length) ? c.geo.regions : null;
+                c.geo.status = num(c.geo.status) || 0;
                 c.sensitivity = num(c.sensitivity);
                 MODULES.forEach(function (m) {
                     if (!c.modules[m.key]) c.modules[m.key] = { open: true, tier: 0 };

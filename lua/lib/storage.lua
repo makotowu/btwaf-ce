@@ -116,6 +116,9 @@ function storage.build_attack_record(ctx, decision)
     snippet = clean(decision.snippet or ctx.snippet, snippet_limit),
     block_time = tonumber(decision.block_time) or 0,
     rule_source = clean(decision.rule_source, 16),
+    country = clean(decision.country, 16),
+    geo_source = clean(decision.geo_source, 32),
+    reason = clean(decision.reason, 128),
     req_id = clean(ctx.req_id or decision.req_id, 64),
   }
   return rec

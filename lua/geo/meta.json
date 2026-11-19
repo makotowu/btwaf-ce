@@ -1,0 +1,14 @@
+{
+  "format": "ipv4-start-end",
+  "generated_at": "2026-11-19T06:57:33Z",
+  "license": "CC BY 4.0",
+  "license_url": "https://creativecommons.org/licenses/by/4.0/",
+  "records": 5314,
+  "region": "CN",
+  "sha256": "e5c8459d638a272ece7f4d7cfa49dce18d91b4f403f6940ba9249bf0db3781fd",
+  "source": "DB-IP Lite Country",
+  "source_records": 362998,
+  "source_region_rows": 5314,
+  "source_release": "2026-11",
+  "source_url": "https://download.db-ip.com/free/dbip-country-lite-2026-11.csv.gz"
+}

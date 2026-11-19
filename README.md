@@ -15,6 +15,7 @@
 - 检测并拦截常见 Web 攻击：SQL 注入、XSS、命令执行、文件包含/目录遍历、PHP/Java 代码注入、恶意上传、敏感文件探测、扫描器、恶意爬虫、协议异常、CC；
 - 在面板内查看概览、拦截记录、封锁记录、操作日志，按站点开关防护、配置灵敏度、黑白名单、规则库/排除和自定义规则；
 - 支持站点/规则级拦截状态码、IP 范围名单、常见 CDN Header 预设；面板已开启 CDN 真实 IP 解析时自动以面板为准，避免重复解析；
+- 支持基于内置离线中国 IP 范围的地区访问控制（仅允许中国大陆或禁止中国大陆）；
 - 先以观察模式运行、根据拦截记录调整白名单/规则，再切换为拦截模式；
 - 安装/卸载时自动处理 Nginx Lua 处理链冲突，卸载时按安装清单恢复安装前配置。
 
@@ -105,6 +106,8 @@ python tools/check_frontend.py
 python tools/check_rules.py
 python tools/build_zip.py --version 0.1.0
 ```
+
+`build_zip.py` 默认下载最新可用的 DB-IP Lite Country 月度数据并生成 `lua/geo/cn.ranges`；无网络时可显式使用 `--no-geo-refresh`，但该产物可能不是最新数据。
 
 ## 安全、贡献与行为准则
 

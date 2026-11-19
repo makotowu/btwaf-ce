@@ -1,0 +1,13 @@
+China IPv4 ranges in this directory are generated from the DB-IP Lite Country
+database by DB-IP (https://db-ip.com).
+
+The DB-IP Lite Country database is licensed under the Creative Commons
+Attribution 4.0 International License:
+https://creativecommons.org/licenses/by/4.0/
+
+Attribution: IP Geolocation by DB-IP (https://db-ip.com)
+
+The generated range file is a derivative work used by btwaf-ce for offline
+region access control. It contains only the IPv4 ranges whose DB-IP country
+code is CN. See meta.json for the exact source URL, release month, generation
+time and SHA256 of the source archive.

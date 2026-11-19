@@ -74,6 +74,9 @@ def normalize_record(obj):
         "snippet": util.truncate(obj.get("snippet") or "", 512),
         "block_time": util.safe_int(obj.get("block_time"), 0, 0),
         "rule_source": util.truncate(obj.get("rule_source") or "", 16),
+        "country": util.truncate(obj.get("country") or "", 16),
+        "geo_source": util.truncate(obj.get("geo_source") or "", 32),
+        "reason": util.truncate(obj.get("reason") or "", 128),
         "req_id": util.truncate(obj.get("req_id") or "", 64),
         "area": util.truncate(obj.get("area") or "", 128),
     }
@@ -203,7 +206,7 @@ def query_logs(params=None):
         if action and rec["action"] != action:
             continue
         rec_type = ""
-        if rec["action"] in ("cc", "blacklist"):
+        if rec["action"] in ("cc", "blacklist", "geo"):
             rec_type = rec["action"]
         elif rec["hits"]:
             rec_type = rec["hits"][0].get("module") or ""
@@ -253,6 +256,7 @@ def module_label(key):
         ("custom", "自定义"),
         ("cc", "CC 攻击"),
         ("blacklist", "黑名单"),
+        ("geo", "地区限制"),
     ):
         if k == key:
             return name
@@ -280,7 +284,7 @@ def stat_for_date(date=None, site=None):
             blocks += 1
         if action == "cc":
             cc += 1
-        if action in ("cc", "blacklist"):
+        if action in ("cc", "blacklist", "geo"):
             module = action
         else:
             module = rec["hits"][0].get("module") if rec["hits"] else "unknown"

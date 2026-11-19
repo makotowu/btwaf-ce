@@ -32,6 +32,13 @@ local DEFAULT_GLOBAL = {
   observe = false,
   sensitivity = 2,
   block = { status = 403, use_custom = false, page = "" },
+  geo = {
+    open = false,
+    mode = "allow",
+    regions = { "CN" },
+    unknown = "allow",
+    status = 403,
+  },
   scan = {
     body_limit = 1048576,
     arg_limit = 8192,
@@ -96,6 +103,7 @@ local DEFAULT_SITE = {
   sensitivity = 0,
   observe = nil,
   block = { status = 0 },
+  geo = { open = nil, mode = nil, regions = nil, unknown = nil, status = 0 },
   modules = {},
   cc = { open = nil, cycle = 0, limit = 0, block_time = 0, status = 0, url_cc = nil },
   attack_block = { open = nil, cycle = 0, limit = 0, block_time = 0 },
@@ -319,6 +327,25 @@ local function merge_block(global_block, site_block)
   return out
 end
 
+local function merge_geo(global_geo, site_geo)
+  local out = {}
+  global_geo = type(global_geo) == "table" and global_geo or {}
+  site_geo = type(site_geo) == "table" and site_geo or {}
+  for _, key in ipairs({ "open", "mode", "regions", "unknown" }) do
+    local value = site_geo[key]
+    if value == nil then
+      value = global_geo[key]
+    end
+    out[key] = value
+  end
+  local status = tonumber(site_geo.status) or 0
+  if status == 0 then
+    status = tonumber(global_geo.status) or 403
+  end
+  out.status = status
+  return out
+end
+
 local function merge_cc(global_cc, site_cc)
   site_cc = site_cc or {}
   return {
@@ -536,6 +563,7 @@ local function merge_site(site_name)
   merged.rule_exclude = merge_exclude(global.rule_exclude, raw.rule_exclude)
   merged.rule_status = merge_rule_status(global.rule_status, raw.rule_status)
   merged.block = merge_block(global.block, raw.block)
+  merged.geo = merge_geo(global.geo, raw.geo)
   merged.disable_php_path = as_array(raw.disable_php_path)
   merged.disable_ext = as_array(raw.disable_ext)
   merged.upload_ext = as_array(raw.upload_ext)

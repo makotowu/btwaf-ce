@@ -107,6 +107,10 @@ copy_runtime() {
     rm -rf "${LUA_DIR}"
     mkdir -p "${LUA_DIR}"
     cp -a "${PLUGIN_DIR}/lua/." "${LUA_DIR}/" || fail "复制 lua 目录失败"
+  mkdir -p "${DATA_DIR}/geo"
+  if [ -d "${PLUGIN_DIR}/lua/geo" ]; then
+      cp -a "${PLUGIN_DIR}/lua/geo/." "${DATA_DIR}/geo/" || fail "复制地区数据失败"
+  fi
     if [ -d "${PLUGIN_DIR}/defaults" ]; then
         mkdir -p "${DATA_DIR}/defaults"
         cp -a "${PLUGIN_DIR}/defaults/." "${DATA_DIR}/defaults/" || fail "复制默认配置失败"
@@ -115,6 +119,8 @@ copy_runtime() {
     chmod 755 "${DATA_DIR}" 2>/dev/null || true
     chmod -R 755 "${LUA_DIR}" 2>/dev/null || true
     find "${LUA_DIR}" -type f -name '*.lua' -exec chmod 644 {} \; 2>/dev/null || true
+    chmod -R 755 "${DATA_DIR}/geo" 2>/dev/null || true
+    find "${DATA_DIR}/geo" -type f -exec chmod 644 {} \; 2>/dev/null || true
     chown -R root:root "${DATA_DIR}" 2>/dev/null || true
     chown www:www "${DATA_DIR}/data" 2>/dev/null || true
     chmod 750 "${DATA_DIR}/data" 2>/dev/null || true

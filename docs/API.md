@@ -122,8 +122,36 @@
 - `config.rule_status`：规则 ID → 响应码，站点覆盖全局。
 
 ### `save_site_config`
-参数：`site_name`、`config`（JSON；可包含 `block.status` 和 `rule_status`）
+参数：`site_name`、`config`（JSON；可包含 `block.status`、`rule_status` 和 `geo`）
 返回 `data = {"saved": true, "apply_at": 1730000000}`
+
+### 地区访问字段
+全局配置：
+
+```json
+"geo": {
+  "open": false,
+  "mode": "allow",
+  "regions": ["CN"],
+  "unknown": "allow",
+  "status": 403
+}
+```
+
+- `mode=allow`：仅允许 `regions`；
+- `mode=block`：拒绝 `regions`；
+- `regions` 仅支持 `CN`；
+- `unknown`：无法识别/内网/IPv6 的处理，`allow|block`；
+- `status`：允许 `403/404/444/429/503`。
+
+站点配置使用相同字段，`open/mode/regions/unknown=null` 继承全局，`status=0` 继承全局。
+`status.geo` 返回：
+
+```json
+{"open": false, "available": true, "source": "DB-IP Lite Country",
+ "license": "CC BY 4.0", "source_release": "2026-11",
+ "generated_at": "...", "records": 5314}
+```
 
 ### `set_site_open`
 参数：`site_names`（JSON 数组）、`open`（`true|false`）
@@ -141,7 +169,8 @@
   "action": "block", "score": 5, "sensitivity": 2,
   "hits": [{"module": "sqli", "rule": "crs-942100", "name": "...", "score": 5, "tier": 1, "src": "crs"}],
   "ua": "...", "referer": "...", "ctype": "...", "body_len": 0, "snippet": "",
-  "block_time": 0, "rule_source": "crs", "req_id": "..."
+  "block_time": 0, "rule_source": "crs", "req_id": "...",
+  "country": "CN|OTHER|PRIVATE|UNKNOWN", "geo_source": "builtin-cn", "reason": ""
 }], "total": 0, "page": 1, "rows": 20, "types": [{"module":"sqli","name":"SQL注入","count":0}], "limited": false}
 ```
 说明：`types` 总是返回（供类型下拉）；`limited=true` 表示只扫描了尾部窗口，`total` 为窗口内数量。

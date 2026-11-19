@@ -169,6 +169,7 @@ def default_data_files():
     util.ensure_dir(paths.runtime_rule_dir(), 0o755)
     util.ensure_dir(paths.DATA_DIR + "/data", 0o750)
     util.ensure_dir(paths.DATA_DIR + "/logs", 0o755)
+    util.ensure_dir(paths.geo_dir(), 0o755)
     util.ensure_dir(paths.LOG_DIR, 0o750)
     if not os.path.isfile(paths.GLOBAL_CONFIG):
         cfg, _ = C.clean_global({})
