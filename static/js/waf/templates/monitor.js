@@ -269,8 +269,8 @@
         <el-table-column label="剩余" width="130">
             <template #default="s">{{ remain(s.row.expire) }}</template>
         </el-table-column>
-        <el-table-column label="封锁时长（0=继承）" width="100">
-            <template #default="s">{{ num(s.row.block_time) }} 秒</template>
+        <el-table-column label="封锁时长" width="100">
+            <template #default="s">{{ num(s.row.block_time) ? num(s.row.block_time) + ' 秒' : '默认' }}</template>
         </el-table-column>
         <el-table-column label="归属" min-width="120">
             <template #default="s"><span class="waf-sub">{{ s.row.area || '-' }}</span></template>

@@ -68,6 +68,8 @@ if "import_lists" not in appjs or "onImportGlobalList" not in appjs or "exportGl
     problems.append("app.js missing IP list import/export UI")
 if "protocol.from_data" not in appjs:
     problems.append("app.js missing From-data setting")
+if "继承" in appjs:
+    problems.append("frontend still exposes inheritance wording")
 if "openSiteLogs" not in appjs or "get_log_dates" not in appjs:
     problems.append("app.js missing per-site log viewer")
 if "<el-drawer" in appjs or "waf-drawer" in appjs:

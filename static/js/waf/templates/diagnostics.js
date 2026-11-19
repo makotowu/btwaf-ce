@@ -236,12 +236,15 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item label="观察模式">
-                        <el-select v-model="siteTri.observe" size="small" style="width:170px">
-                            <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
-                        </el-select>
+                        <el-radio-group v-model="siteTri.observe" size="small">
+                            <el-radio-button v-for="o in triOptions" :key="o.value" :value="o.value">{{ o.label }}</el-radio-button>
+                        </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="拦截状态码（0=继承）">
-                        <el-input-number v-model="siteDialog.config.block.status" :min="0" :max="599" size="small" controls-position="right"></el-input-number>
+                    <el-form-item label="拦截状态码">
+                        <el-select v-model="siteDialog.config.block.status" size="small" style="width:150px">
+                            <el-option label="默认" :value="0"></el-option>
+                            <el-option v-for="v in blockStatusOptions" :key="v" :label="String(v)" :value="v"></el-option>
+                        </el-select>
                     </el-form-item>
                 </el-form>
             </el-tab-pane>
@@ -267,13 +270,13 @@
             <el-tab-pane lazy label="地区访问" name="geo">
                 <el-form label-width="150px" size="small" class="waf-form">
                     <el-form-item label="本站点地区控制">
-                        <el-select v-model="siteTri.geo_open" size="small" style="width:170px">
-                            <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
-                        </el-select>
+                        <el-radio-group v-model="siteTri.geo_open" size="small">
+                            <el-radio-button v-for="o in triOptions" :key="o.value" :value="o.value">{{ o.label }}</el-radio-button>
+                        </el-radio-group>
                     </el-form-item>
                     <el-form-item label="模式">
                         <el-select v-model="siteTri.geo_mode" size="small" style="width:220px">
-                            <el-option label="继承全局" value="inherit"></el-option>
+                            <el-option label="默认" value="inherit"></el-option>
                             <el-option v-for="o in geoModeOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
                         </el-select>
                     </el-form-item>
@@ -284,13 +287,13 @@
                     </el-form-item>
                     <el-form-item label="未识别 IP / 内网">
                         <el-select v-model="siteTri.geo_unknown" size="small" style="width:170px">
-                            <el-option label="继承全局" value="inherit"></el-option>
+                            <el-option label="默认" value="inherit"></el-option>
                             <el-option v-for="o in geoUnknownOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
                         </el-select>
                     </el-form-item>
                     <el-form-item label="拦截状态码">
                         <el-select v-model="siteDialog.config.geo.status" size="small" style="width:150px">
-                            <el-option label="继承全局" :value="0"></el-option>
+                            <el-option label="默认" :value="0"></el-option>
                             <el-option v-for="v in blockStatusOptions" :key="v" :label="String(v)" :value="v"></el-option>
                         </el-select>
                     </el-form-item>
@@ -300,40 +303,85 @@
             <el-tab-pane lazy label="CC / 攻击拦截" name="cc">
                 <el-form label-width="150px" size="small" class="waf-form">
                     <el-form-item label="CC 防护">
-                        <el-select v-model="siteTri.cc_open" size="small" style="width:150px">
-                            <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
+                        <el-radio-group v-model="siteTri.cc_open" size="small">
+                            <el-radio-button v-for="o in triOptions" :key="o.value" :value="o.value">{{ o.label }}</el-radio-button>
+                        </el-radio-group>
+                    </el-form-item>
+                    <el-form-item label="统计周期">
+                        <div class="waf-inline-mode">
+                            <el-radio-group v-model="siteNumMode.cc_cycle" size="small" @change="setSiteNumMode('cc_cycle', $event)">
+                                <el-radio-button :value="true">默认</el-radio-button>
+                                <el-radio-button :value="false">自定义</el-radio-button>
+                            </el-radio-group>
+                            <span v-if="siteNumMode.cc_cycle" class="waf-sub">默认 {{ num((siteDialog.global.cc || {}).cycle) }} 秒</span>
+                            <el-input-number v-else v-model="siteDialog.config.cc.cycle" :min="0" size="small" controls-position="right"></el-input-number>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="周期内上限">
+                        <div class="waf-inline-mode">
+                            <el-radio-group v-model="siteNumMode.cc_limit" size="small" @change="setSiteNumMode('cc_limit', $event)">
+                                <el-radio-button :value="true">默认</el-radio-button>
+                                <el-radio-button :value="false">自定义</el-radio-button>
+                            </el-radio-group>
+                            <span v-if="siteNumMode.cc_limit" class="waf-sub">默认 {{ num((siteDialog.global.cc || {}).limit) }} 次</span>
+                            <el-input-number v-else v-model="siteDialog.config.cc.limit" :min="0" size="small" controls-position="right"></el-input-number>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="封锁时长">
+                        <div class="waf-inline-mode">
+                            <el-radio-group v-model="siteNumMode.cc_block_time" size="small" @change="setSiteNumMode('cc_block_time', $event)">
+                                <el-radio-button :value="true">默认</el-radio-button>
+                                <el-radio-button :value="false">自定义</el-radio-button>
+                            </el-radio-group>
+                            <span v-if="siteNumMode.cc_block_time" class="waf-sub">默认 {{ num((siteDialog.global.cc || {}).block_time) }} 秒</span>
+                            <el-input-number v-else v-model="siteDialog.config.cc.block_time" :min="0" size="small" controls-position="right"></el-input-number>
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="CC 状态码">
+                        <el-select v-model="siteDialog.config.cc.status" size="small" style="width:150px">
+                            <el-option label="默认" :value="0"></el-option>
+                            <el-option v-for="v in blockStatusOptions" :key="v" :label="String(v)" :value="v"></el-option>
                         </el-select>
-                    </el-form-item>
-                    <el-form-item label="统计周期（0=继承）">
-                        <el-input-number v-model="siteDialog.config.cc.cycle" :min="0" size="small" controls-position="right"></el-input-number>
-                    </el-form-item>
-                    <el-form-item label="周期内上限（0=继承）">
-                        <el-input-number v-model="siteDialog.config.cc.limit" :min="0" size="small" controls-position="right"></el-input-number>
-                    </el-form-item>
-                    <el-form-item label="封锁时长（0=继承）">
-                        <el-input-number v-model="siteDialog.config.cc.block_time" :min="0" size="small" controls-position="right"></el-input-number>
-                    </el-form-item>
-                    <el-form-item label="CC 状态码（0=继承）">
-                        <el-input-number v-model="siteDialog.config.cc.status" :min="0" :max="599" size="small" controls-position="right"></el-input-number>
                     </el-form-item>
                     <el-form-item label="URL 级 CC">
-                        <el-select v-model="siteTri.url_cc" size="small" style="width:150px">
-                            <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
-                        </el-select>
+                        <el-radio-group v-model="siteTri.url_cc" size="small">
+                            <el-radio-button v-for="o in triOptions" :key="o.value" :value="o.value">{{ o.label }}</el-radio-button>
+                        </el-radio-group>
                     </el-form-item>
                     <el-form-item label="攻击次数拦截">
-                        <el-select v-model="siteTri.attack_open" size="small" style="width:150px">
-                            <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
-                        </el-select>
+                        <el-radio-group v-model="siteTri.attack_open" size="small">
+                            <el-radio-button v-for="o in triOptions" :key="o.value" :value="o.value">{{ o.label }}</el-radio-button>
+                        </el-radio-group>
                     </el-form-item>
-                    <el-form-item label="攻击统计周期（0=继承）">
-                        <el-input-number v-model="siteDialog.config.attack_block.cycle" :min="0" size="small" controls-position="right"></el-input-number>
+                    <el-form-item label="攻击统计周期">
+                        <div class="waf-inline-mode">
+                            <el-radio-group v-model="siteNumMode.attack_cycle" size="small" @change="setSiteNumMode('attack_cycle', $event)">
+                                <el-radio-button :value="true">默认</el-radio-button>
+                                <el-radio-button :value="false">自定义</el-radio-button>
+                            </el-radio-group>
+                            <span v-if="siteNumMode.attack_cycle" class="waf-sub">默认 {{ num((siteDialog.global.attack_block || {}).cycle) }} 秒</span>
+                            <el-input-number v-else v-model="siteDialog.config.attack_block.cycle" :min="0" size="small" controls-position="right"></el-input-number>
+                        </div>
                     </el-form-item>
-                    <el-form-item label="攻击次数上限（0=继承）">
-                        <el-input-number v-model="siteDialog.config.attack_block.limit" :min="0" size="small" controls-position="right"></el-input-number>
+                    <el-form-item label="攻击次数上限">
+                        <div class="waf-inline-mode">
+                            <el-radio-group v-model="siteNumMode.attack_limit" size="small" @change="setSiteNumMode('attack_limit', $event)">
+                                <el-radio-button :value="true">默认</el-radio-button>
+                                <el-radio-button :value="false">自定义</el-radio-button>
+                            </el-radio-group>
+                            <span v-if="siteNumMode.attack_limit" class="waf-sub">默认 {{ num((siteDialog.global.attack_block || {}).limit) }} 次</span>
+                            <el-input-number v-else v-model="siteDialog.config.attack_block.limit" :min="0" size="small" controls-position="right"></el-input-number>
+                        </div>
                     </el-form-item>
-                    <el-form-item label="攻击封锁时长（0=继承）">
-                        <el-input-number v-model="siteDialog.config.attack_block.block_time" :min="0" size="small" controls-position="right"></el-input-number>
+                    <el-form-item label="攻击封锁时长">
+                        <div class="waf-inline-mode">
+                            <el-radio-group v-model="siteNumMode.attack_block_time" size="small" @change="setSiteNumMode('attack_block_time', $event)">
+                                <el-radio-button :value="true">默认</el-radio-button>
+                                <el-radio-button :value="false">自定义</el-radio-button>
+                            </el-radio-group>
+                            <span v-if="siteNumMode.attack_block_time" class="waf-sub">默认 {{ num((siteDialog.global.attack_block || {}).block_time) }} 秒</span>
+                            <el-input-number v-else v-model="siteDialog.config.attack_block.block_time" :min="0" size="small" controls-position="right"></el-input-number>
+                        </div>
                     </el-form-item>
                 </el-form>
             </el-tab-pane>

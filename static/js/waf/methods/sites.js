@@ -171,15 +171,52 @@
             applySiteConfigData: function (row, res) {
                 var d = this.siteDialog;
                 if (!res) return;
-                // 编辑用站点自身配置 raw（保留 0/null 继承语义）；config 为合并后生效值，仅作回退
+                // 编辑用站点自身配置 raw（保留 0/null 默认值语义）；config 为合并后生效值，仅作回退
                 d.config = normalizeSiteConfig(res.raw || res.config || {});
                 d.raw = res.raw || {};
                 d.global = res.global || {};
                 d.panelCdn = res.panel_cdn || null;
                 this.buildSiteTexts();
+                this.initSiteNumMode();
                 d.snapshot = this.siteFingerprint();
                 if (!this.customRuleOptions.length) this.loadCustomRuleOptions();
                 if (!this.siteNames.length) this.loadSiteNames();
+            },
+            initSiteNumMode: function () {
+                var c = this.siteDialog.config || {};
+                var cc = c.cc || {};
+                var attack = c.attack_block || {};
+                this.siteNumMode = {
+                    cc_cycle: !num(cc.cycle),
+                    cc_limit: !num(cc.limit),
+                    cc_block_time: !num(cc.block_time),
+                    attack_cycle: !num(attack.cycle),
+                    attack_limit: !num(attack.limit),
+                    attack_block_time: !num(attack.block_time)
+                };
+            },
+            setSiteNumMode: function (field, useDefault) {
+                var map = {
+                    cc_cycle: ['cc', 'cycle', 60],
+                    cc_limit: ['cc', 'limit', 120],
+                    cc_block_time: ['cc', 'block_time', 300],
+                    attack_cycle: ['attack_block', 'cycle', 120],
+                    attack_limit: ['attack_block', 'limit', 20],
+                    attack_block_time: ['attack_block', 'block_time', 1800]
+                };
+                var item = map[field];
+                if (!item) return;
+                this.siteNumMode[field] = !!useDefault;
+                var c = this.siteDialog.config;
+                c[item[0]] = c[item[0]] || {};
+                if (useDefault) {
+                    c[item[0]][item[1]] = 0;
+                    return;
+                }
+                if (!num(c[item[0]][item[1]])) {
+                    var global = (this.siteDialog.global || {})[item[0]] || {};
+                    c[item[0]][item[1]] = num(global[item[1]]) || item[2];
+                }
             },
             prefetchSiteConfig: function (row) {
                 if (!row || !row.site_name || this.siteConfigCache[row.site_name]) return;

@@ -81,7 +81,7 @@
             },
             tierLabel: function (v) {
                 v = num(v);
-                return v === 0 ? '继承' : ('PL' + v);
+                return v === 0 ? '默认' : ('PL' + v);
             },
             actionLabel: function (a) {
                 var map = { block: '拦截', allow: '记录/放行', cc: 'CC 拦截', blacklist: '黑名单', geo: '地区限制', log: '记录' };

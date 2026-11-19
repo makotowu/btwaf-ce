@@ -71,6 +71,10 @@
                 },
                 siteConfigCache: {},
                 siteTri: { observe: 'inherit', cc_open: 'inherit', url_cc: 'inherit', attack_open: 'inherit', geo_open: 'inherit', geo_mode: 'inherit', geo_unknown: 'inherit' },
+                siteNumMode: {
+                    cc_cycle: true, cc_limit: true, cc_block_time: true,
+                    attack_cycle: true, attack_limit: true, attack_block_time: true
+                },
                 siteText: {
                     ip_black: '', ip_white: '', url_black: '', url_white: '', ua_black: '', ua_white: '',
                     param_white: '', disable_php_path: '', disable_ext: '', upload_ext: '',

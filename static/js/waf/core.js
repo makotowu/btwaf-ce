@@ -151,14 +151,14 @@
         { value: 2, label: '2 · 标准' },
         { value: 3, label: '3 · 严格' }
     ];
-    var SITE_SENSITIVITY_OPTIONS = [{ value: 0, label: '继承全局' }].concat(SENSITIVITY_OPTIONS);
+    var SITE_SENSITIVITY_OPTIONS = [{ value: 0, label: '默认' }].concat(SENSITIVITY_OPTIONS);
     var TRI_OPTIONS = [
-        { value: 'inherit', label: '继承全局' },
+        { value: 'inherit', label: '默认' },
         { value: 'on', label: '开启' },
         { value: 'off', label: '关闭' }
     ];
     var SITE_TIER_OPTIONS = [
-        { value: 0, label: '继承全局' },
+        { value: 0, label: '默认' },
         { value: 1, label: 'PL1（宽松）' },
         { value: 2, label: 'PL2' },
         { value: 3, label: 'PL3（严格）' }
@@ -216,7 +216,7 @@
         { value: 'site', label: '指定站点' }
     ];
     var BLOCK_STATUS_OPTIONS = [403, 404, 444, 429, 503];
-    var RULE_STATUS_OPTIONS = [{ value: 0, label: '继承' }].concat(BLOCK_STATUS_OPTIONS.map(function (v) {
+    var RULE_STATUS_OPTIONS = [{ value: 0, label: '默认' }].concat(BLOCK_STATUS_OPTIONS.map(function (v) {
         return { value: v, label: String(v) };
     }));
     var GEO_REGION_OPTIONS = [{ value: 'CN', label: '中国大陆' }];

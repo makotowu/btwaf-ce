@@ -48,7 +48,7 @@
             <template #default="s"><el-switch :model-value="!!s.row.open" size="small" @click.stop @update:model-value="toggleSite(s.row, $event)"></el-switch></template>
         </el-table-column>
         <el-table-column label="灵敏度" width="90">
-            <template #default="s">{{ num(s.row.sensitivity) ? sensitivityLabel(s.row.sensitivity) : '继承' }}</template>
+            <template #default="s">{{ num(s.row.sensitivity) ? sensitivityLabel(s.row.sensitivity) : '默认' }}</template>
         </el-table-column>
         <el-table-column label="今日拦截" width="96" align="center">
             <template #default="s">
@@ -163,7 +163,7 @@
                     <el-form-item label="CC 封禁（秒）">
                         <el-input-number v-model="cfg.cc.block_time" :min="1" size="small" controls-position="right"></el-input-number>
                     </el-form-item>
-                    <el-form-item label="CC 状态码（0=继承）">
+                    <el-form-item label="CC 状态码">
                         <el-input-number v-model="cfg.cc.status" :min="400" :max="599" size="small" controls-position="right"></el-input-number>
                     </el-form-item>
                     <el-form-item label="URL 级 CC"><el-switch v-model="cfg.cc.url_cc"></el-switch></el-form-item>
