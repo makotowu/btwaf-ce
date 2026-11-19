@@ -103,7 +103,7 @@ restore_conflicts() {
 
 copy_runtime() {
     log "正在部署 Lua 引擎与规则..."
-    mkdir -p "${LUA_DIR}" "${DATA_DIR}/rule" "${DATA_DIR}/data" "${DATA_DIR}/logs"
+    mkdir -p "${LUA_DIR}" "${DATA_DIR}/rule" "${DATA_DIR}/data" "${DATA_DIR}/data/webshell" "${DATA_DIR}/logs"
     rm -rf "${LUA_DIR}"
     mkdir -p "${LUA_DIR}"
     cp -a "${PLUGIN_DIR}/lua/." "${LUA_DIR}/" || fail "复制 lua 目录失败"

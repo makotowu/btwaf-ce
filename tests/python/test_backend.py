@@ -67,6 +67,10 @@ _path_constants = {
     "PERF_FILE": os.path.join(DATA_DIR, "data", "perf.json"),
     "BLOCK_PAGE": os.path.join(DATA_DIR, "data", "blockpage.html"),
     "PLUGIN_LOG": os.path.join(DATA_DIR, "logs", "plugin.log"),
+    "WEBSHELL_DIR": os.path.join(DATA_DIR, "data", "webshell"),
+    "WEBSHELL_JOB": os.path.join(DATA_DIR, "data", "webshell", "job.json"),
+    "WEBSHELL_LIST": os.path.join(DATA_DIR, "data", "webshell", "files.txt"),
+    "WEBSHELL_LOG": os.path.join(DATA_DIR, "data", "webshell", "worker.log"),
     "WAF_LOG": os.path.join(LOG_DIR, "waf.log"),
     "RULES_INDEX": os.path.join(_lua_dir, "rules", "index.json"),
 }

@@ -238,6 +238,14 @@ body.waf-dark .el-overlay .el-message-box {
 #btwaf-ce-app .waf-hint { color: var(--el-text-color-secondary, #909399); font-size: var(--el-font-size-small, 12px); margin-left: 8px; }
 #btwaf-ce-app .waf-sub,
 .waf-teleport .waf-sub { color: var(--el-text-color-secondary, #909399); font-size: var(--el-font-size-small, 12px); }
+
+.waf-webshell-alert { margin-bottom: 12px; }
+.waf-webshell-alert-row { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+.waf-webshell-alert-row code { color: var(--waf-text-2, #606266); }
+.waf-webshell-toolbar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+.waf-webshell-job { display: flex; flex-direction: column; gap: 10px; }
+.waf-webshell-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--waf-text, #303133); font-size: 13px; }
+.waf-webshell-error { margin-bottom: 2px; }
 #btwaf-ce-app .waf-mono,
 .waf-teleport .waf-mono {
     font-family: Menlo, Consolas, "Courier New", monospace;

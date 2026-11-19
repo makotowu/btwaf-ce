@@ -52,6 +52,9 @@ jobs:
       - name: Backend tests
         run: python tests/python/test_backend.py
 
+      - name: Webshell scanner tests
+        run: python tests/python/test_webshell.py
+
       - name: Lua module compatibility
         run: |
           bash -n install.sh

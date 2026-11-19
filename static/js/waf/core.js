@@ -256,6 +256,7 @@
         config: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8.4 4c0 .46-.04.9-.12 1.33l2.03 1.58-1.92 3.32-2.4-.96c-.7.58-1.5 1.04-2.37 1.35L15.3 22h-3.84l-.42-2.38a8.2 8.2 0 0 1-2.37-1.35l-2.4.96-1.92-3.32 2.03-1.58A8.6 8.6 0 0 1 6.26 12c0-.46.04-.9.12-1.33L4.35 9.09l1.92-3.32 2.4.96c.7-.58 1.5-1.04 2.37-1.35L11.46 3h3.84l.42 2.38c.87.31 1.67.77 2.37 1.35l2.4-.96 1.92 3.32-2.03 1.58c.08.43.12.87.12 1.33Z"/></svg>',
         rules: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6V2Zm8 1.5V8h4.5L14 3.5ZM9 12h8v-2H9v2Zm0 4h8v-2H9v2Zm0 4h6v-2H9v2Z"/></svg>',
         blocks: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5.05 3.4 9.74 8 11 4.6-1.26 8-5.95 8-11V5l-8-3Zm0 4a6 6 0 0 1 6 6c0 .9-.2 1.76-.55 2.53L10.47 7.55A5.96 5.96 0 0 1 12 6Zm-5.45 3.47 6.98 6.98A5.96 5.96 0 0 1 12 18a6 6 0 0 1-5.45-8.53Z"/></svg>',
+        webshell: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2 4 5v6c0 5.05 3.4 9.74 8 11 4.6-1.26 8-5.95 8-11V5l-8-3Zm-1.2 5.2 4.8 4.8-4.8 4.8-1.4-1.4 3.4-3.4-3.4-3.4 1.4-1.4Z"/></svg>',
         diagnostics: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 13h4l2-5 4 10 2-5h6v2h-4.6l-3.4 8-4-10-1 3H3v-3Z"/></svg>'
     };
     var VIEWS = [
@@ -266,6 +267,7 @@
         { key: 'config', label: '全局配置', group: '配置', icon: ICON.config },
         { key: 'rules', label: '规则库', group: '配置', icon: ICON.rules },
         { key: 'oplogs', label: '操作日志', group: '系统', icon: ICON.oplogs },
+        { key: 'webshell', label: 'Webshell 查杀', group: '系统', icon: ICON.webshell },
         { key: 'diagnostics', label: '系统诊断', group: '系统', icon: ICON.diagnostics }
     ];
 

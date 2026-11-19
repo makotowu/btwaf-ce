@@ -120,7 +120,7 @@ def main():
     items = collect(PLUGIN)
     # 必备文件检查
     required = ["info.json", "install.sh", "btwaf_ce_main.py", "index.html",
-                "defaults/blockpage.html", "lua/geo/cn.ranges", "lua/geo/meta.json"]
+                "defaults/blockpage.html", "defaults/webshell/rules.yar", "lua/geo/cn.ranges", "lua/geo/meta.json"]
     rels = set(rel for _full, rel in items)
     missing = [r for r in required if r not in rels]
     if missing:

@@ -260,14 +260,57 @@
 参数：`payload`（JSON 字符串，结构同 `export_config` 的 data）
 返回 `data = {"imported": true}`
 
-## 8. 自测（可选）
+## 8. Webshell 查杀（可选 YARA）
+
+YARA 不随插件分发。以下接口只操作本机引擎和扫描任务，不修改被扫描文件。
+
+### `get_webshell_status`
+参数：无
+返回 `data = {"engine": {...}, "rules": {...}, "sites": [...], "job": {...}, "limits": {...}}`
+- `engine.installed` 表示系统是否检测到 `yara`；
+- `engine.install_supported` 表示是否有可用包管理器；
+- `engine.install_hint` 为手动安装提示；
+- `rules.count` 为内置规则数；
+- `job` 为当前或最近一次扫描任务。
+
+### `install_webshell_engine`
+参数：无
+- 仅当 `engine.installed=false` 时执行；
+- 只调用系统包管理器安装 `yara`，不下载任意二进制；
+- 成功返回最新 `get_webshell_status` 数据；失败返回 `status=false` 和错误信息。
+
+### `start_webshell_scan`
+参数：`site_name`
+- 校验站点和站点目录；
+- 校验引擎、规则；
+- 同一时间只允许一个扫描任务；
+- 启动独立 worker 后返回任务对象。
+
+### `get_webshell_scan`
+参数：无
+返回当前或最近一次任务：
+```json
+{"id": "...", "status": "running|done|failed|cancelled",
+ "site_name": "...", "started": 0, "finished": 0,
+ "scanned": 0, "total_files": 0, "matched": 0,
+ "truncated": false, "error": "",
+ "results": [{"file": "uploads/x.php", "rule": "webshell_php_eval_request"}]}
+```
+`results` 只包含相对路径和规则名。
+
+### `cancel_webshell_scan`
+参数：无
+- 只取消当前运行中的任务；
+- 返回取消后的任务对象。
+
+## 9. 自测（可选）
 
 ### `run_selftest`
 参数：`site`（必填）、`payload`（字符串，≤ 2048）、`location`（`query|body|header|ua`，默认 query）
 说明：向 `http://127.0.0.1` 发送带 `Host: <site>` 的本地请求，随后 tail `waf.log` 匹配 `req_id`，返回命中结果。仅当站点解析到本机时有效。
 返回 `data = {"blocked": true, "status": 403, "hits": [...], "request_id": "..."}`
 
-## 9. 前端状态映射
+## 10. 前端状态映射
 
 - `status.ready=false` → 顶部红色"引擎未就绪"，引导到系统诊断。
 - `status.enabled=false` → 顶部黄色"防护已关闭"。

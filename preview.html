@@ -413,6 +413,14 @@
                 };
             case 'get_plugin_config': return globalConfig(true);
             case 'get_lists': return { lists: emptyLists() };
+            case 'get_webshell_status':
+                return {
+                    engine: { installed: false, version: '', path: '', install_supported: true, manager: 'apt', install_hint: '' },
+                    rules: { available: true, count: 7, version: 'mock', path: '' },
+                    sites: [],
+                    job: {}
+                };
+            case 'get_webshell_scan': return {};
             case 'check_env': return { items: ENV_ITEMS, repairable: true };
             default: return {};
         }
@@ -655,6 +663,42 @@
             case 'run_selftest':
                 return { blocked: true, status: 403, hits: HITS_SQLI, request_id: 'mock-selftest-1' };
 
+            case 'get_webshell_status':
+                return {
+                    engine: { installed: true, version: '4.2.3', path: '/usr/bin/yara', install_supported: true, manager: 'apt', install_hint: '' },
+                    rules: { available: true, count: 7, version: 'a1b2c3d4e5f6', path: '' },
+                    sites: [{ site_name: 'www.example.com' }, { site_name: 'shop.example.com' }],
+                    job: {
+                        id: 'mock-scan-1', status: 'done', site_name: 'www.example.com',
+                        started: NOW - 60, finished: NOW - 30, scanned: 1240, total_files: 1240,
+                        matched: 2, truncated: false, error: '',
+                        results: [
+                            { file: 'uploads/2026/avatar.php', rule: 'webshell_php_eval_request' },
+                            { file: 'cache/tmp_9f8a.php', rule: 'webshell_php_long_encoded_eval' }
+                        ]
+                    }
+                };
+            case 'get_webshell_scan':
+                return {
+                    id: 'mock-scan-1', status: 'done', site_name: 'www.example.com',
+                    started: NOW - 60, finished: NOW - 30, scanned: 1240, total_files: 1240,
+                    matched: 2, truncated: false, error: '',
+                    results: [
+                        { file: 'uploads/2026/avatar.php', rule: 'webshell_php_eval_request' },
+                        { file: 'cache/tmp_9f8a.php', rule: 'webshell_php_long_encoded_eval' }
+                    ]
+                };
+            case 'start_webshell_scan':
+                return {
+                    id: 'mock-scan-2', status: 'running', site_name: params.site_name || 'www.example.com',
+                    started: NOW, finished: 0, scanned: 0, total_files: 0, matched: 0,
+                    truncated: false, error: '', results: []
+                };
+            case 'cancel_webshell_scan':
+                return { id: 'mock-scan-2', status: 'cancelled', site_name: 'www.example.com', finished: NOW, results: [] };
+            case 'install_webshell_engine':
+                return { engine: { installed: true, version: '4.2.3' }, rules: { available: true, count: 7 }, sites: [], job: {} };
+
             default:
                 console.warn('[preview mock] 未实现的方法：' + method);
                 return {};
@@ -796,12 +840,14 @@
 <script src="static/js/waf/templates/monitor.js"></script>
 <script src="static/js/waf/templates/manage.js"></script>
 <script src="static/js/waf/templates/diagnostics.js"></script>
+<script src="static/js/waf/templates/webshell.js"></script>
 <script src="static/js/waf/methods/common.js"></script>
 <script src="static/js/waf/methods/monitor.js"></script>
 <script src="static/js/waf/methods/sites.js"></script>
 <script src="static/js/waf/methods/config.js"></script>
 <script src="static/js/waf/methods/rules.js"></script>
 <script src="static/js/waf/methods/diagnostics.js"></script>
+<script src="static/js/waf/methods/webshell.js"></script>
 <script src="static/js/app.js"></script>
 </body>
 </html>

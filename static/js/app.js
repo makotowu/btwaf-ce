@@ -8,7 +8,7 @@
     function buildTemplate() {
         return '<div id="btwaf-ce-app" class="waf-app" :class="{ \'waf-dark\': isDark }">' +
             (WAF.tpl.top || '') + (WAF.tpl.overview || '') + (WAF.tpl.logs || '') + (WAF.tpl.sites || '') +
-            (WAF.tpl.config || '') + (WAF.tpl.rules || '') + (WAF.tpl.blocks || '') + (WAF.tpl.oplogs || '') + (WAF.tpl.diagnostics || '') +
+            (WAF.tpl.config || '') + (WAF.tpl.rules || '') + (WAF.tpl.blocks || '') + (WAF.tpl.oplogs || '') + (WAF.tpl.webshell || '') + (WAF.tpl.diagnostics || '') +
             (WAF.tpl.dialogs || '') + '</div>';
     }
 
@@ -48,7 +48,7 @@
                 statusLoading: false,
                 loaded: {},
                 errors: {
-                    overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', oplogs: '', diagnostics: ''
+                    overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', oplogs: '', diagnostics: '', webshell: ''
                 },
 
                 ovDate: today,
@@ -121,6 +121,12 @@
         opLogFilter: { date: '', keyword: '' },
                 importLoading: false,
 
+                webshell: {
+                    loading: false, installing: false, starting: false, cancelling: false,
+                    engine: {}, rules: {}, sites: [], site: '', job: {}
+                },
+                webshellTimer: null,
+
                 /* 通用确认弹窗（不使用 BTP.confirm，避免 z-index 被面板 layer 遮挡） */
                 confirmDialog: { visible: false, title: '', content: '', resolve: null, checkbox: false, checkboxLabel: '', checked: false, withOption: false }
             };
@@ -186,6 +192,9 @@
                     map[g].items.push(v);
                 });
                 return groups;
+            },
+            webshellRunning: function () {
+                return !!(this.webshell && this.webshell.job && this.webshell.job.status === 'running');
             },
             envAllOk: function () {
                 return !!(this.envItems && this.envItems.length) && this.envItems.every(function (i) { return i && i.ok; });

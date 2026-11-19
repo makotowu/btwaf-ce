@@ -246,14 +246,14 @@
             refreshCurrent: function () {
                 var map = {
                     overview: 'loadOverview', logs: 'loadLogs', sites: 'loadSites', config: 'loadConfig',
-                    rules: 'loadRules', blocks: 'loadBlocks', oplogs: 'loadOpLogs', diagnostics: 'loadDiagnostics'
+                    rules: 'loadRules', blocks: 'loadBlocks', oplogs: 'loadOpLogs', diagnostics: 'loadDiagnostics', webshell: 'loadWebshell'
                 };
                 var fn = map[this.view];
                 return fn ? this[fn]() : Promise.resolve();
             },
             reloadAll: function () {
                 this.loaded = {};
-                this.errors = { overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', oplogs: '', diagnostics: '' };
+                this.errors = { overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', oplogs: '', diagnostics: '', webshell: '' };
                 this.ruleExcludeLoaded = false;
                 this.boot();
             },
@@ -348,6 +348,7 @@
             },
             switchView: function (key) {
                 var self = this;
+                if (key !== 'webshell') this.stopWebshellPoll();
                 this.view = key;
                 var main = document.querySelector('#btwaf-ce-app .waf-main');
                 if (main) { main.scrollTop = 0; main.scrollLeft = 0; }

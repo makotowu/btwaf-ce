@@ -31,6 +31,7 @@ from wafcore import rules as R
 from wafcore import sites as S
 from wafcore import state
 from wafcore import util
+from wafcore import webshell
 
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
 SITE_RE = re.compile(r"^[A-Za-z0-9\.\-_\*\u4e00-\u9fa5]+$")
@@ -810,6 +811,35 @@ class btwaf_ce_main(object):
         E.apply_config("import_config")
         self._audit("导入配置")
         return {"imported": True}
+
+    # ---------------- Webshell 查杀 ----------------
+    @_api
+    def get_webshell_status(self, get):
+        db = getattr(self.public, "M", None) if self.public else None
+        return webshell.status(db if callable(db) else None)
+
+    @_api
+    def install_webshell_engine(self, get):
+        res = webshell.install_engine()
+        self._audit("安装 Webshell 扫描引擎")
+        return res
+
+    @_api
+    def start_webshell_scan(self, get):
+        name = self._site_name(get, "site_name")
+        job = webshell.start_scan(self._db(), name)
+        self._audit("启动 Webshell 扫描：%s" % name)
+        return job
+
+    @_api
+    def get_webshell_scan(self, get):
+        return webshell.load_job()
+
+    @_api
+    def cancel_webshell_scan(self, get):
+        job = webshell.cancel_scan()
+        self._audit("取消 Webshell 扫描")
+        return job
 
     # ---------------- 自测 ----------------
     @_api
