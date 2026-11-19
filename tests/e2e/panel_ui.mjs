@@ -7,7 +7,7 @@
  *   BTWAF_PANEL_USER  面板账号
  *   BTWAF_PANEL_PASS  面板密码
  *   CHROME_BIN        Chrome/Chromium 可执行文件（缺省尝试常见路径）
- *   BTWAF_CE_VERSION  期望版本（默认 0.1.0）
+ *   BTWAF_CE_VERSION  期望版本（默认 0.2.0）
  *
  * 说明：脚本使用 CDP，不依赖 puppeteer；缺少环境变量或 Chrome 时以 0 退出（跳过）。
  */
@@ -19,7 +19,7 @@ import path from 'node:path';
 const URL = process.env.BTWAF_PANEL_URL || '';
 const USER = process.env.BTWAF_PANEL_USER || '';
 const PASS = process.env.BTWAF_PANEL_PASS || '';
-const VERSION = process.env.BTWAF_CE_VERSION || '0.1.0';
+const VERSION = process.env.BTWAF_CE_VERSION || '0.2.0';
 const CHROME_CANDIDATES = [
   process.env.CHROME_BIN,
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',

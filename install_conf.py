@@ -151,7 +151,7 @@ def iter_conf_files(nginx_conf, vhost_dir):
 
 def load_manifest(path):
     if not os.path.isfile(path):
-        return {"version": "0.1.0", "files": []}
+        return {"version": "0.2.0", "files": []}
     with io.open(path, "r", encoding="utf-8") as f:
         data = json.load(f)
     if not isinstance(data, dict):
@@ -181,7 +181,7 @@ def prepare(args):
             write_bytes(path, ("\n".join(lines) + "\n").encode("utf-8"))
             manifest["files"].append(entry)
             changed.append(entry)
-        manifest["version"] = "0.1.0"
+        manifest["version"] = "0.2.0"
         manifest["updated_at"] = int(time.time())
         tmp = args.manifest + ".tmp"
         with io.open(tmp, "w", encoding="utf-8") as f:

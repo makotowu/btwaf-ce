@@ -1,5 +1,5 @@
 # coding: utf-8
-"""打包插件：python tools/build_zip.py [--version 0.1.0]
+"""打包插件：python tools/build_zip.py [--version 0.2.0]
 
 产物：dist/btwaf_ce-<version>.zip（内容位于 zip 根目录，面板"导入插件"可直接安装）
 排除：测试、构建工具、缓存、面板 CSS 副本（如存在）、日志、dist 自身。
@@ -94,7 +94,7 @@ def refresh_geo():
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--version", default="0.1.0")
+    parser.add_argument("--version", default="0.2.0")
     parser.add_argument("--out", default="")
     parser.add_argument(
         "--no-geo-refresh",

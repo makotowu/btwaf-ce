@@ -2,7 +2,7 @@
   "name": "btwaf_ce",
   "title": "宝塔WAF社区版",
   "ps": "开源 Web 应用防火墙：SQL注入/XSS/命令执行/文件包含/上传木马/CC 防护",
-  "versions": "0.1.0",
+  "versions": "0.2.0",
   "checks": "/www/server/panel/plugin/btwaf_ce",
   "author": "makotowu",
   "home": "https://github.com/makotowu/btwaf-ce",

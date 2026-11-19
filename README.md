@@ -105,7 +105,7 @@ python tests/python/test_backend.py
 python tests/python/test_nginx.py
 python tools/check_frontend.py
 python tools/check_rules.py
-python tools/build_zip.py --version 0.1.0
+python tools/build_zip.py --version 0.2.0
 ```
 
 `build_zip.py` 默认下载最新可用的 DB-IP Lite Country 月度数据并生成 `lua/geo/cn.ranges`；无网络时可显式使用 `--no-geo-refresh`，但该产物可能不是最新数据。

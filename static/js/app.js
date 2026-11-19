@@ -140,7 +140,7 @@
 
         computed: {
             pluginVersion: function () {
-                return this.status.version || '0.1.0';
+                return this.status.version || '0.2.0';
             },
             readyTagType: function () { return this.status.ready ? 'success' : 'danger'; },
             readyText: function () { return this.status.ready ? '引擎就绪' : '引擎未就绪'; },

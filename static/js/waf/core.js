@@ -443,7 +443,7 @@
     }
     function defaultGlobalConfig() {
         return {
-            schema: 1, version: '0.1.0', enabled: true, observe: false, sensitivity: 2,
+            schema: 1, version: '0.2.0', enabled: true, observe: false, sensitivity: 2,
             block: { status: 403, use_custom: false, page: '' },
             geo: { open: false, mode: 'allow', regions: ['CN'], unknown: 'allow', status: 403 },
             scan: { body_limit: 1048576, arg_limit: 8192, header_limit: 8192, upload_scan_limit: 20971520, max_args: 200 },

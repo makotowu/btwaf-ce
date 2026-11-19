@@ -18,7 +18,7 @@
 - 返回 `data`：
 ```json
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "ready": true,
   "enabled": true,
   "observe": false,

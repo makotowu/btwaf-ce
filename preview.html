@@ -402,7 +402,7 @@
                 };
             case 'get_engine_status':
                 return {
-                    version: '1.0.0', ready: true, enabled: true, observe: false, sensitivity: 2,
+                    version: '0.2.0', ready: true, enabled: true, observe: false, sensitivity: 2,
                     nginx: { bin: '/www/server/nginx/sbin/nginx', lua: true, conf_exists: true, conf_ok: true, conf_hash_ok: true },
                     dirs: { data: true, logs: true, lua: true, writable: true },
                     rules: {
@@ -439,7 +439,7 @@
         switch (method) {
             case 'get_engine_status':
                 return {
-                    version: '1.0.0', ready: true, enabled: true, observe: false, sensitivity: 2,
+                    version: '0.2.0', ready: true, enabled: true, observe: false, sensitivity: 2,
                     nginx: { bin: '/www/server/nginx/sbin/nginx', lua: true, conf_exists: true, conf_ok: true, conf_hash_ok: true },
                     dirs: { data: true, logs: true, lua: true, writable: true },
                     rules: {

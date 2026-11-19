@@ -837,7 +837,7 @@ async function runCorpus() {
     modules[m] = { open: true, tier: 3 };
   }
   const config = {
-    schema: 1, version: '0.1.0', enabled: true, observe: false, sensitivity: 2,
+    schema: 1, version: '0.2.0', enabled: true, observe: false, sensitivity: 2,
     block: { status: 403, use_custom: false, page: '' },
     scan: { body_limit: 1048576, arg_limit: 8192, header_limit: 8192, upload_scan_limit: 20971520, max_args: 200 },
     log: { enabled: false, retain_days: 30, rotate_size: 52428800, snippet: 512 },

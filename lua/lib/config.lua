@@ -27,7 +27,7 @@ local config = {}
 -- ---------------------------------------------------------------------------
 local DEFAULT_GLOBAL = {
   schema = 1,
-  version = "0.1.0",
+  version = "0.2.0",
   enabled = true,
   observe = false,
   sensitivity = 2,

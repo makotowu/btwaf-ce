@@ -36,7 +36,7 @@ PLUGIN_DEFAULTS = os.path.join(PLUGIN_DIR, "defaults")
 RUNTIME_LUA_DIR = os.path.join(DATA_DIR, "lua")
 RULES_INDEX = os.path.join(RUNTIME_LUA_DIR, "rules", "index.json")
 
-VERSION = "0.1.0"
+VERSION = "0.2.0"
 
 
 def _lua_quote(value):
