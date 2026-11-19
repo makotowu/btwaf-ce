@@ -55,6 +55,9 @@ jobs:
       - name: Webshell scanner tests
         run: python tests/python/test_webshell.py
 
+      - name: Geo custom tests
+        run: python tests/python/test_geo_custom.py
+
       - name: Lua module compatibility
         run: |
           bash -n install.sh

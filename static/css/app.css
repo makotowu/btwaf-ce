@@ -246,6 +246,8 @@ body.waf-dark .el-overlay .el-message-box {
 .waf-webshell-job { display: flex; flex-direction: column; gap: 10px; }
 .waf-webshell-summary { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; color: var(--waf-text, #303133); font-size: 13px; }
 .waf-webshell-error { margin-bottom: 2px; }
+.waf-geo-add { display: flex; gap: 8px; margin-bottom: 8px; }
+.waf-geo-add .el-input { flex: 1 1 0; }
 #btwaf-ce-app .waf-mono,
 .waf-teleport .waf-mono {
     font-family: Menlo, Consolas, "Courier New", monospace;

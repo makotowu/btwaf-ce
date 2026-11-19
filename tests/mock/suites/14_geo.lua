@@ -6,6 +6,7 @@ local mock = require("mock.ngx")
 local paths = require("lib.paths")
 local geo = require("lib.geo")
 local config = require("lib.config")
+local json = require("lib.json")
 
 local function write_ranges()
   mock.file_write(paths.geo_file(), table.concat({
@@ -14,6 +15,16 @@ local function write_ranges()
     "114.114.114.0 114.114.114.255",
   }, "\n") .. "\n")
   mock.file_write(paths.geo_meta_file(), '{"source":"fixture","records":2}')
+  __BTWAF_FS_REMOVE(paths.geo_custom_file())
+  geo.reset()
+end
+
+local function write_custom(include, exclude)
+  mock.file_write(paths.geo_custom_file(), json.encode({
+    version = 1,
+    include = include or {},
+    exclude = exclude or {},
+  }))
   geo.reset()
 end
 
@@ -68,4 +79,33 @@ t.test("站点 geo 继承和覆盖", function()
     { rules = {} }
   )
   t.eq(config.site("www.example.com").geo.open, false)
+end)
+
+t.test("自定义中国 IP 段：补充与排除", function()
+  write_ranges()
+  write_custom(
+    { { ["start"] = "8.8.8.0", ["end"] = "8.8.8.255" } },
+    { { ["start"] = "1.2.3.128", ["end"] = "1.2.3.255" } }
+  )
+  t.eq(geo.region("8.8.8.8"), "CN")
+  t.eq(geo.region("1.2.3.4"), "CN")
+  t.eq(geo.region("1.2.3.200"), "OTHER")
+  t.eq(geo.region("114.114.114.114"), "CN")
+end)
+
+t.test("自定义中国 IP 段：排除优先", function()
+  write_ranges()
+  write_custom(
+    { { ["start"] = "1.2.3.0", ["end"] = "1.2.3.255" } },
+    { { ["start"] = "1.2.3.0", ["end"] = "1.2.3.255" } }
+  )
+  t.eq(geo.region("1.2.3.4"), "OTHER")
+end)
+
+t.test("自定义中国 IP 段：文件损坏回退内置数据", function()
+  write_ranges()
+  mock.file_write(paths.geo_custom_file(), "{bad json")
+  geo.reset()
+  t.eq(geo.region("1.2.3.4"), "CN")
+  t.eq(geo.region("8.8.8.8"), "OTHER")
 end)

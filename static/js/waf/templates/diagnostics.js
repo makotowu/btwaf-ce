@@ -565,6 +565,54 @@
         <el-button size="small" type="primary" @click="onConfirmOk">确定</el-button>
     </template>
 </el-dialog>
+
+<el-dialog v-model="geoCnDialog.visible" title="中国 IP 段" width="760px" append-to-body class="waf-dialog">
+    <div v-loading="geoCnDialog.loading" class="waf-teleport waf-dialog-body">
+        <div class="waf-list-head">
+            <div class="waf-inline-mode">
+                <el-radio-group v-model="geoCnDialog.tab" size="small" @change="geoCnTabChange">
+                    <el-radio-button value="include">补充</el-radio-button>
+                    <el-radio-button value="exclude">排除</el-radio-button>
+                </el-radio-group>
+                <span class="waf-sub">内置 {{ geoCnDialog.builtin.records || 0 }} 段</span>
+            </div>
+            <div class="waf-list-tools">
+                <el-upload :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportGeoCn">
+                    <el-button size="small" :loading="geoCnDialog.importing">导入</el-button>
+                </el-upload>
+                <el-button size="small" @click="exportGeoCn">导出</el-button>
+            </div>
+        </div>
+
+        <div class="waf-geo-add">
+            <el-input v-model="geoCnDialog.start" size="small" placeholder="起始 IP"></el-input>
+            <el-input v-model="geoCnDialog.end" size="small" placeholder="结束 IP"></el-input>
+            <el-button size="small" type="primary" @click="addGeoCn">添加</el-button>
+        </div>
+
+        <el-alert v-if="geoCnDialog.error" class="waf-webshell-error" type="error" :closable="false" show-icon :title="geoCnDialog.error"></el-alert>
+        <el-table :data="geoCnList" size="small" border empty-text="暂无条目">
+            <el-table-column label="起始 IP" prop="start" min-width="180">
+                <template #default="s"><span class="waf-mono">{{ s.row.start }}</span></template>
+            </el-table-column>
+            <el-table-column label="结束 IP" prop="end" min-width="180">
+                <template #default="s"><span class="waf-mono">{{ s.row.end }}</span></template>
+            </el-table-column>
+            <el-table-column label="操作" width="80" align="right">
+                <template #default="s">
+                    <el-button link type="danger" size="small" @click="removeGeoCn(s.$index)">删除</el-button>
+                </template>
+            </el-table-column>
+        </el-table>
+        <div class="waf-pager">
+            <el-pagination background small layout="total, prev, pager, next" :total="geoCnTotal" :page-size="geoCnDialog.rows" :current-page="geoCnDialog.page" @current-change="geoCnDialog.page = $event"></el-pagination>
+        </div>
+    </div>
+    <template #footer>
+        <el-button size="small" @click="geoCnDialog.visible = false">取消</el-button>
+        <el-button size="small" type="primary" :loading="geoCnDialog.saving" @click="saveGeoCn">保存</el-button>
+    </template>
+</el-dialog>
 `;
 
 })(window);

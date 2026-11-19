@@ -260,7 +260,41 @@
 参数：`payload`（JSON 字符串，结构同 `export_config` 的 data）
 返回 `data = {"imported": true}`
 
-## 8. Webshell 查杀（可选 YARA）
+## 8. 中国 IP 段自定义
+
+有效 CN 集合为“内置 CN 范围 ∪ 补充范围 − 排除范围”，排除优先。
+
+### `get_geo_custom`
+参数：无
+返回：
+```json
+{
+  "builtin": {"available": true, "records": 5314, "source": "DB-IP Lite Country", "release": "2026-11"},
+  "include": [{"start": "1.2.3.0", "end": "1.2.3.255"}],
+  "exclude": [{"start": "1.2.4.0", "end": "1.2.4.255"}],
+  "effective": 5314,
+  "error": ""
+}
+```
+`error` 非空表示自定义文件无法解析；内置数据仍然可用。
+
+### `save_geo_custom`
+参数：`include`（JSON 数组）、`exclude`（JSON 数组）
+- 仅接受 IPv4 范围对象 `{start,end}`；
+- 自动去重、排序、合并；
+- 每类最多 10000 条；
+- 保存后重载 Nginx；
+- 返回保存后的数据、`saved` 和 `reloaded`。
+
+如果 Nginx 重载失败：
+
+```json
+{"saved": true, "reloaded": false, "reload_error": "...", "data": {...}}
+```
+
+数据已保存，但运行时需要手动重载后生效。
+
+## 9. Webshell 查杀（可选 YARA）
 
 YARA 不随插件分发。以下接口只操作本机引擎和扫描任务，不修改被扫描文件。
 
@@ -303,14 +337,14 @@ YARA 不随插件分发。以下接口只操作本机引擎和扫描任务，不
 - 只取消当前运行中的任务；
 - 返回取消后的任务对象。
 
-## 9. 自测（可选）
+## 10. 自测（可选）
 
 ### `run_selftest`
 参数：`site`（必填）、`payload`（字符串，≤ 2048）、`location`（`query|body|header|ua`，默认 query）
 说明：向 `http://127.0.0.1` 发送带 `Host: <site>` 的本地请求，随后 tail `waf.log` 匹配 `req_id`，返回命中结果。仅当站点解析到本机时有效。
 返回 `data = {"blocked": true, "status": 403, "hits": [...], "request_id": "..."}`
 
-## 10. 前端状态映射
+## 11. 前端状态映射
 
 - `status.ready=false` → 顶部红色"引擎未就绪"，引导到系统诊断。
 - `status.enabled=false` → 顶部黄色"防护已关闭"。

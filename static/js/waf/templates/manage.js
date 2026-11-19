@@ -267,6 +267,9 @@
                             <el-option v-for="v in blockStatusOptions" :key="v" :label="String(v)" :value="v"></el-option>
                         </el-select>
                     </el-form-item>
+                    <el-form-item label="中国 IP 段">
+                        <el-button size="small" @click="openGeoCnDialog">管理</el-button>
+                    </el-form-item>
                 </el-form>
             </el-tab-pane>
 

@@ -17,6 +17,8 @@ local ranges = nil
 local available = nil
 local load_error_logged = false
 local meta_cache = nil
+local custom_cache = nil
+local custom_error_logged = false
 
 local PRIVATE_RANGES = {
   { 0, 16777215 },          -- 0.0.0.0/8
@@ -46,6 +48,132 @@ local function data_file()
   return paths.geo_file()
 end
 
+local function custom_file()
+  return paths.geo_custom_file()
+end
+
+local function to_range(item)
+  if type(item) ~= "table" then
+    return nil
+  end
+  local first = item.start or item[1]
+  local last = item["end"] or item[2]
+  local a = util.ip_to_int(first)
+  local b = util.ip_to_int(last)
+  if a and b and a <= b then
+    return { a, b }
+  end
+  return nil
+end
+
+local function load_custom()
+  if custom_cache ~= nil then
+    return custom_cache
+  end
+  custom_cache = { include = {}, exclude = {} }
+  local path = custom_file()
+  if not fs.exists(path) then
+    return custom_cache
+  end
+  local ok, data = pcall(fs.read_json, path)
+  if not ok or type(data) ~= "table" then
+    if not custom_error_logged then
+      util.log_error("自定义中国 IP 段无法解析: " .. path)
+      custom_error_logged = true
+    end
+    return custom_cache
+  end
+  local ok_inc, include = pcall(function()
+    local out = {}
+    if type(data.include) == "table" then
+      for i = 1, #data.include do
+        local item = to_range(data.include[i])
+        if item then out[#out + 1] = item end
+      end
+    end
+    return out
+  end)
+  local ok_exc, exclude = pcall(function()
+    local out = {}
+    if type(data.exclude) == "table" then
+      for i = 1, #data.exclude do
+        local item = to_range(data.exclude[i])
+        if item then out[#out + 1] = item end
+      end
+    end
+    return out
+  end)
+  if ok_inc then custom_cache.include = include end
+  if ok_exc then custom_cache.exclude = exclude end
+  return custom_cache
+end
+
+local function merge_ranges(list)
+  if type(list) ~= "table" or #list == 0 then
+    return list or {}
+  end
+  table.sort(list, function(x, y)
+    if x[1] == y[1] then return x[2] < y[2] end
+    return x[1] < y[1]
+  end)
+  local out = {}
+  for i = 1, #list do
+    local item = list[i]
+    if #out == 0 or item[1] > out[#out][2] + 1 then
+      out[#out + 1] = { item[1], item[2] }
+    elseif item[2] > out[#out][2] then
+      out[#out][2] = item[2]
+    end
+  end
+  return out
+end
+
+local function subtract_ranges(base, cuts)
+  cuts = merge_ranges(cuts)
+  local out = {}
+  local j = 1
+  for i = 1, #base do
+    local start, finish = base[i][1], base[i][2]
+    local cur = start
+    while j <= #cuts and cuts[j][2] < cur do
+      j = j + 1
+    end
+    local k = j
+    while k <= #cuts and cuts[k][1] <= finish do
+      if cuts[k][1] > cur then
+        out[#out + 1] = { cur, math.min(finish, cuts[k][1] - 1) }
+      end
+      if cuts[k][2] >= cur then
+        cur = cuts[k][2] + 1
+      end
+      if cur > finish then
+        break
+      end
+      k = k + 1
+    end
+    if cur <= finish then
+      out[#out + 1] = { cur, finish }
+    end
+  end
+  return out
+end
+
+local function apply_custom(base)
+  local custom = load_custom()
+  local merged = {}
+  for i = 1, #base do
+    merged[#merged + 1] = { base[i][1], base[i][2] }
+  end
+  for i = 1, #custom.include do
+    merged[#merged + 1] = { custom.include[i][1], custom.include[i][2] }
+  end
+  merged = merge_ranges(merged)
+  if #custom.exclude > 0 then
+    merged = subtract_ranges(merged, custom.exclude)
+  end
+  return merged
+end
+
 local function ensure()
   if ranges ~= nil then
     return available
@@ -71,12 +199,17 @@ local function ensure()
       end
     end
   end
-  table.sort(ranges, function(x, y) return x[1] < y[1] end)
-  available = #ranges > 0
-  if not available and not load_error_logged then
-    util.log_error("geo 数据为空: " .. data_file())
-    load_error_logged = true
+  if #ranges == 0 then
+    if not load_error_logged then
+      util.log_error("geo 数据为空: " .. data_file())
+      load_error_logged = true
+    end
+    return false
   end
+  ranges = apply_custom(ranges)
+  table.sort(ranges, function(x, y) return x[1] < y[1] end)
+  -- 内置数据存在即视为可用；即使自定义排除把范围减空，也应继续按 OTHER 处理。
+  available = true
   return available
 end
 
@@ -174,6 +307,8 @@ function geo.reset()
   available = nil
   load_error_logged = false
   meta_cache = nil
+  custom_cache = nil
+  custom_error_logged = false
 end
 
 return geo

@@ -74,6 +74,8 @@ if "waf-list-layout" not in appjs or "listGroups" not in appjs or "addListEntry"
     problems.append("app.js missing redesigned list editor")
 if "Webshell 查杀" not in appjs or "get_webshell_status" not in appjs or "webshellRunning" not in appjs:
     problems.append("app.js missing webshell scanner view")
+if "中国 IP 段" not in appjs or "get_geo_custom" not in appjs or "save_geo_custom" not in appjs:
+    problems.append("app.js missing custom China IP range management")
 if "openSiteLogs" not in appjs or "get_log_dates" not in appjs:
     problems.append("app.js missing per-site log viewer")
 if "<el-drawer" in appjs or "waf-drawer" in appjs:

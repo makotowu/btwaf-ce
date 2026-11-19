@@ -75,6 +75,11 @@ function P.geo_file()
   return P.geo_dir() .. "/cn.ranges"
 end
 
+-- 自定义中国 IP 段放在 data/ 下，升级/修复覆盖 geo/ 时不会丢。
+function P.geo_custom_file()
+  return P.DATA_DIR .. "/data/geo_custom.json"
+end
+
 function P.geo_meta_file()
   return P.geo_dir() .. "/meta.json"
 end

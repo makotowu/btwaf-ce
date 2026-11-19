@@ -163,6 +163,206 @@
                 );
                 BTP.msg('已导出 ' + items.length + ' 条', 'success');
             },
+            isIpv4Address: function (value) {
+                var text = String(value || '').trim();
+                if (!/^\d{1,3}(\.\d{1,3}){3}$/.test(text)) return false;
+                return text.split('.').every(function (p) { return Number(p) >= 0 && Number(p) <= 255; });
+            },
+            ipv4ToInt: function (value) {
+                var parts = String(value || '').trim().split('.');
+                if (parts.length !== 4) return 0;
+                return (((Number(parts[0]) << 24) | (Number(parts[1]) << 16) | (Number(parts[2]) << 8) | Number(parts[3])) >>> 0);
+            },
+            intToIpv4: function (value) {
+                value = value >>> 0;
+                return [(value >>> 24) & 255, (value >>> 16) & 255, (value >>> 8) & 255, value & 255].join('.');
+            },
+            geoCnCurrent: function () {
+                return this.geoCnDialog.tab === 'exclude' ? this.geoCnDialog.exclude : this.geoCnDialog.include;
+            },
+            geoCnSort: function (list) {
+                list.sort(function (a, b) {
+                    var ai = this.ipv4ToInt(a.start), bi = this.ipv4ToInt(b.start);
+                    if (ai === bi) return this.ipv4ToInt(a.end) - this.ipv4ToInt(b.end);
+                    return ai - bi;
+                }.bind(this));
+                return list;
+            },
+            geoCnAppend: function (list, start, end) {
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].start === start && list[i].end === end) return false;
+                }
+                list.push({ start: start, end: end });
+                this.geoCnSort(list);
+                return true;
+            },
+            addGeoCn: function () {
+                var d = this.geoCnDialog;
+                var start = String(d.start || '').trim();
+                var end = String(d.end || '').trim();
+                if (!this.isIpv4Address(start) || !this.isIpv4Address(end)) {
+                    BTP.msg('请输入正确的 IPv4 地址', 'error');
+                    return;
+                }
+                if (this.ipv4ToInt(start) > this.ipv4ToInt(end)) {
+                    BTP.msg('起始 IP 不能大于结束 IP', 'error');
+                    return;
+                }
+                if (!this.geoCnAppend(this.geoCnCurrent(), start, end)) {
+                    BTP.msg('该范围已存在', 'info');
+                    return;
+                }
+                d.start = '';
+                d.end = '';
+                d.error = '';
+            },
+            removeGeoCn: function (index) {
+                var d = this.geoCnDialog;
+                var list = this.geoCnCurrent();
+                var pos = (d.page - 1) * d.rows + index;
+                if (pos < 0 || pos >= list.length) return;
+                list.splice(pos, 1);
+                var maxPage = Math.max(1, Math.ceil(list.length / d.rows));
+                if (d.page > maxPage) d.page = maxPage;
+            },
+            geoCnTabChange: function () {
+                this.geoCnDialog.page = 1;
+            },
+            parseGeoCnLine: function (line) {
+                line = String(line || '').trim();
+                if (!line || line.charAt(0) === '#') return null;
+                var hash = line.indexOf('#');
+                if (hash >= 0) line = line.slice(0, hash).trim();
+                var start, end;
+                if (line.indexOf('/') >= 0) {
+                    var cidr = line.split('/');
+                    if (cidr.length !== 2 || !this.isIpv4Address(cidr[0])) return null;
+                    var bits = Number(cidr[1]);
+                    if (!isFinite(bits) || bits < 0 || bits > 32) return null;
+                    var base = this.ipv4ToInt(cidr[0]);
+                    var mask = bits === 0 ? 0 : ((0xFFFFFFFF << (32 - bits)) >>> 0);
+                    start = this.intToIpv4((base & mask) >>> 0);
+                    end = this.intToIpv4(((base & mask) | (~mask)) >>> 0);
+                } else {
+                    var parts = line.split(/\s+/);
+                    if (parts.length >= 2) {
+                        start = parts[0];
+                        end = parts[1];
+                    } else {
+                        var range = line.split('-');
+                        if (range.length === 2) {
+                            start = range[0].trim();
+                            end = range[1].trim();
+                        } else {
+                            start = line;
+                            end = line;
+                        }
+                    }
+                }
+                if (!this.isIpv4Address(start) || !this.isIpv4Address(end)) return null;
+                if (this.ipv4ToInt(start) > this.ipv4ToInt(end)) return null;
+                return { start: start, end: end };
+            },
+            onImportGeoCn: function (uploadFile) {
+                var self = this;
+                var file = uploadFile && uploadFile.raw;
+                if (!file) return;
+                if (file.size > 1024 * 1024) { BTP.msg('文件不能超过 1MB', 'error'); return; }
+                this.geoCnDialog.importing = true;
+                var reader = new FileReader();
+                reader.onload = function () {
+                    var lines = String(reader.result || '').split(/\r?\n/);
+                    var added = 0;
+                    var skipped = 0;
+                    lines.forEach(function (line) {
+                        var item = self.parseGeoCnLine(line);
+                        if (!item) {
+                            if (String(line || '').trim() && String(line || '').trim().charAt(0) !== '#') skipped++;
+                            return;
+                        }
+                        if (self.geoCnAppend(self.geoCnCurrent(), item.start, item.end)) {
+                            added++;
+                        } else {
+                            skipped++;
+                        }
+                    });
+                    BTP.msg('导入 ' + added + ' 条，跳过 ' + skipped + ' 条', added ? 'success' : 'info');
+                    self.geoCnDialog.page = 1;
+                    self.geoCnDialog.importing = false;
+                };
+                reader.onerror = function () {
+                    self.geoCnDialog.importing = false;
+                    BTP.msg('读取文件失败', 'error');
+                };
+                reader.readAsText(file, 'utf-8');
+            },
+            exportGeoCn: function () {
+                var self = this;
+                var list = this.geoCnCurrent();
+                if (!list.length) { BTP.msg('当前分类为空', 'info'); return; }
+                var lines = list.map(function (item) { return item.start + '-' + item.end; });
+                this.downloadTextFile(
+                    'btwaf_ce-cn-' + this.geoCnDialog.tab + '-' + todayStr().replace(/-/g, '') + '.txt',
+                    lines.join('\n') + '\n'
+                );
+                BTP.msg('已导出 ' + lines.length + ' 条', 'success');
+            },
+            openGeoCnDialog: function () {
+                var d = this.geoCnDialog;
+                d.visible = true;
+                d.loading = true;
+                d.tab = 'include';
+                d.page = 1;
+                d.start = '';
+                d.end = '';
+                d.include = [];
+                d.exclude = [];
+                d.builtin = {};
+                d.error = '';
+                this.loadGeoCn();
+            },
+            loadGeoCn: async function () {
+                var d = this.geoCnDialog;
+                d.loading = true;
+                d.error = '';
+                try {
+                    var res = await WafAPI.data('get_geo_custom');
+                    res = res || {};
+                    d.builtin = res.builtin || {};
+                    d.include = res.include || [];
+                    d.exclude = res.exclude || [];
+                    if (res.error) d.error = res.error;
+                } catch (e) {
+                    d.error = errText(e);
+                } finally {
+                    d.loading = false;
+                }
+            },
+            saveGeoCn: async function () {
+                var d = this.geoCnDialog;
+                d.saving = true;
+                d.error = '';
+                try {
+                    var res = await WafAPI.data('save_geo_custom', {
+                        include: JSON.stringify(d.include),
+                        exclude: JSON.stringify(d.exclude)
+                    }, { timeout: 120000 });
+                    var payload = (res && res.data) || res || {};
+                    d.builtin = payload.builtin || d.builtin;
+                    d.include = payload.include || d.include;
+                    d.exclude = payload.exclude || d.exclude;
+                    d.error = payload.error || '';
+                    if (res && res.reloaded === false) {
+                        BTP.msg('已保存，但 Nginx 重载失败：' + (res.reload_error || ''), 'warning');
+                    } else {
+                        BTP.msg('中国 IP 段已保存', 'success');
+                    }
+                } catch (e) {
+                    if (!e || !e.__msgShown) BTP.msg(errText(e), 'error');
+                } finally {
+                    d.saving = false;
+                }
+            },
             saveBlockPage: async function () {
                 try {
                     await WafAPI.data('save_block_page', {

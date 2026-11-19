@@ -127,6 +127,12 @@
                 },
                 webshellTimer: null,
 
+                geoCnDialog: {
+                    visible: false, loading: false, saving: false, importing: false,
+                    tab: 'include', page: 1, rows: 20, start: '', end: '',
+                    builtin: {}, include: [], exclude: [], error: ''
+                },
+
                 /* 通用确认弹窗（不使用 BTP.confirm，避免 z-index 被面板 layer 遮挡） */
                 confirmDialog: { visible: false, title: '', content: '', resolve: null, checkbox: false, checkboxLabel: '', checked: false, withOption: false }
             };
@@ -195,6 +201,16 @@
             },
             webshellRunning: function () {
                 return !!(this.webshell && this.webshell.job && this.webshell.job.status === 'running');
+            },
+            geoCnList: function () {
+                var d = this.geoCnDialog;
+                var list = d.tab === 'exclude' ? d.exclude : d.include;
+                var start = (d.page - 1) * d.rows;
+                return list.slice(start, start + d.rows);
+            },
+            geoCnTotal: function () {
+                var d = this.geoCnDialog;
+                return (d.tab === 'exclude' ? d.exclude : d.include).length;
             },
             envAllOk: function () {
                 return !!(this.envItems && this.envItems.length) && this.envItems.every(function (i) { return i && i.ok; });

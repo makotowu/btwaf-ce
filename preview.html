@@ -413,6 +413,12 @@
                 };
             case 'get_plugin_config': return globalConfig(true);
             case 'get_lists': return { lists: emptyLists() };
+            case 'get_geo_custom':
+                return {
+                    builtin: { available: true, records: 5314, source: 'DB-IP Lite Country', release: '2026-11' },
+                    include: [], exclude: [], effective: 5314, error: ''
+                };
+            case 'save_geo_custom': return { saved: true, reloaded: true, reload_error: '', data: { builtin: { records: 5314 }, include: [], exclude: [], effective: 5314, error: '' } };
             case 'get_webshell_status':
                 return {
                     engine: { installed: false, version: '', path: '', install_supported: true, manager: 'apt', install_hint: '' },
@@ -662,6 +668,24 @@
 
             case 'run_selftest':
                 return { blocked: true, status: 403, hits: HITS_SQLI, request_id: 'mock-selftest-1' };
+
+            case 'get_geo_custom':
+                return {
+                    builtin: { available: true, records: 5314, source: 'DB-IP Lite Country', release: '2026-11' },
+                    include: [{ start: '1.2.3.0', end: '1.2.3.255' }, { start: '8.8.4.0', end: '8.8.4.255' }],
+                    exclude: [{ start: '114.114.114.0', end: '114.114.114.255' }],
+                    effective: 5315, error: ''
+                };
+            case 'save_geo_custom':
+                return {
+                    saved: true, reloaded: true, reload_error: '',
+                    data: {
+                        builtin: { available: true, records: 5314, source: 'DB-IP Lite Country', release: '2026-11' },
+                        include: JSON.parse(params.include || '[]'),
+                        exclude: JSON.parse(params.exclude || '[]'),
+                        effective: 5315, error: ''
+                    }
+                };
 
             case 'get_webshell_status':
                 return {

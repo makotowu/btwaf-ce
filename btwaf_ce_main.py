@@ -24,6 +24,7 @@ except Exception:
 from wafcore import config as C
 from wafcore import engine as E
 from wafcore import firewall as F
+from wafcore import geo_custom
 from wafcore import logs as L
 from wafcore import nginx as N
 from wafcore import paths
@@ -811,6 +812,34 @@ class btwaf_ce_main(object):
         E.apply_config("import_config")
         self._audit("导入配置")
         return {"imported": True}
+
+    # ---------------- 中国 IP 段 ----------------
+    @_api
+    def get_geo_custom(self, get):
+        return geo_custom.status()
+
+    @_api
+    def save_geo_custom(self, get):
+        include = self._obj_param(get, "include", [])
+        exclude = self._obj_param(get, "exclude", [])
+        if include is None:
+            include = []
+        if exclude is None:
+            exclude = []
+        if not isinstance(include, list) or not isinstance(exclude, list):
+            raise ValueError("include/exclude 必须是数组")
+        state_data = geo_custom.save(include, exclude)
+        reloaded, detail = E.reload_nginx()
+        self._audit(
+            "更新中国 IP 段：补充 %d 条，排除 %d 条"
+            % (len(state_data.get("include") or []), len(state_data.get("exclude") or []))
+        )
+        return {
+            "saved": True,
+            "data": state_data,
+            "reloaded": bool(reloaded),
+            "reload_error": "" if reloaded else str(detail or "Nginx 重载失败")[:300],
+        }
 
     # ---------------- Webshell 查杀 ----------------
     @_api
