@@ -5,6 +5,20 @@ version=re.search(r'VERSION = "([^"]+)"',io.open(paths,encoding="utf-8").read())
 problems=[]
 def read(p):
     return io.open(os.path.join(root,p),encoding="utf-8").read()
+def line_count(p):
+    return len(io.open(os.path.join(root,p),encoding="utf-8").read().splitlines())
+# 所有前端 JS 源文件；模板/方法/核心分包后仍按整体做标记检查
+_js_parts = ["static/js/app.js"]
+_waf_dir = os.path.join(root, "static/js/waf")
+for _dirpath, _dirnames, _filenames in os.walk(_waf_dir):
+    for _name in sorted(_filenames):
+        if _name.endswith(".js"):
+            _js_parts.append(os.path.relpath(os.path.join(_dirpath, _name), root).replace("\\", "/"))
+_js_parts = sorted(set(_js_parts))
+for _p in _js_parts:
+    if not os.path.isfile(os.path.join(root, _p)):
+        problems.append("missing frontend source: " + _p)
+appjs = "\n".join(read(p) for p in _js_parts)
 # version.json
 vj=read("static/version.json")
 try:
@@ -19,7 +33,6 @@ if "http://" in idx or "https://" in idx: problems.append("index.html contains e
 charts=read("static/js/charts.js")
 if "echarts" not in charts: problems.append("charts.js missing echarts runtime")
 # theme follow / locale / contrast regressions
-appjs=read("static/js/app.js")
 for marker in ["btp-primary","panelDocument","month11","--btn"]:
     pass
 # 产品名统一为「宝塔WAF社区版」（技术名 btwaf_ce 保留）
@@ -33,7 +46,7 @@ for p in ["static/js/app.js","index.html","preview.html","install.sh","wafcore/p
     _s=read(p)
     for bad in ["btwaf CE","WAF 社区版","堡塔 WAF","宝塔 WAF"]:
         if bad in _s: problems.append("%s still contains old name: %s" % (p,bad))
-for p in ["static/js/app.js","index.html","info.json"]:
+for p in ["static/js/waf/templates/monitor.js","index.html","info.json"]:
     if "宝塔WAF社区版" not in read(p): problems.append("%s missing canonical name" % p)
 if "btp-primary" not in appjs: problems.append("app.js missing panel theme follower")
 if "month11" not in appjs: problems.append("app.js datepicker locale incomplete")
@@ -49,6 +62,17 @@ if "geoModeOptions" not in appjs or "地区访问" not in appjs or "countryLabel
 if "waf-grid-3" not in appjs: problems.append("app.js missing top sites grid")
 if "logRows: 10" not in appjs or "siteRows: 10" not in appjs: problems.append("table default rows not 10")
 if "page-sizes=\"[10, 20, 50, 100]\"" not in appjs: problems.append("page size options missing 10")
+if line_count("static/js/app.js") > 600:
+    problems.append("app.js is too large; move view code into static/js/waf")
+for _p in _js_parts:
+    if _p.startswith("static/js/waf/") and line_count(_p) > 800:
+        problems.append("frontend module too large: %s" % _p)
+for _p in ("static/js/waf/core.js", "static/js/waf/templates/monitor.js",
+           "static/js/waf/methods/common.js"):
+    if _p not in read("index.html") or _p not in read("preview.html"):
+        problems.append("frontend loader missing: " + _p)
+if read("index.html").find("static/js/waf/core.js") > read("index.html").find("static/js/app.js"):
+    problems.append("app.js must load after waf modules")
 css=read("static/css/app.css")
 for marker in ["--btp-primary","waf-dark","el-select__popper","el-upload__input","el-input-number__increase"]:
     if marker not in css: problems.append("app.css missing "+marker)

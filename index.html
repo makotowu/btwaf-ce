@@ -52,6 +52,16 @@
                 .then(function () { return addScript('/static/js/btp-components.js'); })
                 .then(function () { return addScript('/static/js/charts.js'); })
                 .then(function () { return addScript('/static/js/api.js'); })
+                .then(function () { return addScript('/static/js/waf/core.js'); })
+                .then(function () { return addScript('/static/js/waf/templates/monitor.js'); })
+                .then(function () { return addScript('/static/js/waf/templates/manage.js'); })
+                .then(function () { return addScript('/static/js/waf/templates/diagnostics.js'); })
+                .then(function () { return addScript('/static/js/waf/methods/common.js'); })
+                .then(function () { return addScript('/static/js/waf/methods/monitor.js'); })
+                .then(function () { return addScript('/static/js/waf/methods/sites.js'); })
+                .then(function () { return addScript('/static/js/waf/methods/config.js'); })
+                .then(function () { return addScript('/static/js/waf/methods/rules.js'); })
+                .then(function () { return addScript('/static/js/waf/methods/diagnostics.js'); })
                 .then(function () { return addScript('/static/js/app.js'); })
                 .catch(function (e) { fail((e && e.message) || e); });
         }
