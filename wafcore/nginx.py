@@ -18,6 +18,8 @@ else:
 
 PANEL_ROOT = "/www/server/nginx"
 PANEL_VHOST_DIR = "/www/server/panel/vhost/nginx"
+PANEL_CDN_GLOBAL = "/www/server/panel/vhost/nginx/real_cdn_ip.conf"
+PANEL_CDN_EXT_DIR = "/www/server/panel/vhost/nginx/extension"
 
 
 def resolve_paths():
@@ -53,6 +55,55 @@ def resolve_vhost_dir():
     """Use the panel's Nginx vhost directory, preferring its HTTP include."""
     nginx_conf = resolve_paths()[1]
     return _configured_vhost_dir(nginx_conf) or PANEL_VHOST_DIR
+
+
+def _read_realip_status(path):
+    result = {"open": False, "header": "", "trusted_count": 0}
+    if not path or not os.path.isfile(path):
+        return result
+    try:
+        with open(path, "r", encoding="utf-8", errors="replace") as handle:
+            text = handle.read()
+    except (OSError, IOError):
+        return result
+    for raw in text.splitlines():
+        line = raw.strip().strip(";").strip()
+        if not line or line.startswith("#"):
+            continue
+        parts = line.split(None, 1)
+        if parts[0] == "real_ip_header" and len(parts) == 2:
+            result["header"] = parts[1].strip().strip(";").strip("\"'")
+            result["open"] = True
+        elif parts[0] == "set_real_ip_from":
+            result["trusted_count"] += 1
+    result["open"] = bool(result["open"] and result["trusted_count"])
+    return result
+
+
+def panel_cdn_status(site_name=None):
+    """Detect BaoTa panel real-IP config. Panel-level CDN always wins."""
+    global_status = _read_realip_status(PANEL_CDN_GLOBAL)
+    result = {
+        "open": global_status["open"],
+        "scope": "global" if global_status["open"] else "",
+        "header": global_status["header"],
+        "global": global_status["open"],
+        "site": False,
+        "trusted_count": global_status["trusted_count"],
+    }
+    if site_name:
+        name = str(site_name).strip()
+        if name and "/" not in name and "\\" not in name and ".." not in name:
+            site_status = _read_realip_status(os.path.join(PANEL_CDN_EXT_DIR, name, "proxy_real_ip.conf"))
+            if site_status["open"]:
+                result.update({
+                    "open": True,
+                    "scope": "site",
+                    "header": site_status["header"],
+                    "site": True,
+                    "trusted_count": site_status["trusted_count"],
+                })
+    return result
 
 
 def _prefix_from_banner(text):

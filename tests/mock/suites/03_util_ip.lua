@@ -42,6 +42,17 @@ t.test("ip_in_list 支持 CIDR 与普通 IP", function()
   t.eq(util.ip_in_list("1.2.3.4", nil), false)
 end)
 
+t.test("ip_in_list 支持 IPv4 范围", function()
+  local list = { "10.0.0.10-10.0.0.20", "203.0.113.5" }
+  t.eq(util.ip_in_list("10.0.0.10", list), true)
+  t.eq(util.ip_in_list("10.0.0.15", list), true)
+  t.eq(util.ip_in_list("10.0.0.20", list), true)
+  t.eq(util.ip_in_list("10.0.0.21", list), false)
+  t.eq(util.ip_in_list("10.0.0.5", list), false)
+  t.eq(util.ip_in_list("10.0.0.20-10.0.0.10", { "10.0.0.10-10.0.0.20" }), false)
+  t.eq(util.ip_range_match("2001:db8::1", "10.0.0.1-10.0.0.2"), false)
+end)
+
 t.test("is_ip", function()
   t.eq(util.is_ip("1.2.3.4"), true)
   t.eq(util.is_ip("2001:db8::1"), true)

@@ -55,13 +55,16 @@ local function setup(opts)
     fail_open = opts.fail_open ~= false,
     modules = { sqli = { open = true, tier = 1 } },
     lists = opts.global_lists or {},
+    rule_status = opts.global_status or {},
     cc = opts.cc or { open = false },
     attack_block = opts.attack_block or { open = false },
-    block = { status = 403, use_custom = false, page = "" },
+    block = { status = opts.global_block_status or 403, use_custom = false, page = "" },
   }
   local site = {
     open = true,
     lists = opts.site_lists or {},
+    rule_status = opts.site_status or {},
+    block = { status = opts.site_block_status or 0 },
     custom_rules = {},
   }
   local custom = opts.custom or { rules = {} }
@@ -177,6 +180,37 @@ t.test("规则命中超阈值：block + 日志 hits/action/score", function()
   t.eq(obj.hits[1].module, "sqli")
   t.eq(obj.hits[1].src, "ce")
   t.ok(type(obj.snippet) == "string")
+end)
+
+t.test("内置规则响应码：全局覆盖实际返回码", function()
+  setup({ rules = { rule_base() }, global_status = { ["ce-test-1"] = 404 } })
+  local res = request({ uri = "/index.php", query = "id=union" })
+  t.eq(res.status, 404)
+  t.eq(last_log().obj.status, 404)
+end)
+
+t.test("内置规则响应码：站点规则覆盖优先于全局", function()
+  setup({
+    rules = { rule_base() },
+    global_status = { ["ce-test-1"] = 404 },
+    site_status = { ["ce-test-1"] = 429 },
+  })
+  local res = request({ uri = "/index.php", query = "id=union" })
+  t.eq(res.status, 429)
+end)
+
+t.test("站点默认拦截状态码：无规则覆盖时生效", function()
+  setup({ rules = { rule_base() }, site_block_status = 503 })
+  local res = request({ uri = "/index.php", query = "id=union" })
+  t.eq(res.status, 503)
+end)
+
+t.test("规则响应码在 observe 模式下不改变放行", function()
+  setup({ rules = { rule_base() }, global_status = { ["ce-test-1"] = 404 }, observe = true })
+  local res = request({ uri = "/index.php", query = "id=union" })
+  t.eq(res.blocked, false)
+  t.eq(res.status, 200)
+  t.eq(last_log().obj.action, "allow")
 end)
 
 t.test("未达阈值：不拦截但记录 allow（链路内命中）", function()

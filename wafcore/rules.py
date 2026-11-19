@@ -127,9 +127,21 @@ def get_rules(params=None):
     source = (params.get("source") or "").strip().lower()
     keyword = (params.get("keyword") or "").strip().lower()
     status = (params.get("status") or "").strip().lower()
+    scope = (params.get("scope") or "global").strip().lower()
+    site_name = (params.get("site_name") or "").strip()
     page = util.safe_int(params.get("p"), 1, 1)
     rows = util.safe_int(params.get("rows"), 50, 1, 500)
     cfg = C.load_global()
+    if scope == "site":
+        if not site_name:
+            raise ValueError("缺少站点名")
+        sites_cfg = C.load_sites()
+        if site_name not in sites_cfg:
+            sites_cfg[site_name] = C.default_site_entry()
+        status_map = C.effective_site(cfg, sites_cfg[site_name]).get("rule_status") or {}
+    else:
+        scope = "global"
+        status_map = cfg.get("rule_status") or {}
     rules = all_rules()
     out = []
     for r in rules:
@@ -141,6 +153,7 @@ def get_rules(params=None):
             continue
         r = dict(r)
         r["enabled"] = _is_enabled(r, cfg)
+        r["status_override"] = util.safe_int(status_map.get(r["id"]), 0)
         if status == "enabled" and not r["enabled"]:
             continue
         if status in ("disabled", "excluded") and r["enabled"]:
@@ -164,6 +177,8 @@ def get_rules(params=None):
         "total": total,
         "page": page,
         "rows": rows,
+        "scope": scope,
+        "site_name": site_name if scope == "site" else "",
         "skipped": index.get("skipped") or [],
         "crs_version": index.get("crs_version") or "",
     }
@@ -216,6 +231,44 @@ def set_rule_exclude(scope, site_name, type_key, ids, db=None):
     state.mark_config_applied("rule_exclude")
     state.append_plugin_log("更新规则排除：%s/%s，%d 条" % (scope or "global", type_key, len(clean)))
     return {"saved": True, "count": len(clean)}
+
+
+def set_rule_status(scope, site_name, rule_id, status):
+    rule_id = (rule_id or "").strip()
+    if not rule_id or len(rule_id) > 64:
+        raise ValueError("规则 ID 不合法")
+    if not any(r["id"] == rule_id for r in all_rules()):
+        raise ValueError("规则不存在：%s" % rule_id)
+    status = util.safe_int(status, 0)
+    if status not in (0,) + C.BLOCK_STATUSES:
+        raise ValueError("响应码只支持 403/404/444/429/503，0 表示继承")
+    if scope == "site":
+        if not site_name:
+            raise ValueError("缺少站点名")
+        sites_cfg = C.load_sites()
+        if site_name not in sites_cfg:
+            sites_cfg[site_name] = C.default_site_entry()
+        entry = sites_cfg[site_name]
+        mapping = dict(entry.get("rule_status") or {})
+        if status:
+            mapping[rule_id] = status
+        else:
+            mapping.pop(rule_id, None)
+        entry["rule_status"] = C.clean_rule_status(mapping)
+        entry["update_time"] = util.now()
+        C.save_sites(sites_cfg)
+    else:
+        cfg = C.load_global()
+        mapping = dict(cfg.get("rule_status") or {})
+        if status:
+            mapping[rule_id] = status
+        else:
+            mapping.pop(rule_id, None)
+        cfg["rule_status"] = C.clean_rule_status(mapping)
+        C.save_global(cfg)
+    state.mark_config_applied("rule_status")
+    state.append_plugin_log("更新规则响应码：%s/%s=%s" % (scope or "global", rule_id, status or "继承"))
+    return {"saved": True, "rule_id": rule_id, "status": status}
 
 
 def version_info():

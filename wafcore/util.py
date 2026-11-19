@@ -182,6 +182,7 @@ def reload_nginx(init_script="/etc/init.d/nginx"):
 # ---------------- 校验 ----------------
 IP_RE = re.compile(r"^(\d{1,3}\.){3}\d{1,3}$")
 CIDR_RE = re.compile(r"^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$")
+IP_RANGE_RE = re.compile(r"^(.+?)\s*-\s*(.+)$")
 IPV6_RE = re.compile(r"^[0-9a-fA-F:]+$")
 
 
@@ -210,6 +211,33 @@ def valid_cidr(cidr):
         return valid_ip(ip) and 0 <= int(mask) <= 32
     except Exception:
         return False
+
+
+def _ipv4_int(ip):
+    parts = [int(p) for p in ip.split(".")]
+    return parts[0] * 16777216 + parts[1] * 65536 + parts[2] * 256 + parts[3]
+
+
+def valid_ip_range(value):
+    """IPv4 range: a.b.c.d-a.b.c.d, start <= end."""
+    if not value or not isinstance(value, str):
+        return False
+    match = IP_RANGE_RE.match(value.strip())
+    if not match:
+        return False
+    start, end = match.group(1).strip(), match.group(2).strip()
+    if not IP_RE.match(start) or not IP_RE.match(end):
+        return False
+    try:
+        if not valid_ip(start) or not valid_ip(end):
+            return False
+        return _ipv4_int(start) <= _ipv4_int(end)
+    except Exception:
+        return False
+
+
+def valid_ip_or_cidr_range(value):
+    return valid_ip(value) or valid_cidr(value) or valid_ip_range(value)
 
 
 def valid_ip_or_cidr(value):

@@ -62,11 +62,29 @@ local function exact_ip_match(ip, base)
   return type(ip) == "string" and type(base) == "string" and ip:lower() == base:lower()
 end
 
--- 判断 ip 是否落在 cidr 内。cidr 可以是纯 IP（精确匹配）或 a.b.c.d/n。
+-- 判断 ip 是否落在 IPv4 范围 a.b.c.d-a.b.c.d 内
+function util.ip_range_match(ip, value)
+  if type(ip) ~= "string" or type(value) ~= "string" then
+    return false
+  end
+  local start, finish = value:match("^(%d+%.%d+%.%d+%.%d+)%s*%-%s*(%d+%.%d+%.%d+%.%d+)$")
+  if not start then
+    return false
+  end
+  local ipn = util.ip_to_int(ip)
+  local a = util.ip_to_int(start)
+  local b = util.ip_to_int(finish)
+  return ipn ~= nil and a ~= nil and b ~= nil and a <= b and ipn >= a and ipn <= b
+end
+
+-- 判断 ip 是否落在 cidr 内。cidr 可以是纯 IP（精确匹配）、a.b.c.d/n 或 IPv4 范围。
 -- 说明：IPv6 网段计算不在 v1 范围，退化为精确匹配，避免误放行/误拦截。
 function util.cidr_match(ip, cidr)
   if type(ip) ~= "string" or type(cidr) ~= "string" then
     return false
+  end
+  if util.ip_range_match(ip, cidr) then
+    return true
   end
   local base, bits = cidr:match("^([^/]+)/(%d+)$")
   if not base then

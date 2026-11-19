@@ -21,6 +21,7 @@ MODULES = [
     ("custom", "自定义规则"),
 ]
 MODULE_KEYS = [m[0] for m in MODULES]
+BLOCK_STATUSES = (403, 404, 444, 429, 503)
 
 DEFAULT_GLOBAL = {
     "schema": 1,
@@ -58,6 +59,7 @@ DEFAULT_GLOBAL = {
         "param_white": [],
     },
     "rule_exclude": {"crs": [], "ce": []},
+    "rule_status": {},
     "trusted_proxies": [],
     "crawler": {
         "allow": [
@@ -90,6 +92,7 @@ def default_site_entry():
         "open": True,
         "sensitivity": 0,
         "observe": None,
+        "block": {"status": 0},
         "modules": dict([(k, {"open": True, "tier": 0}) for k in MODULE_KEYS]),
         "cc": {
             "open": None,
@@ -103,6 +106,7 @@ def default_site_entry():
         "cdn": copy.deepcopy(DEFAULT_CDN),
         "lists": copy.deepcopy(DEFAULT_GLOBAL["lists"]),
         "rule_exclude": {"crs": [], "ce": []},
+        "rule_status": {},
         "disable_php_path": ["^/cache/", "^/config/", "^/runtime/", "^/application/", "^/logs/"],
         "disable_ext": ["sql", "bak", "swp", "git", "env"],
         "upload_ext": ["php", "php5", "phtml", "jsp", "jspx", "asp", "aspx", "exe", "sh"],
@@ -163,7 +167,7 @@ def clean_global(data):
 
     blk = _as_dict(cfg.get("block"))
     status = util.safe_int(blk.get("status"), 403)
-    if status not in (403, 404, 444, 429, 503):
+    if status not in BLOCK_STATUSES:
         warnings.append("拦截状态码不支持，已回退 403")
         status = 403
     page = blk.get("page") or ""
@@ -228,6 +232,7 @@ def clean_global(data):
 
     cfg["lists"] = clean_lists(cfg.get("lists") or {})
     cfg["rule_exclude"] = clean_rule_exclude(cfg.get("rule_exclude") or {})
+    cfg["rule_status"] = clean_rule_status(cfg.get("rule_status") or {})
     cfg["trusted_proxies"] = clean_trusted(cfg.get("trusted_proxies") or [])
 
     crawler = _as_dict(cfg.get("crawler"))
@@ -254,9 +259,7 @@ def clean_lists(lists):
             if not item or item in clean:
                 continue
             if key.startswith("ip_"):
-                if "/" in item and not util.valid_cidr(item):
-                    continue
-                if "/" not in item and not util.valid_ip(item):
+                if not util.valid_ip_or_cidr_range(item):
                     continue
             if key.startswith("url_"):
                 probe = item[1:] if item.startswith("~") else item
@@ -274,9 +277,26 @@ def clean_trusted(items):
         return []
     out = []
     for item in items:
-        if isinstance(item, str) and util.valid_ip_or_cidr(item.strip()):
+        if isinstance(item, str) and util.valid_ip_or_cidr_range(item.strip()):
             out.append(item.strip())
     return out[:200]
+
+
+def clean_rule_status(obj):
+    """rule id -> allowed response status; invalid entries are dropped."""
+    out = {}
+    if not isinstance(obj, dict):
+        return out
+    for rule_id, status in obj.items():
+        rule_id = str(rule_id).strip()
+        if not rule_id or len(rule_id) > 64:
+            continue
+        status = util.safe_int(status, 0)
+        if status in BLOCK_STATUSES:
+            out[rule_id] = status
+        if len(out) >= 2000:
+            break
+    return out
 
 
 def clean_rule_exclude(obj):
@@ -314,6 +334,10 @@ def clean_site(data):
         }
     entry["modules"] = clean_mods
 
+    blk = _as_dict(entry.get("block"))
+    block_status = util.safe_int(blk.get("status"), 0, 0, 599)
+    entry["block"] = {"status": block_status if block_status in BLOCK_STATUSES else 0}
+
     cc = _as_dict(entry.get("cc"))
     entry["cc"] = {
         "open": _clean_bool_maybe(cc.get("open")),
@@ -343,6 +367,7 @@ def clean_site(data):
 
     entry["lists"] = clean_lists(entry.get("lists") or {})
     entry["rule_exclude"] = clean_rule_exclude(entry.get("rule_exclude") or {})
+    entry["rule_status"] = clean_rule_status(entry.get("rule_status") or {})
     for key, default in (
         ("disable_php_path", []),
         ("disable_ext", []),
@@ -515,6 +540,16 @@ def effective_site(global_cfg, site_cfg):
     out["sensitivity"] = s.get("sensitivity") or g.get("sensitivity", 2)
     if s.get("observe") is not None:
         out["observe"] = s.get("observe")
+    blk = _as_dict(g.get("block"))
+    sblk = _as_dict(s.get("block"))
+    block_status = util.safe_int(sblk.get("status"), 0)
+    out["block"] = dict(blk)
+    out["block"]["status"] = (
+        block_status if block_status in BLOCK_STATUSES else util.safe_int(blk.get("status"), 403)
+    )
+    out["cdn"] = deep_merge(DEFAULT_CDN, _as_dict(s.get("cdn")))
+    out["rule_status"] = dict(_as_dict(g.get("rule_status")))
+    out["rule_status"].update(_as_dict(s.get("rule_status")))
     out["modules"] = {}
     gmods = _as_dict(g.get("modules"))
     smods = _as_dict(s.get("modules"))

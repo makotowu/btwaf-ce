@@ -74,6 +74,7 @@ local DEFAULT_GLOBAL = {
     param_white = {},
   },
   rule_exclude = { crs = {}, ce = {} },
+  rule_status = {},
   trusted_proxies = {},
   crawler = {
     allow = {
@@ -94,12 +95,14 @@ local DEFAULT_SITE = {
   open = true,
   sensitivity = 0,
   observe = nil,
+  block = { status = 0 },
   modules = {},
   cc = { open = nil, cycle = 0, limit = 0, block_time = 0, status = 0, url_cc = nil },
   attack_block = { open = nil, cycle = 0, limit = 0, block_time = 0 },
   cdn = { open = false, headers = { "cf-connecting-ip", "x-real-ip", "x-forwarded-for" }, trusted = {} },
   lists = { ip_black = {}, ip_white = {}, url_black = {}, url_white = {}, ua_black = {}, ua_white = {}, param_white = {} },
   rule_exclude = { crs = {}, ce = {} },
+  rule_status = {},
   disable_php_path = { "^/cache/", "^/config/", "^/runtime/", "^/application/", "^/logs/" },
   disable_ext = { "sql", "bak", "swp", "git", "env" },
   upload_ext = { "php", "php5", "phtml", "jsp", "jspx", "asp", "aspx", "exe", "sh" },
@@ -277,6 +280,41 @@ local function merge_exclude(global_ex, site_ex)
       global_ex and global_ex[key],
       site_ex and site_ex[key]
     )
+  end
+  return out
+end
+
+local function merge_rule_status(global_rs, site_rs)
+  local out = {}
+  if type(global_rs) == "table" then
+    for rule_id, status in pairs(global_rs) do
+      if type(rule_id) == "string" then
+        local n = tonumber(status)
+        if n then out[rule_id] = n end
+      end
+    end
+  end
+  if type(site_rs) == "table" then
+    for rule_id, status in pairs(site_rs) do
+      if type(rule_id) == "string" then
+        local n = tonumber(status)
+        if n then out[rule_id] = n end
+      end
+    end
+  end
+  return out
+end
+
+local function merge_block(global_block, site_block)
+  local out = {}
+  if type(global_block) == "table" then
+    for k, v in pairs(global_block) do out[k] = v end
+  end
+  if type(site_block) == "table" then
+    local status = tonumber(site_block.status)
+    if status and status ~= 0 then
+      out.status = status
+    end
   end
   return out
 end
@@ -496,12 +534,13 @@ local function merge_site(site_name)
   merged.cdn = merge_cdn(raw.cdn)
   merged.lists = merge_lists(global.lists, raw.lists)
   merged.rule_exclude = merge_exclude(global.rule_exclude, raw.rule_exclude)
+  merged.rule_status = merge_rule_status(global.rule_status, raw.rule_status)
+  merged.block = merge_block(global.block, raw.block)
   merged.disable_php_path = as_array(raw.disable_php_path)
   merged.disable_ext = as_array(raw.disable_ext)
   merged.upload_ext = as_array(raw.upload_ext)
   merged.custom_rules = collect_custom_rules(site_name, raw)
   -- 全局共享项（站点级无对应字段）
-  merged.block = global.block
   merged.scan = global.scan
   merged.log = global.log
   merged.crawler = global.crawler

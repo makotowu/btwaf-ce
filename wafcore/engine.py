@@ -258,6 +258,7 @@ def status():
         "dirs": dirs,
         "lua_files": lua_files,
         "rules": rules,
+        "panel_cdn": nginx.panel_cdn_status(),
         "config_apply_at": util.safe_int(st.get("config_apply_at"), 0),
         "last_reload": util.safe_int(st.get("last_reload"), 0),
         "errors": state.read_error_log_tail(20),
@@ -282,6 +283,13 @@ def check_env():
         detail += "；请启用 HTTP lua-nginx-module 并加载所需动态模块"
     add(label + " Lua 模块", server["lua"], detail)
     add(label + " 配置文件", conf["exists"], paths.CONF_PATH, True)
+    panel_cdn = nginx.panel_cdn_status()
+    add(
+        "面板 CDN 真实 IP",
+        True,
+        ("已开启（%s，Header=%s），插件站点 CDN 设置将让位于面板" % (panel_cdn["scope"], panel_cdn["header"]))
+        if panel_cdn["open"] else "未开启",
+    )
     add("配置与插件模板一致", conf["hash_ok"], "被修改或缺失时点一键修复即可恢复", True)
     ok_cfg = True
     try:

@@ -9,8 +9,57 @@
 ]]
 
 local util = require("lib.util")
+local fs = require("lib.fs")
 
 local ip = {}
+local PANEL_CDN_GLOBAL = "/www/server/panel/vhost/nginx/real_cdn_ip.conf"
+local PANEL_CDN_EXT = "/www/server/panel/vhost/nginx/extension/%s/proxy_real_ip.conf"
+local panel_cdn_cache = {}
+
+local function panel_realip(path)
+  local text = fs.read(path)
+  if type(text) ~= "string" or text == "" then
+    return false, ""
+  end
+  local has_from = false
+  local header = ""
+  for line in text:gmatch("[^\r\n]+") do
+    line = util.trim(line)
+    if line ~= "" and line:sub(1, 1) ~= "#" then
+      local name, value = line:match("^(%S+)%s+(.+)$")
+      if name == "set_real_ip_from" then
+        has_from = true
+      elseif name == "real_ip_header" then
+        header = value:gsub(";", "")
+      end
+    end
+  end
+  return has_from and header ~= "", header
+end
+
+-- 面板 CDN/真实 IP 已由 Nginx 提前改写 remote_addr；插件不能再解析 Header。
+local function panel_cdn(site_name)
+  local key = type(site_name) == "string" and site_name or ""
+  if panel_cdn_cache[key] ~= nil then
+    return panel_cdn_cache[key]
+  end
+  local result = { open = false, scope = "" }
+  local global_open = panel_realip(PANEL_CDN_GLOBAL)
+  if global_open then
+    result.open = true
+    result.scope = "global"
+  end
+  if key ~= "" and not key:find("[/\\]") and not key:find("%.%.") then
+    local site_open = panel_realip(string.format(PANEL_CDN_EXT, key))
+    if site_open then
+      result.open = true
+      result.scope = "site"
+    end
+  end
+  panel_cdn_cache[key] = result
+  return result
+end
+ip.panel_cdn = panel_cdn
 
 -- 大小写不敏感取 header（headers 约定为小写键，但测试/调用方可能传原始大小写）
 local function header_get(headers, name)
@@ -64,6 +113,22 @@ function ip.client_ip(headers, remote_addr, site_cfg)
   if type(site_cfg) == "table" then
     cdn = site_cfg.cdn
     global = site_cfg.global_proxy_trusted
+  end
+
+  -- 面板 CDN 已由 Nginx real_ip 模块处理时，realip_remote_addr 与原地址不同；
+  -- 这种情况下不能再从 Header 解析，否则会重复处理或绕过面板的 trusted 链。
+  local realip = nil
+  if ngx and ngx.var then
+    realip = ngx.var.realip_remote_addr
+  end
+  if type(realip) == "string" and realip ~= "" and realip ~= remote_addr then
+    return remote_addr, "panel-cdn:realip"
+  end
+
+  -- 面板全局/站点 CDN 已由 Nginx real_ip 模块处理，直接使用 remote_addr。
+  local panel = panel_cdn(type(site_cfg) == "table" and site_cfg.site_name or nil)
+  if panel.open then
+    return remote_addr, "panel-cdn:" .. panel.scope
   end
 
   -- 1) 站点 CDN 开启

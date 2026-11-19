@@ -59,7 +59,7 @@
 
 ### `get_logs` / `clear_logs`
 插件操作日志（`<data>/logs/plugin.log` + 操作流水）。
-- 参数：`p=1, rows=50`
+- 参数：`p=1, rows=50`；可选 `date=YYYY-MM-DD`、`keyword`（内容过滤）
 - 返回分页，`list` 元素 `{"time": 1730000000, "content": "..."}`
 
 ## 2. 全局配置
@@ -79,14 +79,18 @@
 返回 `data = {"saved": true}`
 
 ### `get_rules`
-参数：`source`、`module`、`keyword`、`status`（`enabled`/`disabled`，可空）、`p`、`rows`；`status=disabled` 表示当前未启用的规则（可能因排除/模块关闭/灵敏度 tier）。
+参数：`source`、`module`、`keyword`、`status`（`enabled`/`disabled`，可空）、`scope`（`global|site`）、`site_name`（scope=site 时必填）、`p`、`rows`；`status=disabled` 表示当前未启用的规则（可能因排除/模块关闭/灵敏度 tier）。
 规则清单与来源。
-- 参数：`module`（可选）、`source`（`crs|ce|custom` 可选）、`keyword`（可选）、`p=1, rows=50`
 - 返回 `data` 分页，`list` 元素：
 ```json
-{"id": "crs-942100", "module": "sqli", "name": "...", "tier": 1, "score": 5, "src": "crs", "enabled": true, "hits": 0}
+{"id": "crs-942100", "module": "sqli", "name": "...", "tier": 1, "score": 5, "src": "crs", "enabled": true, "status_override": 0, "hits": 0}
 ```
-- 顶层同时返回：`{"skipped": [{"id": "...", "reason": "..."}], "crs_version": "4.x.y"}`（规则库页的"未移植清单"直接用它）。
+- `status_override`：0=继承，其他值为该规则被拦截时使用的状态码。
+- 顶层同时返回：`{"scope": "global", "site_name": "", "skipped": [...], "crs_version": "4.x.y"}`。
+
+### `set_rule_status`
+参数：`scope`（`global|site`）、`site_name`（scope=site 时必填）、`rule_id`、`status`（`0/403/404/444/429/503`，0=继承）
+返回 `data = {"saved": true, "rule_id": "...", "status": 403}`
 
 ### `set_rule_exclude`
 参数：`scope`（`global|site`）、`site_name`（scope=site 时必填）、`type`（`crs|ce`）、`ids`（JSON 数组，`[]` 表示清空）
@@ -113,10 +117,12 @@
 
 ### `get_site_config`
 参数：`site_name`（必填）
-返回：`data = {"site_name": "...", "config": <站点配置合并后对象>, "raw": <站点原始对象>, "global": <全局对象>}`
+返回：`data = {"site_name": "...", "config": <站点配置合并后对象>, "raw": <站点原始对象>, "global": <全局对象>, "panel_cdn": {"open": false, "scope": "", "header": "", "site": false, "global": false}}`
+- `config.block.status`：0=继承全局；其他为允许的拦截状态码。
+- `config.rule_status`：规则 ID → 响应码，站点覆盖全局。
 
 ### `save_site_config`
-参数：`site_name`、`config`（JSON）
+参数：`site_name`、`config`（JSON；可包含 `block.status` 和 `rule_status`）
 返回 `data = {"saved": true, "apply_at": 1730000000}`
 
 ### `set_site_open`
@@ -168,7 +174,7 @@
 
 ### `set_lists`
 参数：`scope`、`site_name`（scope=site 必填）、`type`（键名）、`items`（JSON 数组）
-- 校验：ip 支持单 IP/CIDR；url 支持 `^` 前缀或正则（以 `~` 开头）；ua 字符串；param 名称
+- 校验：ip 支持单 IP/CIDR/IP 范围（`start-end`）；url 支持 `^` 前缀或正则（以 `~` 开头）；ua 字符串；param 名称
 返回 `data = {"saved": true, "count": 3}`
 
 ## 6. 自定义规则

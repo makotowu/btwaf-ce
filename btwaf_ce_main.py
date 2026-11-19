@@ -24,6 +24,7 @@ except Exception:
 from wafcore import config as C
 from wafcore import engine as E
 from wafcore import logs as L
+from wafcore import nginx as N
 from wafcore import paths
 from wafcore import rules as R
 from wafcore import sites as S
@@ -209,8 +210,14 @@ class btwaf_ce_main(object):
     def get_logs(self, get):
         p = util.safe_int(self._p(get, "p"), 1, 1)
         rows = util.safe_int(self._p(get, "rows"), 50, 1, 200)
+        date_filter = str(self._p(get, "date", "") or "").strip()
+        keyword = str(self._p(get, "keyword", "") or "").strip().lower()
         lines = state.read_plugin_log()
         lines = list(reversed(lines))
+        if date_filter:
+            lines = [line for line in lines if line.strip().startswith(date_filter)]
+        if keyword:
+            lines = [line for line in lines if keyword in line.lower()]
         total = len(lines)
         start = (p - 1) * rows
         items = []
@@ -292,6 +299,8 @@ class btwaf_ce_main(object):
                 "source": self._p(get, "source", ""),
                 "keyword": self._p(get, "keyword", ""),
                 "status": self._p(get, "status", ""),
+                "scope": self._p(get, "scope", "global"),
+                "site_name": self._p(get, "site_name", ""),
                 "p": self._p(get, "p", 1),
                 "rows": self._p(get, "rows", 50),
             }
@@ -309,6 +318,18 @@ class btwaf_ce_main(object):
             self._check_site_exists(site_name)
         res = R.set_rule_exclude(scope, site_name, type_key, ids)
         self._audit("更新规则排除：%s/%s" % (scope, type_key))
+        return res
+
+    @_api
+    def set_rule_status(self, get):
+        scope = str(self._p(get, "scope", "global") or "global")
+        site_name = str(self._p(get, "site_name", "") or "").strip()
+        rule_id = str(self._p(get, "rule_id", "") or "").strip()
+        status = util.safe_int(self._p(get, "status"), 0)
+        if scope == "site":
+            self._check_site_exists(site_name)
+        res = R.set_rule_status(scope, site_name, rule_id, status)
+        self._audit("更新规则响应码：%s/%s=%s" % (scope, rule_id, status or "继承"))
         return res
 
     @_api
@@ -375,6 +396,7 @@ class btwaf_ce_main(object):
             "config": C.effective_site(glob, raw),
             "raw": raw,
             "global": glob,
+            "panel_cdn": N.panel_cdn_status(name),
         }
 
     @_api

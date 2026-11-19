@@ -80,6 +80,7 @@ atexit.register(_conf_patch.stop)
 from wafcore import config as C  # noqa: E402
 from wafcore import engine as E  # noqa: E402
 from wafcore import logs as L  # noqa: E402
+from wafcore import nginx as N  # noqa: E402
 from wafcore import rules as R  # noqa: E402
 from wafcore import sites as S  # noqa: E402
 from wafcore import state as ST  # noqa: E402
@@ -1524,6 +1525,85 @@ class ControllerReadOnlyTest(BaseCase):
         self.assertIs(saved["status"], True)
         self.assertTrue(os.path.isfile(P.BLOCK_PAGE))
         self.assertIn("blocked", E.read_block_page())
+
+
+# ---------------------------------------------------------------------------
+# 11) P0：范围、响应码、面板 CDN、操作日志筛选
+# ---------------------------------------------------------------------------
+class P0RangeAndStatusTest(BaseCase):
+    def test_ip_range_validation_and_lists(self):
+        self.assertTrue(U.valid_ip_range("1.2.3.4-1.2.3.10"))
+        self.assertTrue(U.valid_ip_range(" 1.2.3.4 - 1.2.3.4 "))
+        self.assertFalse(U.valid_ip_range("1.2.3.10-1.2.3.4"))
+        self.assertFalse(U.valid_ip_range("1.2.3.4-::1"))
+        self.assertFalse(U.valid_ip_range("1.2.3.4"))
+        self.assertEqual(C.clean_lists({"ip_black": ["1.2.3.4-1.2.3.10", "bad", "10.0.0.0/8"]})["ip_black"],
+                         ["1.2.3.4-1.2.3.10", "10.0.0.0/8"])
+        self.assertEqual(C.clean_trusted(["1.2.3.4-1.2.3.10", "bad"]), ["1.2.3.4-1.2.3.10"])
+
+    def test_site_block_and_rule_status_merge(self):
+        site = C.clean_site({"block": {"status": 404}, "rule_status": {"crs-1": 403}})
+        self.assertEqual(site["block"], {"status": 404})
+        self.assertEqual(site["rule_status"], {"crs-1": 403})
+        g = C.clean_global({"block": {"status": 403}, "rule_status": {"crs-1": 404, "x": 200}})[0]
+        eff = C.effective_site(g, site)
+        self.assertEqual(eff["block"]["status"], 404)
+        self.assertEqual(eff["rule_status"], {"crs-1": 403})
+        self.assertEqual(C.clean_site({"block": {"status": 0}})["block"]["status"], 0)
+
+    def test_rule_status_api(self):
+        rule_id = R.all_rules()[0]["id"]
+        R.set_rule_status("global", "", rule_id, 404)
+        self.assertEqual(C.load_global()["rule_status"][rule_id], 404)
+        rows = R.get_rules({"scope": "global", "keyword": rule_id})["list"]
+        target = [r for r in rows if r["id"] == rule_id]
+        self.assertTrue(target)
+        self.assertEqual(target[0]["status_override"], 404)
+        R.set_rule_status("global", "", rule_id, 0)
+        self.assertNotIn(rule_id, C.load_global()["rule_status"])
+
+
+class P0PanelCdnTest(BaseCase):
+    def set_realip(self, path, header="X-Forwarded-For", trusted="0.0.0.0/0"):
+        d = os.path.dirname(path)
+        if d:
+            os.makedirs(d, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            f.write("set_real_ip_from %s;\nreal_ip_header %s;\nreal_ip_recursive on;\n" % (trusted, header))
+
+    def test_panel_cdn_global_and_site(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            global_file = os.path.join(tmp, "real_cdn_ip.conf")
+            ext_dir = os.path.join(tmp, "extension")
+            with mock.patch.object(N, "PANEL_CDN_GLOBAL", global_file), \
+                    mock.patch.object(N, "PANEL_CDN_EXT_DIR", ext_dir):
+                self.assertFalse(N.panel_cdn_status()["open"])
+                self.set_realip(global_file)
+                g = N.panel_cdn_status("example.com")
+                self.assertTrue(g["open"])
+                self.assertEqual(g["scope"], "global")
+                self.assertEqual(g["header"], "X-Forwarded-For")
+                self.set_realip(os.path.join(ext_dir, "example.com", "proxy_real_ip.conf"), "CF-Connecting-IP")
+                s = N.panel_cdn_status("example.com")
+                self.assertEqual(s["scope"], "site")
+                self.assertEqual(s["header"], "CF-Connecting-IP")
+                self.assertFalse(N.panel_cdn_status("../bad")["site"])
+
+
+class P0OperationLogTest(BaseCase):
+    def test_get_logs_filters(self):
+        ctrl = MAIN.btwaf_ce_main()
+        os.makedirs(os.path.dirname(P.PLUGIN_LOG), exist_ok=True)
+        with open(P.PLUGIN_LOG, "w", encoding="utf-8") as f:
+            f.write("2026-01-02 10:00:00  更新全局配置\n")
+            f.write("2026-01-03 10:00:00  更新规则响应码\n")
+        d = ctrl.get_logs({"date": "2026-01-03"})
+        d = d.get("data", d)
+        self.assertEqual(d["total"], 1)
+        self.assertIn("规则响应码", d["list"][0]["content"])
+        d = ctrl.get_logs({"keyword": "全局配置"})
+        d = d.get("data", d)
+        self.assertEqual(d["total"], 1)
 
 
 # ---------------------------------------------------------------------------

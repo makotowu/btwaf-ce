@@ -37,6 +37,8 @@ python3 tests/shell/test_install_check.py
 
 该测试在 tmpfs 根目录中只读挂载运行库和原始仓库，将临时 fixture 挂载到 `/www`，不会写宿主的面板目录。fixture 提供模拟 Nginx 可执行文件，验证安装脚本、Python 包装函数、真实探测器及错误返回之间的集成，不声称验证真实 Lua 模块。CI 必须执行此回归，缺少依赖或沙箱不可用时失败，不静默跳过；`bash -n install.sh` 仍保留为独立语法检查。
 
+面板 CDN 冲突需要额外手工验证：分别开启面板全局 CDN（`real_cdn_ip.conf`）和站点 CDN（`extension/<site>/proxy_real_ip.conf`），确认插件不再读取 Header、直接使用 `$remote_addr`；关闭面板 CDN 后再验证站点 CDN 预设和 IP 范围。
+
 ## 3. Lua 测试环境变量
 
 | 变量 | 默认 | 含义 |

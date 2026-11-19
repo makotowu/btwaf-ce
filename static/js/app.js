@@ -137,8 +137,8 @@
         { key: 'custom', name: '自定义' }
     ];
     var LIST_META = [
-        { key: 'ip_black', label: 'IP 黑名单', hint: '单 IP 或 CIDR，一行一个' },
-        { key: 'ip_white', label: 'IP 白名单', hint: '单 IP 或 CIDR，一行一个' },
+        { key: 'ip_black', label: 'IP 黑名单', hint: '单 IP、CIDR 或 IP 范围，一行一个' },
+        { key: 'ip_white', label: 'IP 白名单', hint: '单 IP、CIDR 或 IP 范围，一行一个' },
         { key: 'url_black', label: 'URL 黑名单', hint: '^ 开头为前缀匹配，~ 开头为正则' },
         { key: 'url_white', label: 'URL 白名单', hint: '^ 开头为前缀匹配，~ 开头为正则' },
         { key: 'ua_black', label: 'UA 黑名单', hint: 'User-Agent 关键字/正则，一行一个' },
@@ -213,9 +213,28 @@
         { value: 'global', label: '全局' },
         { value: 'site', label: '指定站点' }
     ];
+    var BLOCK_STATUS_OPTIONS = [403, 404, 444, 429, 503];
+    var RULE_STATUS_OPTIONS = [{ value: 0, label: '继承' }].concat(BLOCK_STATUS_OPTIONS.map(function (v) {
+        return { value: v, label: String(v) };
+    }));
+    var CDN_PRESETS = [
+        { value: 'generic', label: '通用 CDN / 反代', headers: ['x-real-ip', 'x-forwarded-for'] },
+        { value: 'cloudflare', label: 'Cloudflare', headers: ['cf-connecting-ip', 'x-forwarded-for', 'x-real-ip'] },
+        { value: 'baidu', label: '百度云加速', headers: ['x-real-ip', 'x-forwarded-for'] },
+        { value: 'tencent', label: '腾讯云 CDN', headers: ['x-forwarded-for', 'x-real-ip'] },
+        { value: 'edgeone', label: '腾讯 EdgeOne', headers: ['eo-connecting-ip', 'x-forwarded-for'] },
+        { value: 'aliyun', label: '阿里云 CDN', headers: ['ali-cdn-real-ip', 'x-forwarded-for', 'x-real-ip'] },
+        { value: 'huawei', label: '华为云 CDN', headers: ['x-real-ip', 'x-forwarded-for'] },
+        { value: 'volcengine', label: '火山引擎 CDN', headers: ['x-forwarded-for', 'x-real-ip'] },
+        { value: 'qiniu', label: '七牛云 CDN', headers: ['x-real-ip', 'x-forwarded-for'] },
+        { value: 'akamai', label: 'Akamai', headers: ['true-client-ip', 'x-forwarded-for'] },
+        { value: 'fastly', label: 'Fastly', headers: ['fastly-client-ip', 'x-forwarded-for'] },
+        { value: 'custom', label: '自定义', headers: [] }
+    ];
     var ICON = {
         overview: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 13h6V4H4v9Zm0 7h6v-5H4v5Zm10 0h6v-9h-6v9Zm0-16v5h6V4h-6Z"/></svg>',
         logs: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3h14a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Zm2 4v2h10V7H7Zm0 4v2h10v-2H7Zm0 4v2h7v-2H7Z"/></svg>',
+        oplogs: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm1 5v5l4 2-1 1.7-5-2.7V7h2Z"/></svg>',
         sites: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm6.9 9h-3.02a15.6 15.6 0 0 0-1.32-5.6A8.02 8.02 0 0 1 18.9 11ZM12 4c.9 1.3 1.7 3.5 1.9 7H10.1c.2-3.5 1-5.7 1.9-7ZM5.1 13h3.02c.15 2.05.6 3.98 1.32 5.6A8.02 8.02 0 0 1 5.1 13Zm3.02-2H5.1a8.02 8.02 0 0 1 4.34-5.6A15.6 15.6 0 0 0 8.12 11ZM12 20c-.9-1.3-1.7-3.5-1.9-7h3.8c-.2 3.5-1 5.7-1.9 7Zm2.56-1.4A15.6 15.6 0 0 0 15.88 13h3.02a8.02 8.02 0 0 1-4.34 5.6Z"/></svg>',
         config: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm8.4 4c0 .46-.04.9-.12 1.33l2.03 1.58-1.92 3.32-2.4-.96c-.7.58-1.5 1.04-2.37 1.35L15.3 22h-3.84l-.42-2.38a8.2 8.2 0 0 1-2.37-1.35l-2.4.96-1.92-3.32 2.03-1.58A8.6 8.6 0 0 1 6.26 12c0-.46.04-.9.12-1.33L4.35 9.09l1.92-3.32 2.4.96c.7-.58 1.5-1.04 2.37-1.35L11.46 3h3.84l.42 2.38c.87.31 1.67.77 2.37 1.35l2.4-.96 1.92 3.32-2.03 1.58c.08.43.12.87.12 1.33Z"/></svg>',
         rules: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l5 5v15H6V2Zm8 1.5V8h4.5L14 3.5ZM9 12h8v-2H9v2Zm0 4h8v-2H9v2Zm0 4h6v-2H9v2Z"/></svg>',
@@ -229,6 +248,7 @@
         { key: 'sites', label: '网站防护', group: '配置', icon: ICON.sites },
         { key: 'config', label: '全局配置', group: '配置', icon: ICON.config },
         { key: 'rules', label: '规则库', group: '配置', icon: ICON.rules },
+        { key: 'oplogs', label: '操作日志', group: '系统', icon: ICON.oplogs },
         { key: 'diagnostics', label: '系统诊断', group: '系统', icon: ICON.diagnostics }
     ];
 
@@ -410,6 +430,7 @@
             modules: defaultModules(),
             lists: emptyLists(),
             rule_exclude: { crs: [], ce: [] },
+            rule_status: {},
             trusted_proxies: [],
             crawler: { allow: ['baiduspider', 'googlebot', 'bingbot', 'bytespider', 'sogou', '360spider', 'yandex', 'duckduckbot', 'applebot'], block_fake: true },
             fail_open: true, whitelist_first: true, update_time: 0
@@ -421,12 +442,14 @@
     function defaultSiteConfig() {
         return {
             open: true, sensitivity: 0, observe: null,
+            block: { status: 0 },
             modules: defaultSiteModules(),
             cc: { open: null, cycle: 0, limit: 0, block_time: 0, status: 0, url_cc: null },
             attack_block: { open: null, cycle: 0, limit: 0, block_time: 0 },
             cdn: { open: false, headers: ['cf-connecting-ip', 'x-real-ip', 'x-forwarded-for'], trusted: [] },
             lists: emptyLists(),
             rule_exclude: { crs: [], ce: [] },
+            rule_status: {},
             disable_php_path: [], disable_ext: [], upload_ext: [],
             custom_rules: [], update_time: 0
         };
@@ -909,7 +932,7 @@
                         <el-input v-model="crawlerText" type="textarea" :rows="6" class="waf-mono" placeholder="一行一个 UA 关键字"></el-input>
                     </el-form-item>
                     <el-form-item label="可信代理 IP">
-                        <el-input v-model="trustedText" type="textarea" :rows="4" class="waf-mono" placeholder="一行一个 IP / CIDR，用于获取真实客户端 IP"></el-input>
+                        <el-input v-model="trustedText" type="textarea" :rows="4" class="waf-mono" placeholder="一行一个 IP / CIDR / IP 范围，用于获取真实客户端 IP"></el-input>
                     </el-form-item>
                 </el-form>
             </el-tab-pane>
@@ -943,6 +966,13 @@
     <el-tabs v-model="ruleTab" class="waf-tabs">
         <el-tab-pane label="内置规则" name="builtin">
             <div class="waf-filters">
+                <el-select v-model="ruleScope" size="small" style="width:110px" @change="ruleScopeChange">
+                    <el-option label="全局" value="global"></el-option>
+                    <el-option label="站点" value="site"></el-option>
+                </el-select>
+                <el-select v-if="ruleScope === 'site'" v-model="ruleSite" size="small" style="width:190px" @change="ruleScopeChange">
+                    <el-option v-for="s in siteNames" :key="s" :label="s" :value="s"></el-option>
+                </el-select>
                 <el-select v-model="ruleFilter.source" placeholder="全部来源" size="small" style="width:150px">
                     <el-option v-for="o in ruleSourceOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
                 </el-select>
@@ -979,6 +1009,13 @@
                 <el-table-column label="启用" width="80">
                     <template #default="s">
                         <el-switch :model-value="isRuleEnabled(s.row)" size="small" @update:model-value="toggleRule(s.row, $event)"></el-switch>
+                    </template>
+                </el-table-column>
+                <el-table-column label="响应码" width="120">
+                    <template #default="s">
+                        <el-select :model-value="s.row.status_override || 0" size="small" style="width:100px" @change="setRuleStatus(s.row, $event)">
+                            <el-option v-for="o in ruleStatusOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
+                        </el-select>
                     </template>
                 </el-table-column>
             </el-table>
@@ -1237,23 +1274,38 @@
             
         </div>
     </div>
+</section>
+`;
 
-    <div class="waf-panel">
-        <div class="waf-panel-head">
-            <span>操作日志</span>
+    TPL.oplogs = `
+<section class="waf-view" v-show="view === 'oplogs'">
+    <div class="waf-view-head">
+        <div class="waf-view-title">操作日志</div>
+        <div class="waf-view-tools">
+            <el-button size="small" :loading="opLogLoading" @click="loadOpLogs">刷新</el-button>
             <el-button link type="danger" size="small" @click="clearOpLogs">清空</el-button>
         </div>
-        <el-table :data="opLogs" size="small" border v-loading="opLogLoading" max-height="260" empty-text="暂无操作日志">
-            <el-table-column label="时间" width="160">
-                <template #default="s"><span class="waf-mono">{{ fmtTime(s.row.time) }}</span></template>
-            </el-table-column>
-            <el-table-column label="内容" min-width="380">
-                <template #default="s"><span class="waf-sub">{{ s.row.content }}</span></template>
-            </el-table-column>
-        </el-table>
-        <div class="waf-pager">
-            <el-pagination background small layout="total, sizes, prev, pager, next" :total="opLogTotal" :page-size="opLogRows" :current-page="opLogPage" :page-sizes="[10, 20, 50, 100]" @current-change="onOpLogPageChange" @size-change="onOpLogSizeChange"></el-pagination>
-        </div>
+    </div>
+    <div class="waf-error" v-if="errors.oplogs">
+        <span>{{ errors.oplogs }}</span>
+        <el-button link type="primary" size="small" @click="loadOpLogs">重试</el-button>
+    </div>
+    <div class="waf-filters">
+        <el-date-picker v-model="opLogFilter.date" type="date" value-format="YYYY-MM-DD" size="small" clearable popper-class="waf-popper" style="width:150px"></el-date-picker>
+        <el-input v-model="opLogFilter.keyword" placeholder="操作内容关键字" size="small" clearable style="width:220px" @keyup.enter="opLogSearch"></el-input>
+        <el-button size="small" type="primary" @click="opLogSearch">查询</el-button>
+        <el-button size="small" @click="opLogReset">重置</el-button>
+    </div>
+    <el-table :data="opLogs" size="small" border v-loading="opLogLoading" empty-text="暂无操作日志">
+        <el-table-column label="时间" width="170">
+            <template #default="s"><span class="waf-mono">{{ fmtTime(s.row.time) }}</span></template>
+        </el-table-column>
+        <el-table-column label="操作内容" min-width="420">
+            <template #default="s"><span class="waf-sub">{{ s.row.content }}</span></template>
+        </el-table-column>
+    </el-table>
+    <div class="waf-pager">
+        <el-pagination background small layout="total, sizes, prev, pager, next" :total="opLogTotal" :page-size="opLogRows" :current-page="opLogPage" :page-sizes="[10, 20, 50, 100]" @current-change="onOpLogPageChange" @size-change="onOpLogSizeChange"></el-pagination>
     </div>
 </section>
 `;
@@ -1326,6 +1378,9 @@
                             <el-option v-for="o in triOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
                         </el-select>
                     </el-form-item>
+                    <el-form-item label="拦截状态码（0=继承）">
+                        <el-input-number v-model="siteDialog.config.block.status" :min="0" :max="599" size="small" controls-position="right"></el-input-number>
+                    </el-form-item>
                 </el-form>
             </el-tab-pane>
 
@@ -1389,13 +1444,21 @@
             </el-tab-pane>
 
             <el-tab-pane label="CDN" name="cdn">
+                <el-alert v-if="panelCdnOpen()" type="warning" :closable="false" show-icon
+                    :title="'面板已开启 CDN 真实 IP 解析（' + (siteDialog.panelCdn.scope === 'site' ? '站点' : '全局') + '，Header=' + (siteDialog.panelCdn.header || '-') + '），插件站点 CDN 设置暂不生效'"></el-alert>
                 <el-form label-width="130px" size="small" class="waf-form">
-                    <el-form-item label="CDN 模式"><el-switch v-model="siteDialog.config.cdn.open"></el-switch></el-form-item>
+                    <el-form-item label="CDN 预设">
+                        <el-select v-model="siteDialog.cdnPreset" size="small" style="width:220px" :disabled="panelCdnOpen()" @change="applyCdnPreset">
+                            <el-option v-for="p in cdnPresets" :key="p.value" :label="p.label" :value="p.value"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="CDN 模式"><el-switch v-model="siteDialog.config.cdn.open" :disabled="panelCdnOpen()"></el-switch></el-form-item>
                     <el-form-item label="真实 IP 头">
-                        <el-input v-model="siteText.cdn_headers" type="textarea" :rows="4" class="waf-mono" placeholder="一行一个请求头，如 cf-connecting-ip"></el-input>
+                        <el-input v-model="siteText.cdn_headers" type="textarea" :rows="4" class="waf-mono" :disabled="panelCdnOpen()" placeholder="一行一个请求头，如 cf-connecting-ip"></el-input>
+                        <div class="waf-hint">选择预设只填 Header；仍需按服务商文档填写可信回源 IP。面板 CDN 开启时，插件会让位于面板解析。</div>
                     </el-form-item>
                     <el-form-item label="可信代理 IP">
-                        <el-input v-model="siteText.cdn_trusted" type="textarea" :rows="4" class="waf-mono" placeholder="一行一个 IP / CIDR"></el-input>
+                        <el-input v-model="siteText.cdn_trusted" type="textarea" :rows="4" class="waf-mono" :disabled="panelCdnOpen()" placeholder="一行一个 IP / CIDR / IP 范围"></el-input>
                     </el-form-item>
                 </el-form>
             </el-tab-pane>
@@ -1530,7 +1593,7 @@
     function buildTemplate() {
         return '<div id="btwaf-ce-app" class="waf-app" :class="{ \'waf-dark\': isDark }">' +
             (TPL.top || '') + (TPL.overview || '') + (TPL.logs || '') + (TPL.sites || '') +
-            (TPL.config || '') + (TPL.rules || '') + (TPL.blocks || '') + (TPL.diagnostics || '') +
+            (TPL.config || '') + (TPL.rules || '') + (TPL.blocks || '') + (TPL.oplogs || '') + (TPL.diagnostics || '') +
             (TPL.dialogs || '') + '</div>';
     }
 
@@ -1555,6 +1618,8 @@
                 customOperatorOptions: CUSTOM_OPERATOR_OPTIONS,
                 customActionOptions: CUSTOM_ACTION_OPTIONS,
                 customScopeOptions: CUSTOM_SCOPE_OPTIONS,
+                cdnPresets: CDN_PRESETS,
+                ruleStatusOptions: RULE_STATUS_OPTIONS,
 
                 view: 'overview',
                 isDark: false,
@@ -1564,7 +1629,7 @@
                 statusLoading: false,
                 loaded: {},
                 errors: {
-                    overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', diagnostics: ''
+                    overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', oplogs: '', diagnostics: ''
                 },
 
                 ovDate: today,
@@ -1580,7 +1645,8 @@
                 siteLoading: false, siteSelection: [],
                 siteDialog: {
                     visible: false, loading: false, saving: false, tab: 'basic', snapshot: '',
-                    site_name: '', config: defaultSiteConfig(), raw: null, global: {}
+                    site_name: '', config: defaultSiteConfig(), raw: null, global: {},
+                    panelCdn: null, cdnPreset: 'custom'
                 },
                 siteTri: { observe: 'inherit', cc_open: 'inherit', url_cc: 'inherit', attack_open: 'inherit' },
                 siteText: {
@@ -1606,6 +1672,7 @@
 
                 ruleTab: 'builtin',
                 ruleFilter: { source: '', module: '', keyword: '', status: '' },
+                ruleScope: 'global', ruleSite: '',
                 ruleList: [], ruleTotal: 0, rulePage: 1, ruleRows: 10, ruleLoading: false,
                 ruleExclude: { crs: [], ce: [] }, ruleExcludeLoaded: false,
                 customKeyword: '', customRules: [], customTotal: 0, customPage: 1, customRows: 10,
@@ -1617,6 +1684,7 @@
                 advancedOpen: [],
                 envItems: [], envRepairable: true, envNeedsRepair: false, envLoading: false, repairLoading: false,
                 opLogs: [], opLogTotal: 0, opLogPage: 1, opLogRows: 10, opLogLoading: false,
+        opLogFilter: { date: '', keyword: '' },
                 importLoading: false,
 
                 /* 通用确认弹窗（不使用 BTP.confirm，避免 z-index 被面板 layer 遮挡） */
@@ -1848,14 +1916,14 @@
             refreshCurrent: function () {
                 var map = {
                     overview: 'loadOverview', logs: 'loadLogs', sites: 'loadSites', config: 'loadConfig',
-                    rules: 'loadRules', blocks: 'loadBlocks', diagnostics: 'loadDiagnostics'
+                    rules: 'loadRules', blocks: 'loadBlocks', oplogs: 'loadOpLogs', diagnostics: 'loadDiagnostics'
                 };
                 var fn = map[this.view];
                 return fn ? this[fn]() : Promise.resolve();
             },
             reloadAll: function () {
                 this.loaded = {};
-                this.errors = { overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', diagnostics: '' };
+                this.errors = { overview: '', logs: '', sites: '', config: '', rules: '', blocks: '', oplogs: '', diagnostics: '' };
                 this.ruleExcludeLoaded = false;
                 this.boot();
             },
@@ -2214,6 +2282,7 @@
                     d.config = normalizeSiteConfig(res.raw || res.config || {});
                     d.raw = res.raw || {};
                     d.global = res.global || {};
+                    d.panelCdn = res.panel_cdn || null;
                     self.buildSiteTexts();
                     d.snapshot = self.siteFingerprint();
                     if (!self.customRuleOptions.length) self.loadCustomRuleOptions();
@@ -2224,6 +2293,30 @@
                     d.loading = false;
                 });
             },
+            detectCdnPreset: function (headers) {
+                var normalized = (Array.isArray(headers) ? headers : []).map(function (h) { return String(h || '').toLowerCase(); });
+                for (var i = 0; i < CDN_PRESETS.length; i++) {
+                    var p = CDN_PRESETS[i];
+                    if (p.value === 'custom') continue;
+                    if (p.headers.length === normalized.length && p.headers.every(function (h, idx) { return h === normalized[idx]; })) {
+                        return p.value;
+                    }
+                }
+                return 'custom';
+            },
+            applyCdnPreset: function (value) {
+                var preset = null;
+                for (var i = 0; i < CDN_PRESETS.length; i++) {
+                    if (CDN_PRESETS[i].value === value) { preset = CDN_PRESETS[i]; break; }
+                }
+                this.siteDialog.cdnPreset = value;
+                if (!preset || value === 'custom') return;
+                this.siteDialog.config.cdn.open = true;
+                this.siteText.cdn_headers = joinLines(preset.headers);
+            },
+            panelCdnOpen: function () {
+                return !!(this.siteDialog.panelCdn && this.siteDialog.panelCdn.open);
+            },
             buildSiteTexts: function () {
                 var c = this.siteDialog.config;
                 var t = this.siteText;
@@ -2233,6 +2326,7 @@
                 t.upload_ext = joinLines(c.upload_ext || []);
                 t.cdn_headers = joinLines((c.cdn && c.cdn.headers) || []);
                 t.cdn_trusted = joinLines((c.cdn && c.cdn.trusted) || []);
+                this.siteDialog.cdnPreset = this.detectCdnPreset((c.cdn && c.cdn.headers) || []);
                 this.siteTri = {
                     observe: toTri(c.observe),
                     cc_open: toTri(c.cc && c.cc.open),
@@ -2432,9 +2526,16 @@
                 this.errors.rules = '';
                 try {
                     if (!this.ruleExcludeLoaded) await this.ensureRuleExclude();
+                    if (this.ruleScope === 'site') {
+                        if (!this.siteNames.length) await this.loadSiteNames();
+                        if (!this.ruleSite && this.siteNames.length) this.ruleSite = this.siteNames[0];
+                        if (!this.ruleSite) throw new Error('请选择站点');
+                    }
                     var d = await WafAPI.data('get_rules', {
                         source: this.ruleFilter.source, module: this.ruleFilter.module,
-                        keyword: this.ruleFilter.keyword, status: this.ruleFilter.status, p: this.rulePage, rows: this.ruleRows
+                        keyword: this.ruleFilter.keyword, status: this.ruleFilter.status,
+                        scope: this.ruleScope, site_name: this.ruleScope === 'site' ? this.ruleSite : '',
+                        p: this.rulePage, rows: this.ruleRows
                     });
                     d = d || {};
                     this.ruleList = Array.isArray(d.list) ? d.list : [];
@@ -2471,6 +2572,26 @@
                 if (row.src !== 'crs' && row.src !== 'ce') return row.enabled !== false;
                 var list = this.ruleExclude[row.src] || [];
                 return list.indexOf(row.id) < 0;
+            },
+            ruleScopeChange: function () {
+                this.rulePage = 1;
+                this.loadRules();
+            },
+            setRuleStatus: async function (row, status) {
+                if (!row) return;
+                try {
+                    await WafAPI.data('set_rule_status', {
+                        scope: this.ruleScope,
+                        site_name: this.ruleScope === 'site' ? this.ruleSite : '',
+                        rule_id: row.id,
+                        status: status
+                    });
+                    row.status_override = num(status);
+                    BTP.msg('响应码已更新', 'success');
+                } catch (e) {
+                    BTP.msg('设置失败：' + errText(e), 'error');
+                    this.loadRules();
+                }
             },
             toggleRule: async function (row, value) {
                 if (!row) return;
@@ -2632,7 +2753,6 @@
                 try {
                     if (!this.status.version) await this.loadStatus();
                     await this.loadEnv();
-                    await this.loadOpLogs();
                     this.loaded.diagnostics = true;
                 } catch (e) {
                     this.errors.diagnostics = errText(e);
@@ -2673,17 +2793,28 @@
             },
             loadOpLogs: async function () {
                 this.opLogLoading = true;
+                this.errors.oplogs = '';
                 try {
-                    var d = await WafAPI.data('get_logs', { p: this.opLogPage, rows: this.opLogRows });
+                    var d = await WafAPI.data('get_logs', {
+                        p: this.opLogPage, rows: this.opLogRows,
+                        date: this.opLogFilter.date || '', keyword: this.opLogFilter.keyword || ''
+                    });
                     d = d || {};
                     this.opLogs = Array.isArray(d.list) ? d.list : [];
                     this.opLogTotal = num(d.total);
                 } catch (e) {
+                    this.errors.oplogs = errText(e);
                     this.opLogs = [];
                     this.opLogTotal = 0;
                 } finally {
                     this.opLogLoading = false;
                 }
+            },
+            opLogSearch: function () { this.opLogPage = 1; this.loadOpLogs(); },
+            opLogReset: function () {
+                this.opLogFilter = { date: '', keyword: '' };
+                this.opLogPage = 1;
+                this.loadOpLogs();
             },
             onOpLogPageChange: function (p) { this.opLogPage = p; this.loadOpLogs(); },
             onOpLogSizeChange: function (n) { this.opLogRows = n; this.opLogPage = 1; this.loadOpLogs(); },

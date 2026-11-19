@@ -453,6 +453,26 @@ local function evaluate(ctx)
     return nil
   end
 
+  -- 内置规则响应码：最高分命中规则的 rule_status 覆盖默认；自定义 status 优先。
+  if not forced then
+    local best_rule = nil
+    local best_score = -1
+    for i = 1, #hits do
+      local hit = hits[i]
+      local score = tonumber(hit.score) or 0
+      if score > best_score and hit.rule then
+        best_score = score
+        best_rule = tostring(hit.rule)
+      end
+    end
+    if best_rule then
+      local override = tonumber((site.rule_status or {})[best_rule])
+      if override then
+        forced = { status = override, rule = best_rule }
+      end
+    end
+  end
+
   -- 9) 决策：只有“确实要拦截”的攻击请求才累计攻击次数
   --    低分命中但放行的请求（例如数值 IP Host 920350）不计入，避免正常用户被误封。
   local has_hits = #hits > 0
