@@ -203,18 +203,44 @@
             </el-tab-pane>
 
             <el-tab-pane label="黑白名单" name="lists">
-                <div class="waf-list-editor">
-                    <el-select v-model="globalListType" size="small" style="width:180px">
-                        <el-option v-for="m in listMeta" :key="m.key" :label="m.label" :value="m.key"></el-option>
-                    </el-select>
-                    <el-upload v-if="isIpList(globalListType)" :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportGlobalList">
-                        <el-button size="small" :loading="listImporting">导入</el-button>
-                    </el-upload>
-                    <el-button v-if="isIpList(globalListType)" size="small" @click="exportGlobalList">导出</el-button>
-                </div>
-                <el-input v-model="globalListText[globalListType]" type="textarea" :rows="10" class="waf-mono" placeholder="一行一条"></el-input>
-                <div class="waf-pane-actions">
-                    <el-button type="primary" size="small" @click="saveGlobalList(globalListType)">保存该列表</el-button>
+                <div class="waf-list-layout">
+                    <nav class="waf-list-nav">
+                        <template v-for="g in listGroups" :key="g.label">
+                            <div class="waf-list-group">{{ g.label }}</div>
+                            <button v-for="m in g.items" :key="m.key" type="button"
+                                class="waf-list-nav-item" :class="{ 'is-active': globalListType === m.key }"
+                                @click="globalListType = m.key">
+                                <span>{{ m.label }}</span>
+                                <span class="waf-list-count">{{ listCount('global', m.key) }}</span>
+                            </button>
+                        </template>
+                    </nav>
+                    <div class="waf-list-main">
+                        <div class="waf-list-head">
+                            <div class="waf-list-title">{{ listLabel(globalListType) }} <span class="waf-list-count">{{ listCount('global', globalListType) }}</span></div>
+                            <div class="waf-list-tools">
+                                <el-upload v-if="isIpList(globalListType)" :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportGlobalList">
+                                    <el-button size="small" :loading="listImporting">导入</el-button>
+                                </el-upload>
+                                <el-button v-if="isIpList(globalListType)" size="small" @click="exportGlobalList">导出</el-button>
+                                <el-button size="small" @click="toggleListMode('global')">{{ globalListMode === 'tags' ? '批量编辑' : '列表编辑' }}</el-button>
+                            </div>
+                        </div>
+                        <template v-if="globalListMode === 'tags'">
+                            <div class="waf-tag-add">
+                                <el-input v-model="globalListAdd" size="small" :placeholder="'添加' + listLabel(globalListType)" @keyup.enter="addListEntry('global', globalListType, globalListAdd)"></el-input>
+                                <el-button size="small" type="primary" @click="addListEntry('global', globalListType, globalListAdd)">添加</el-button>
+                            </div>
+                            <div class="waf-tag-list">
+                                <el-tag v-for="(item, idx) in listItems('global', globalListType)" :key="item + idx" size="small" closable @close="removeListEntry('global', globalListType, idx)">{{ item }}</el-tag>
+                                <span v-if="!listCount('global', globalListType)" class="waf-list-empty">暂无条目</span>
+                            </div>
+                        </template>
+                        <el-input v-else v-model="globalListText[globalListType]" type="textarea" :rows="12" class="waf-mono" placeholder="一行一条"></el-input>
+                        <div class="waf-list-actions">
+                            <el-button type="primary" size="small" @click="saveGlobalList(globalListType)">保存名单</el-button>
+                        </div>
+                    </div>
                 </div>
             </el-tab-pane>
 

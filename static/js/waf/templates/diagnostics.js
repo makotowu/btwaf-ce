@@ -406,16 +406,48 @@
             </el-tab-pane>
 
             <el-tab-pane lazy label="黑白名单" name="lists">
-                <div class="waf-list-editor">
-                    <el-select v-model="siteListType" size="small" style="width:180px">
-                        <el-option v-for="m in listMeta" :key="m.key" :label="m.label" :value="m.key"></el-option>
-                    </el-select>
-                    <el-upload v-if="isIpList(siteListType)" :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportSiteList">
-                        <el-button size="small" :loading="listImporting">导入</el-button>
-                    </el-upload>
-                    <el-button v-if="isIpList(siteListType)" size="small" @click="exportSiteList">导出</el-button>
+                <div class="waf-list-layout">
+                    <nav class="waf-list-nav">
+                        <template v-for="g in listGroups" :key="g.label">
+                            <div class="waf-list-group">{{ g.label }}</div>
+                            <button v-for="m in g.items" :key="m.key" type="button"
+                                class="waf-list-nav-item" :class="{ 'is-active': siteListType === m.key }"
+                                @click="siteListType = m.key">
+                                <span>{{ m.label }}</span>
+                                <span class="waf-list-count">{{ listCount('site', m.key) }}</span>
+                            </button>
+                        </template>
+                    </nav>
+                    <div class="waf-list-main">
+                        <div class="waf-list-head">
+                            <div class="waf-list-title">站点补充 <span class="waf-list-count">{{ listCount('site', siteListType) }}</span></div>
+                            <div class="waf-list-tools">
+                                <el-upload v-if="isIpList(siteListType)" :auto-upload="false" :show-file-list="false" accept=".txt,text/plain" :on-change="onImportSiteList">
+                                    <el-button size="small" :loading="listImporting">导入</el-button>
+                                </el-upload>
+                                <el-button v-if="isIpList(siteListType)" size="small" @click="exportSiteList">导出</el-button>
+                                <el-button size="small" @click="toggleListMode('site')">{{ siteListMode === 'tags' ? '批量编辑' : '列表编辑' }}</el-button>
+                            </div>
+                        </div>
+                        <div v-if="siteGlobalCount(siteListType)" class="waf-site-global">
+                            <div class="waf-site-global-title">全局名单 <span class="waf-list-count">{{ siteGlobalCount(siteListType) }}</span></div>
+                            <div class="waf-tag-list waf-tag-list-readonly">
+                                <el-tag v-for="(item, idx) in siteGlobalItems(siteListType)" :key="item + idx" size="small" type="info">{{ item }}</el-tag>
+                            </div>
+                        </div>
+                        <template v-if="siteListMode === 'tags'">
+                            <div class="waf-tag-add">
+                                <el-input v-model="siteListAdd" size="small" :placeholder="'添加' + listLabel(siteListType)" @keyup.enter="addListEntry('site', siteListType, siteListAdd)"></el-input>
+                                <el-button size="small" type="primary" @click="addListEntry('site', siteListType, siteListAdd)">添加</el-button>
+                            </div>
+                            <div class="waf-tag-list">
+                                <el-tag v-for="(item, idx) in listItems('site', siteListType)" :key="item + idx" size="small" closable @close="removeListEntry('site', siteListType, idx)">{{ item }}</el-tag>
+                                <span v-if="!listCount('site', siteListType)" class="waf-list-empty">暂无条目</span>
+                            </div>
+                        </template>
+                        <el-input v-else v-model="siteText[siteListType]" type="textarea" :rows="12" class="waf-mono" placeholder="一行一条"></el-input>
+                    </div>
                 </div>
-                <el-input v-model="siteText[siteListType]" type="textarea" :rows="10" class="waf-mono" placeholder="一行一条"></el-input>
             </el-tab-pane>
 
             <el-tab-pane lazy label="敏感路径 / 后缀" name="paths">

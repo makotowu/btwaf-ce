@@ -343,6 +343,45 @@ body.waf-dark .el-overlay .el-message-box {
 .waf-teleport .waf-pane-actions { display: flex; gap: 8px; padding: 6px 0 2px; }
 #btwaf-ce-app .waf-list-editor,
 .waf-teleport .waf-list-editor { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 8px; }
+
+.waf-list-layout { display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; }
+.waf-list-nav { display: flex; flex-direction: column; gap: 2px; min-width: 0; padding-right: 12px; border-right: 1px solid var(--waf-border, #ebeef5); }
+.waf-list-group { margin: 10px 0 3px; color: var(--waf-muted, #909399); font-size: 11px; font-weight: 600; letter-spacing: .04em; }
+.waf-list-group:first-child { margin-top: 0; }
+.waf-list-nav-item {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    width: 100%; padding: 6px 8px; border: 0; border-radius: 6px;
+    background: transparent; color: var(--waf-text-2, #606266);
+    font-size: 12px; text-align: left; cursor: pointer;
+}
+.waf-list-nav-item:hover { background: var(--el-fill-color-light, #f5f7fa); }
+.waf-list-nav-item.is-active { background: var(--waf-primary-weak, rgba(32, 165, 58, .1)); color: var(--waf-primary, #20a53a); font-weight: 600; }
+.waf-list-count { color: var(--waf-muted, #909399); font-size: 11px; font-variant-numeric: tabular-nums; }
+.waf-list-main { min-width: 0; }
+.waf-list-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.waf-list-title { display: inline-flex; align-items: center; gap: 6px; color: var(--waf-text, #303133); font-size: 13px; font-weight: 600; }
+.waf-list-tools { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin-left: auto; }
+.waf-tag-add { display: flex; gap: 6px; margin-bottom: 8px; }
+.waf-tag-add .el-input { flex: 1 1 auto; }
+.waf-tag-list {
+    display: flex; flex-wrap: wrap; align-content: flex-start; gap: 6px;
+    min-height: 180px; max-height: 320px; overflow: auto;
+    padding: 10px; border: 1px solid var(--waf-border, #ebeef5); border-radius: 8px;
+    background: var(--el-fill-color-blank, #fff);
+}
+.waf-tag-list .el-tag { max-width: 100%; }
+.waf-tag-list .el-tag .el-tag__content { overflow: hidden; text-overflow: ellipsis; }
+.waf-tag-list-readonly { min-height: 44px; max-height: 120px; background: var(--el-fill-color-light, #f5f7fa); }
+.waf-list-empty { align-self: center; color: var(--waf-muted, #909399); font-size: 12px; }
+.waf-list-actions { display: flex; justify-content: flex-end; margin-top: 10px; }
+.waf-site-global { margin-bottom: 10px; }
+.waf-site-global-title { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--waf-muted, #909399); font-size: 11px; }
+@media (max-width: 760px) {
+    .waf-list-layout { grid-template-columns: 1fr; }
+    .waf-list-nav { flex-direction: row; flex-wrap: wrap; border-right: 0; padding-right: 0; }
+    .waf-list-group { width: 100%; margin-bottom: 0; }
+    .waf-list-nav-item { width: auto; }
+}
 #btwaf-ce-app .waf-mono textarea,
 .waf-teleport .waf-mono textarea { font-family: Menlo, Consolas, "Courier New", monospace; font-size: 12px; }
 

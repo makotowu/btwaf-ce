@@ -21,6 +21,79 @@
                 if (d && d.truncated) msg += '，已到达 2000 条上限';
                 return msg;
             },
+            listLabel: function (type) {
+                var found = null;
+                LIST_META.forEach(function (item) { if (item.key === type) found = item; });
+                return found ? found.label : type;
+            },
+            listItems: function (scope, type) {
+                if (scope === 'site') return splitLines(this.siteText[type]);
+                return splitLines(this.globalListText[type]);
+            },
+            listCount: function (scope, type) {
+                return this.listItems(scope, type).length;
+            },
+            siteGlobalItems: function (type) {
+                var lists = (this.siteDialog.global && this.siteDialog.global.lists) || {};
+                return Array.isArray(lists[type]) ? lists[type] : [];
+            },
+            siteGlobalCount: function (type) {
+                return this.siteGlobalItems(type).length;
+            },
+            isIpEntry: function (value) {
+                value = String(value || '').trim();
+                if (!value) return false;
+                if (value.indexOf(':') >= 0) return true;
+                var range = value.split('-');
+                if (range.length === 2) return this.isIpEntry(range[0]) && this.isIpEntry(range[1]);
+                var cidr = value.split('/');
+                var ip = cidr[0];
+                var parts = ip.split('.');
+                if (parts.length !== 4) return false;
+                for (var i = 0; i < 4; i++) {
+                    if (!/^\d{1,3}$/.test(parts[i])) return false;
+                    var n = Number(parts[i]);
+                    if (n < 0 || n > 255) return false;
+                }
+                if (cidr.length === 2) return /^\d{1,2}$/.test(cidr[1]) && Number(cidr[1]) <= 32;
+                return cidr.length === 1;
+            },
+            addListEntry: function (scope, type, raw) {
+                var value = String(raw || '').trim();
+                if (!value) return;
+                if (this.isIpList(type) && !this.isIpEntry(value)) {
+                    BTP.msg('IP 格式不正确', 'error');
+                    return;
+                }
+                var items = this.listItems(scope, type);
+                if (items.indexOf(value) >= 0) {
+                    BTP.msg('条目已存在', 'info');
+                    return;
+                }
+                if (items.length >= 2000) {
+                    BTP.msg('名单最多 2000 条', 'error');
+                    return;
+                }
+                items.push(value);
+                if (scope === 'site') {
+                    this.siteText[type] = joinLines(items);
+                    this.siteListAdd = '';
+                } else {
+                    this.globalListText[type] = joinLines(items);
+                    this.globalListAdd = '';
+                }
+            },
+            removeListEntry: function (scope, type, index) {
+                var items = this.listItems(scope, type);
+                if (index < 0 || index >= items.length) return;
+                items.splice(index, 1);
+                if (scope === 'site') this.siteText[type] = joinLines(items);
+                else this.globalListText[type] = joinLines(items);
+            },
+            toggleListMode: function (scope) {
+                if (scope === 'site') this.siteListMode = this.siteListMode === 'tags' ? 'batch' : 'tags';
+                else this.globalListMode = this.globalListMode === 'tags' ? 'batch' : 'tags';
+            },
             downloadTextFile: function (filename, text) {
                 var blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
                 var url = URL.createObjectURL(blob);
