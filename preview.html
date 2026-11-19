@@ -162,6 +162,9 @@
 
     var MODE = 'normal';
     var NOW = Math.floor(Date.now() / 1000);
+    var SYSTEM_FIREWALL = [
+        { ip: '45.88.12.34', ps: '模拟系统封禁', addtime: '2026-11-19 10:00:00' }
+    ];
 
     function pad2(n) { return n < 10 ? '0' + n : '' + n; }
     function dayStr(offset) {
@@ -344,7 +347,10 @@
             { ip: '192.241.210.33', site: 'www.example.com', reason: 'attack', time: NOW - 1800, expire: NOW + 1800, block_time: 3600, area: '美国-纽约' }
         ];
         if (!history) {
-            base.forEach(function (r) { r.state = 'blocked'; });
+            base.forEach(function (r) {
+                r.state = 'blocked';
+                r.system_blocked = SYSTEM_FIREWALL.some(function (x) { return x.ip === r.ip; });
+            });
             return base;
         }
         return [
@@ -600,11 +606,23 @@
                 var status = params.status || 'current';
                 var rows = status === 'current' ? blockRows(false) : blockRows(true);
                 if (params.site) rows = rows.filter(function (r) { return r.site === params.site; });
-                return paged(rows, params);
+                var res = paged(rows, params);
+                res.system = {
+                    available: true,
+                    source: 'mock',
+                    sync_count: rows.filter(function (r) { return r.system_blocked; }).length
+                };
+                return res;
             }
+            case 'get_system_firewall':
+                return { available: true, source: 'mock', list: clone(SYSTEM_FIREWALL), total: SYSTEM_FIREWALL.length, error: '' };
             case 'unban_ip':
+                return { unbanned: 1, system_unbanned: params.sync_system ? 1 : 0 };
             case 'unban_all':
-                return { unbanned: 1 };
+                return { unbanned: 1, system_unbanned: params.sync_system ? 1 : 0 };
+            case 'unban_system_ip':
+            case 'unban_system_all':
+                return { unbanned: 1, errors: [] };
 
             case 'check_env':
                 return { items: ENV_ITEMS, repairable: true };

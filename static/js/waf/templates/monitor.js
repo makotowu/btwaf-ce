@@ -234,9 +234,9 @@
     <div class="waf-view-head">
         <div class="waf-view-title">封锁记录</div>
         <div class="waf-view-tools">
-            <el-input v-model="blockSite" placeholder="站点" size="small" clearable style="width:160px" @keyup.enter="loadBlocks"></el-input>
-            <el-button size="small" :loading="blockLoading" @click="loadBlocks">刷新</el-button>
-            <el-button size="small" type="warning" plain @click="unbanAll">全部解封</el-button>
+            <el-input v-if="blockTab !== 'system'" v-model="blockSite" placeholder="站点" size="small" clearable style="width:160px" @keyup.enter="loadBlocks"></el-input>
+            <el-button size="small" :loading="blockLoading || blockSystemLoading" @click="loadBlocks">刷新</el-button>
+            <el-button size="small" type="warning" plain :disabled="blockTab === 'system' && !blockSystem.available" @click="unbanAll">全部解封</el-button>
         </div>
     </div>
     <div class="waf-error" v-if="errors.blocks">
@@ -248,12 +248,16 @@
             <el-radio-button value="current">当前封锁</el-radio-button>
             <el-radio-button value="history">历史记录</el-radio-button>
             <el-radio-button value="all">全部</el-radio-button>
+            <el-radio-button value="system">系统防火墙</el-radio-button>
         </el-radio-group>
         
     </div>
-    <el-table v-if="blockTab !== 'history'" :data="blockList" size="small" border stripe v-loading="blockLoading" empty-text="当前没有临时封锁的 IP">
-        <el-table-column label="IP" width="140">
-            <template #default="s"><span class="waf-mono">{{ s.row.ip }}</span></template>
+    <el-table v-if="blockTab !== 'history' && blockTab !== 'system'" :data="blockList" size="small" border stripe v-loading="blockLoading" empty-text="当前没有临时封锁的 IP">
+        <el-table-column label="IP" width="170">
+            <template #default="s">
+                <span class="waf-mono">{{ s.row.ip }}</span>
+                <el-tag v-if="s.row.system_blocked" size="small" type="info" effect="plain" style="margin-left:4px">系统</el-tag>
+            </template>
         </el-table-column>
         <el-table-column label="站点" prop="site" min-width="150" show-overflow-tooltip></el-table-column>
         <el-table-column label="原因" width="110">
@@ -278,9 +282,12 @@
             <template #default="s"><el-button size="small" type="danger" plain @click="unbanBlock(s.row)">解封</el-button></template>
         </el-table-column>
     </el-table>
-    <el-table v-else :data="blockList" size="small" border stripe v-loading="blockLoading" empty-text="暂无历史封锁记录">
-        <el-table-column label="IP" width="140">
-            <template #default="s"><span class="waf-mono">{{ s.row.ip }}</span></template>
+    <el-table v-else-if="blockTab === 'history'" :data="blockList" size="small" border stripe v-loading="blockLoading" empty-text="暂无历史封锁记录">
+        <el-table-column label="IP" width="170">
+            <template #default="s">
+                <span class="waf-mono">{{ s.row.ip }}</span>
+                <el-tag v-if="s.row.system_blocked" size="small" type="info" effect="plain" style="margin-left:4px">系统</el-tag>
+            </template>
         </el-table-column>
         <el-table-column label="站点" prop="site" min-width="150" show-overflow-tooltip></el-table-column>
         <el-table-column label="原因" width="110">
@@ -302,7 +309,19 @@
             <template #default="s"><span class="waf-sub">{{ s.row.area || '-' }}</span></template>
         </el-table-column>
     </el-table>
-    <div class="waf-pager">
+    <el-table v-if="blockTab === 'system'" :data="blockSystem.list" size="small" border stripe v-loading="blockSystemLoading" empty-text="暂无系统防火墙封锁记录">
+        <el-table-column label="IP" width="170">
+            <template #default="s"><span class="waf-mono">{{ s.row.ip }}</span></template>
+        </el-table-column>
+        <el-table-column label="备注" prop="ps" min-width="180" show-overflow-tooltip></el-table-column>
+        <el-table-column label="添加时间" min-width="160">
+            <template #default="s"><span class="waf-mono">{{ s.row.addtime || '-' }}</span></template>
+        </el-table-column>
+        <el-table-column label="操作" width="100" fixed="right">
+            <template #default="s"><el-button size="small" type="danger" plain @click="unbanSystem(s.row)">解封</el-button></template>
+        </el-table-column>
+    </el-table>
+    <div class="waf-pager" v-if="blockTab !== 'system'">
         <el-pagination background small layout="total, sizes, prev, pager, next" :total="blockTotal" :page-size="blockRows" :current-page="blockPage" :page-sizes="[10, 20, 50, 100]" @current-change="onBlockPageChange" @size-change="onBlockSizeChange"></el-pagination>
     </div>
 </section>

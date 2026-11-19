@@ -60,6 +60,10 @@ if "IP 范围" not in appjs: problems.append("app.js missing IP range hint")
 if "geoModeOptions" not in appjs or "地区访问" not in appjs or "countryLabel" not in appjs:
     problems.append("app.js missing geo access UI")
 if "waf-grid-3" not in appjs: problems.append("app.js missing top sites grid")
+if "get_system_firewall" not in appjs or "unban_system_ip" not in appjs:
+    problems.append("app.js missing system firewall UI")
+if "showConfirmWithOption" not in appjs or "blockSystem" not in appjs:
+    problems.append("app.js missing system firewall confirm state")
 if "logRows: 10" not in appjs or "siteRows: 10" not in appjs: problems.append("table default rows not 10")
 if "page-sizes=\"[10, 20, 50, 100]\"" not in appjs: problems.append("page size options missing 10")
 if line_count("static/js/app.js") > 600:

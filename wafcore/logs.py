@@ -398,10 +398,11 @@ def area_of(ip, lookup=None):
 
 
 # ---------------- 封锁 / 解封 ----------------
-def block_list(params=None, lookup=None):
+def block_list(params=None, lookup=None, system_ips=None):
     """当前/历史封锁。
 
     params.status: current(默认) | history | all
+    system_ips: optional set of IPs currently blocked by the system firewall.
     返回项 state: blocked | expired | unbanned
     """
     params = params or {}
@@ -412,6 +413,9 @@ def block_list(params=None, lookup=None):
     page = util.safe_int(params.get("p"), 1, 1)
     rows = util.safe_int(params.get("rows"), 50, 1, 200)
     now = util.now()
+    system_set = set()
+    if isinstance(system_ips, (set, list, tuple)):
+        system_set = set(str(x).strip() for x in system_ips if str(x).strip())
     records = [parse_block_record(x) for x in _tail_raw(paths.BLOCK_LOG, 5000)]
     latest = {}
     for rec in records:
@@ -451,10 +455,12 @@ def block_list(params=None, lookup=None):
                 "state": state,
                 "unban_time": unban_time if state == "unbanned" else 0,
                 "area": area_of(rec.get("ip", ""), lookup),
+                "system_blocked": rec.get("ip", "") in system_set,
             }
         )
     items.sort(key=lambda x: -x["time"])
     total = len(items)
+    system_sync_count = sum(1 for item in items if item.get("system_blocked"))
     start = (page - 1) * rows
     return {
         "list": items[start : start + rows],
@@ -463,6 +469,7 @@ def block_list(params=None, lookup=None):
         "rows": rows,
         "status": status,
         "window": 5000,
+        "system_sync_count": system_sync_count,
     }
 
 

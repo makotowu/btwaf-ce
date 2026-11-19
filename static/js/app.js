@@ -98,6 +98,8 @@
                 customDialogVisible: false, customSaving: false, customForm: defaultCustomRule(),
 
                 blockTab: 'current', blockSite: '', blockList: [], blockTotal: 0, blockPage: 1, blockRows: 10, blockLoading: false,
+                blockSystem: { available: false, source: '', list: [], total: 0, sync_count: 0, error: '' },
+                blockSystemLoading: false,
 
                 advancedOpen: [],
                 envItems: [], envRepairable: true, envNeedsRepair: false, envLoading: false, repairLoading: false,
@@ -106,7 +108,7 @@
                 importLoading: false,
 
                 /* 通用确认弹窗（不使用 BTP.confirm，避免 z-index 被面板 layer 遮挡） */
-                confirmDialog: { visible: false, title: '', content: '', resolve: null }
+                confirmDialog: { visible: false, title: '', content: '', resolve: null, checkbox: false, checkboxLabel: '', checked: false, withOption: false }
             };
         },
 

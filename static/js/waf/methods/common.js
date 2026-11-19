@@ -12,13 +12,30 @@
             showConfirm: function (title, content) {
                 var self = this;
                 return new Promise(function (resolve) {
-                    self.confirmDialog = { visible: true, title: title, content: content, resolve: resolve };
+                    self.confirmDialog = {
+                        visible: true, title: title, content: content, resolve: resolve,
+                        checkbox: false, checkboxLabel: '', checked: false, withOption: false
+                    };
+                });
+            },
+            showConfirmWithOption: function (title, content, checkboxLabel, checked) {
+                var self = this;
+                return new Promise(function (resolve) {
+                    self.confirmDialog = {
+                        visible: true, title: title, content: content, resolve: resolve,
+                        checkbox: !!checkboxLabel, checkboxLabel: checkboxLabel || '',
+                        checked: !!checked, withOption: true
+                    };
                 });
             },
             onConfirmOk: function () {
                 var d = this.confirmDialog;
                 d.visible = false;
-                if (d.resolve) { var r = d.resolve; d.resolve = null; r(true); }
+                if (d.resolve) {
+                    var r = d.resolve;
+                    d.resolve = null;
+                    r(d.withOption ? { ok: true, checked: !!d.checked } : true);
+                }
             },
             onConfirmCancel: function () {
                 var d = this.confirmDialog;

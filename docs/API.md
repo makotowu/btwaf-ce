@@ -186,14 +186,32 @@
 ```json
 {"list": [{"ip": "1.2.3.4", "site": "...", "reason": "cc|attack", "time": 1730000000,
            "expire": 1730000300, "block_time": 300, "state": "blocked|expired|unbanned",
-           "unban_time": 0, "area": "..."}],
- "total": 0, "page": 1, "rows": 50, "status": "current", "window": 5000}
+           "unban_time": 0, "area": "...", "system_blocked": false}],
+ "total": 0, "page": 1, "rows": 50, "status": "current", "window": 5000,
+ "system": {"available": true, "source": "panel-firewall", "sync_count": 0}}
 ```
 说明：`current`=仍生效；`history`=已过期或已解封；数据取自 `block.log` 尾部最近 5000 条记录。
+`system_blocked` 表示该 IP 同时存在于系统防火墙；`system.sync_count` 是当前筛选结果中同时被系统防火墙封禁的数量。
+
+### `get_system_firewall`
+参数：无
+返回：
+```json
+{"available": true, "source": "panel-firewall",
+ "list": [{"id": 8, "ip": "1.2.3.4", "ps": "", "addtime": "", "can_unban": true}],
+ "total": 1, "error": ""}
+```
+数据来自面板 `firewall` 表；面板系统防火墙不可用时 `available=false`，`list=[]`。
 
 ### `unban_ip` / `unban_all`
-参数：`ip`、`site`（可选；`unban_all` 只需 `site` 可选）
-返回 `data = {"unbanned": 1}`
+参数：`ip`、`site`（可选；`unban_all` 只需 `site` 可选）、`sync_system`（可选，`1` 表示同步解封系统防火墙中的同一 IP）
+返回 `data`：
+- `unban_ip`：`{"unbanned": 1, "ip": "...", "site": "...", "system_unbanned": 0|1}`
+- `unban_all`：`{"unbanned": N, "system_unbanned": M}`
+
+### `unban_system_ip` / `unban_system_all`
+- `unban_system_ip`：参数 `ip`，返回 `{"unbanned": 1, "ip": "..."}`
+- `unban_system_all`：无参数，逐条通过面板 `firewalls.DelDropAddress` 解封当前系统防火墙 IP，返回 `{"unbanned": N, "errors": []}`
 
 ## 5. 黑白名单
 

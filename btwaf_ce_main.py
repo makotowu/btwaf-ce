@@ -23,6 +23,7 @@ except Exception:
 
 from wafcore import config as C
 from wafcore import engine as E
+from wafcore import firewall as F
 from wafcore import logs as L
 from wafcore import nginx as N
 from wafcore import paths
@@ -128,6 +129,14 @@ class btwaf_ce_main(object):
         if not DATE_RE.match(d):
             raise ValueError("日期格式应为 YYYY-MM-DD")
         return d
+
+    def _flag(self, get, key, default=False):
+        value = self._p(get, key, default)
+        if isinstance(value, bool):
+            return value
+        if value is None:
+            return default
+        return str(value).strip().lower() in ("1", "true", "yes", "on")
 
     def _audit(self, msg):
         try:
@@ -493,22 +502,90 @@ class btwaf_ce_main(object):
             "p": self._p(get, "p", 1),
             "rows": self._p(get, "rows", 50),
         }
-        return L.block_list(params, self._area_lookup())
+        firewall = F.client(self.public).list_blocked()
+        system_ips = [item.get("ip") for item in firewall.get("list") or []]
+        result = L.block_list(params, self._area_lookup(), system_ips=system_ips)
+        result["system"] = {
+            "available": bool(firewall.get("available")),
+            "source": firewall.get("source") or "",
+            "sync_count": result.pop("system_sync_count", 0),
+        }
+        return result
+
+    @_api
+    def get_system_firewall(self, get):
+        return F.client(self.public).list_blocked(sync=True)
 
     @_api
     def unban_ip(self, get):
         ip = str(self._p(get, "ip", "") or "").strip()
         site_name = str(self._p(get, "site", "") or "").strip()
+        sync_system = self._flag(get, "sync_system", False)
         L.unban(ip, site_name)
-        self._audit("解封 IP：%s%s" % (ip, (" @ " + site_name) if site_name else ""))
-        return {"unbanned": 1, "ip": ip, "site": site_name}
+        system_unbanned = 0
+        if sync_system:
+            result = F.client(self.public).unban(ip)
+            if result.get("ok"):
+                system_unbanned = 1
+        self._audit(
+            "解封 IP：%s%s%s"
+            % (
+                ip,
+                (" @ " + site_name) if site_name else "",
+                "，同步系统防火墙" if system_unbanned else "",
+            )
+        )
+        return {"unbanned": 1, "ip": ip, "site": site_name, "system_unbanned": system_unbanned}
 
     @_api
     def unban_all(self, get):
         site_name = str(self._p(get, "site", "") or "").strip()
-        count = L.unban_all(site_name, self._area_lookup())
-        self._audit("解封全部 IP（%s）：%d 个" % (site_name or "全部站点", count))
-        return {"unbanned": count}
+        sync_system = self._flag(get, "sync_system", False)
+        current = L.block_list(
+            {"site": site_name, "p": 1, "rows": 200, "status": "current"},
+            self._area_lookup(),
+        ).get("list") or []
+        system_set = set()
+        if sync_system:
+            firewall = F.client(self.public).list_blocked()
+            system_set = set(item.get("ip") for item in firewall.get("list") or [])
+        count = 0
+        system_unbanned = 0
+        for item in current:
+            ip = item.get("ip") or ""
+            L.unban(ip, item.get("site") or "", "manual_all")
+            count += 1
+            if sync_system and ip in system_set and F.client(self.public).unban(ip).get("ok"):
+                system_unbanned += 1
+        self._audit(
+            "解封全部 IP（%s）：%d 个%s"
+            % (
+                site_name or "全部站点",
+                count,
+                "，同步系统防火墙 %d 个" % system_unbanned if sync_system else "",
+            )
+        )
+        return {"unbanned": count, "system_unbanned": system_unbanned}
+
+    @_api
+    def unban_system_ip(self, get):
+        ip = str(self._p(get, "ip", "") or "").strip()
+        if not util.valid_ip(ip):
+            raise ValueError("IP 格式错误")
+        result = F.client(self.public).unban(ip)
+        if not result.get("ok"):
+            raise ValueError(result.get("error") or "系统防火墙解封失败")
+        self._audit("解封系统防火墙 IP：%s" % ip)
+        return {"unbanned": 1, "ip": ip}
+
+    @_api
+    def unban_system_all(self, get):
+        firewall = F.client(self.public).list_blocked()
+        if not firewall.get("available"):
+            raise ValueError("系统防火墙接口不可用")
+        result = F.client(self.public).unban_many([item.get("ip") for item in firewall.get("list") or []])
+        self._audit("解封系统防火墙全部 IP：%d 个" % result.get("unbanned", 0))
+        return result
 
     # ---------------- 黑白名单 ----------------
     @_api

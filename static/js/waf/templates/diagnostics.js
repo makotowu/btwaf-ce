@@ -433,6 +433,7 @@
 <el-dialog v-model="confirmDialog.visible" :title="confirmDialog.title" width="420px" append-to-body @closed="onConfirmClosed">
     <div class="waf-teleport">
         <div class="waf-confirm-text">{{ confirmDialog.content }}</div>
+        <el-checkbox v-if="confirmDialog.checkbox" v-model="confirmDialog.checked" style="margin-top:12px">{{ confirmDialog.checkboxLabel }}</el-checkbox>
     </div>
     <template #footer>
         <el-button size="small" @click="onConfirmCancel">取消</el-button>

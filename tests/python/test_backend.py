@@ -79,6 +79,7 @@ atexit.register(_conf_patch.stop)
 
 from wafcore import config as C  # noqa: E402
 from wafcore import engine as E  # noqa: E402
+from wafcore import firewall as F  # noqa: E402
 from wafcore import geo as G  # noqa: E402
 from wafcore import logs as L  # noqa: E402
 from wafcore import nginx as N  # noqa: E402
@@ -1043,7 +1044,84 @@ class BlockListTest(BaseCase):
 
 
 # ---------------------------------------------------------------------------
-# 8) sites.sync（fake db）
+# 8) 面板系统防火墙
+# ---------------------------------------------------------------------------
+class PanelFirewallTest(BaseCase):
+    class FakeM(object):
+        def __init__(self, rows):
+            self.rows = rows
+
+        def select(self):
+            return [dict(row) for row in self.rows]
+
+    class FakePublic(object):
+        def __init__(self, rows):
+            self.rows = rows
+
+        def M(self, name):
+            return PanelFirewallTest.FakeM(self.rows)
+
+    class FakeModule(object):
+        calls = []
+
+        class firewalls(object):
+            def GetList(self):
+                PanelFirewallTest.FakeModule.calls.append("GetList")
+
+            def DelDropAddress(self, get):
+                PanelFirewallTest.FakeModule.calls.append((get.id, get.port))
+                return {"status": True}
+
+    def setUp(self):
+        super().setUp()
+        self.rows = [
+            {"id": 1, "port": "1.2.3.4", "ps": "手动", "addtime": "2026-11-19"},
+            {"id": 2, "port": "80", "ps": "", "addtime": ""},
+            {"id": 3, "port": "39000-40000", "ps": "", "addtime": ""},
+            {"id": 4, "port": "5.6.7.0/24", "ps": "", "addtime": ""},
+            {"id": 5, "port": "1.2.3.4", "ps": "重复", "addtime": ""},
+        ]
+        type(self).FakeModule.calls = []
+
+    def test_list_filters_ports_and_duplicates(self):
+        result = F.PanelFirewall(self.FakePublic(self.rows)).list_blocked()
+        self.assertTrue(result["available"])
+        self.assertEqual(result["source"], "panel-firewall")
+        self.assertEqual([x["ip"] for x in result["list"]], ["1.2.3.4", "5.6.7.0/24"])
+
+    def test_list_sync_calls_panel_firewalls(self):
+        with mock.patch.object(F, "_load_firewalls", return_value=self.FakeModule):
+            result = F.PanelFirewall(self.FakePublic(self.rows)).list_blocked(sync=True)
+        self.assertTrue(result["available"])
+        self.assertEqual(self.FakeModule.calls, ["GetList"])
+
+    def test_unban_calls_panel_del_drop_address(self):
+        with mock.patch.object(F, "_load_firewalls", return_value=self.FakeModule):
+            result = F.PanelFirewall(self.FakePublic(self.rows)).unban("1.2.3.4")
+        self.assertTrue(result["ok"])
+        self.assertEqual(self.FakeModule.calls, [(1, "1.2.3.4")])
+
+    def test_unban_missing_ip_does_not_call_panel(self):
+        with mock.patch.object(F, "_load_firewalls", return_value=self.FakeModule):
+            result = F.PanelFirewall(self.FakePublic(self.rows)).unban("9.9.9.9")
+        self.assertFalse(result["ok"])
+        self.assertEqual(self.FakeModule.calls, [])
+
+    def test_unavailable_without_public(self):
+        with mock.patch.object(F, "_default_public", return_value=None):
+            result = F.PanelFirewall().list_blocked()
+        self.assertFalse(result["available"])
+        self.assertEqual(result["list"], [])
+
+    def test_unban_rejects_invalid_ip_without_panel(self):
+        with mock.patch.object(F, "_load_firewalls") as fake:
+            result = F.PanelFirewall(self.FakePublic(self.rows)).unban("not-an-ip")
+        self.assertFalse(result["ok"])
+        fake.assert_not_called()
+
+
+# ---------------------------------------------------------------------------
+# 9) sites.sync（fake db）
 # ---------------------------------------------------------------------------
 class SitesSyncTest(BaseCase):
     def test_sync_rebuilds_hosts_and_fills_sites(self):
@@ -1531,6 +1609,96 @@ class ControllerReadOnlyTest(BaseCase):
 # ---------------------------------------------------------------------------
 # 11) P0：范围、响应码、面板 CDN、操作日志筛选
 # ---------------------------------------------------------------------------
+class FirewallControllerTest(BaseCase):
+    class FakeClient(object):
+        def __init__(self, ips):
+            self.ips = list(ips)
+            self.unbanned = []
+
+        def list_blocked(self, sync=None):
+            return {
+                "available": True,
+                "source": "test",
+                "list": [{"ip": ip, "ps": "", "addtime": ""} for ip in self.ips],
+                "total": len(self.ips),
+                "error": "",
+            }
+
+        def unban(self, ip):
+            self.unbanned.append(ip)
+            return {"ok": True, "error": ""}
+
+        def unban_many(self, ips):
+            for ip in ips:
+                self.unbanned.append(ip)
+            return {"unbanned": len(ips), "errors": []}
+
+    def setUp(self):
+        super().setUp()
+        if MAIN.public is not None:
+            self.skipTest("面板 public 可用，跳过 public=None 场景")
+        self.ctrl = MAIN.btwaf_ce_main()
+        now = U.now()
+        write_lines(
+            P.BLOCK_LOG,
+            [
+                {"time": now - 10, "ip": "1.1.1.1", "site": "a.com", "expire": now + 300, "block_time": 60},
+                {"time": now - 20, "ip": "2.2.2.2", "site": "b.com", "expire": now + 300, "block_time": 60},
+            ],
+        )
+
+    def _envelope(self, res):
+        self.assertIsInstance(res, dict)
+        self.assertIn("status", res)
+        self.assertIn("data", res)
+        return res
+
+    def test_block_list_marks_system_ips(self):
+        fake = self.FakeClient(["1.1.1.1"])
+        with mock.patch.object(F, "DEFAULT_CLIENT", fake):
+            data = self._envelope(self.ctrl.get_block_list(None))["data"]
+        self.assertEqual(data["system"]["sync_count"], 1)
+        tagged = [item for item in data["list"] if item["system_blocked"]]
+        self.assertEqual([item["ip"] for item in tagged], ["1.1.1.1"])
+
+    def test_system_firewall_endpoint(self):
+        fake = self.FakeClient(["1.1.1.1"])
+        with mock.patch.object(F, "DEFAULT_CLIENT", fake):
+            data = self._envelope(self.ctrl.get_system_firewall(None))["data"]
+        self.assertTrue(data["available"])
+        self.assertEqual(data["list"][0]["ip"], "1.1.1.1")
+
+    def test_unban_sync_system(self):
+        fake = self.FakeClient(["1.1.1.1"])
+        with mock.patch.object(F, "DEFAULT_CLIENT", fake):
+            data = self._envelope(self.ctrl.unban_ip({"ip": "1.1.1.1", "sync_system": "1"}))["data"]
+        self.assertEqual(data["system_unbanned"], 1)
+        self.assertEqual(fake.unbanned, ["1.1.1.1"])
+
+    def test_unban_without_sync_does_not_touch_system(self):
+        fake = self.FakeClient(["1.1.1.1"])
+        with mock.patch.object(F, "DEFAULT_CLIENT", fake):
+            data = self._envelope(self.ctrl.unban_ip({"ip": "1.1.1.1"}))["data"]
+        self.assertEqual(data["system_unbanned"], 0)
+        self.assertEqual(fake.unbanned, [])
+
+    def test_unban_all_sync_only_intersection(self):
+        fake = self.FakeClient(["1.1.1.1"])
+        with mock.patch.object(F, "DEFAULT_CLIENT", fake):
+            data = self._envelope(self.ctrl.unban_all({"sync_system": "1"}))["data"]
+        self.assertEqual(data["unbanned"], 2)
+        self.assertEqual(data["system_unbanned"], 1)
+        self.assertEqual(fake.unbanned, ["1.1.1.1"])
+
+    def test_unban_system_ip_and_all(self):
+        fake = self.FakeClient(["1.1.1.1", "2.2.2.2"])
+        with mock.patch.object(F, "DEFAULT_CLIENT", fake):
+            one = self._envelope(self.ctrl.unban_system_ip({"ip": "1.1.1.1"}))["data"]
+            all_res = self._envelope(self.ctrl.unban_system_all(None))["data"]
+        self.assertEqual(one["unbanned"], 1)
+        self.assertEqual(all_res["unbanned"], 2)
+
+
 class P0RangeAndStatusTest(BaseCase):
     def test_ip_range_validation_and_lists(self):
         self.assertTrue(U.valid_ip_range("1.2.3.4-1.2.3.10"))

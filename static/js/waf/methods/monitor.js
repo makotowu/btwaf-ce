@@ -160,6 +160,9 @@
                 });
             },
             loadBlocks: async function () {
+                if (this.blockTab === 'system') {
+                    return this.loadSystemFirewall();
+                }
                 this.blockLoading = true;
                 this.errors.blocks = '';
                 try {
@@ -169,6 +172,9 @@
                     d = d || {};
                     this.blockList = Array.isArray(d.list) ? d.list : [];
                     this.blockTotal = num(d.total);
+                    this.blockSystem.available = !!(d.system && d.system.available);
+                    this.blockSystem.source = (d.system && d.system.source) || '';
+                    this.blockSystem.sync_count = num(d.system && d.system.sync_count);
                     this.loaded.blocks = true;
                 } catch (e) {
                     this.errors.blocks = errText(e);
@@ -178,30 +184,95 @@
                     this.blockLoading = false;
                 }
             },
+            loadSystemFirewall: async function () {
+                this.blockSystemLoading = true;
+                this.errors.blocks = '';
+                try {
+                    var d = await WafAPI.data('get_system_firewall');
+                    d = d || {};
+                    this.blockSystem = {
+                        available: !!d.available,
+                        source: d.source || '',
+                        list: Array.isArray(d.list) ? d.list : [],
+                        total: num(d.total),
+                        error: d.error || ''
+                    };
+                    this.loaded.blocks = true;
+                } catch (e) {
+                    this.errors.blocks = errText(e);
+                    this.blockSystem = { available: false, source: '', list: [], total: 0, error: '' };
+                } finally {
+                    this.blockSystemLoading = false;
+                }
+            },
             switchBlockTab: function (tab) { this.blockTab = tab; this.blockPage = 1; this.loadBlocks(); },
             onBlockPageChange: function (p) { this.blockPage = p; this.loadBlocks(); },
             onBlockSizeChange: function (n) { this.blockRows = n; this.blockPage = 1; this.loadBlocks(); },
             unbanBlock: function (row) {
                 var self = this;
-                this.showConfirm('解封确认', '确定解封 IP ' + row.ip + (row.site ? '（' + row.site + '）' : '') + ' 吗？').then(async function (ok) {
+                var systemAvailable = !!this.blockSystem.available;
+                var sync = systemAvailable && !!row.system_blocked;
+                var content = '该 IP 来自 WAF';
+                if (!systemAvailable) {
+                    content += '。';
+                } else if (sync) {
+                    content += '，同时来自系统防火墙；解封将同步解封系统防火墙中的 ' + row.ip + '。';
+                } else {
+                    content += '；系统防火墙中没有该 IP，仅解封 WAF 记录。';
+                }
+                this.showConfirm('解封确认', content).then(async function (ok) {
                     if (!ok) return;
                     try {
-                        await WafAPI.data('unban_ip', { ip: row.ip, site: row.site || '' });
+                        await WafAPI.data('unban_ip', { ip: row.ip, site: row.site || '', sync_system: sync });
                         BTP.msg('已提交解封：' + row.ip, 'success');
                         self.loadBlocks();
                         self.refreshStatusAfterSave();
                     } catch (e) { }
                 });
             },
-            unbanAll: function () {
+            unbanSystem: function (row) {
                 var self = this;
-                this.showConfirm('全部解封', '确定解封当前所有临时封锁的 IP 吗？').then(async function (ok) {
+                this.showConfirm('解封确认', '该 IP 来自系统防火墙；解封将移除系统防火墙中的 ' + row.ip + '。').then(async function (ok) {
                     if (!ok) return;
                     try {
-                        var d = await WafAPI.data('unban_all', { site: '' });
-                        BTP.msg('已提交全部解封：' + num(d && d.unbanned) + ' 条', 'success');
+                        await WafAPI.data('unban_system_ip', { ip: row.ip });
+                        BTP.msg('已解封系统防火墙 IP：' + row.ip, 'success');
+                        self.loadSystemFirewall();
+                    } catch (e) { }
+                });
+            },
+            unbanAll: function () {
+                if (this.blockTab === 'system') {
+                    return this.unbanAllSystem();
+                }
+                var self = this;
+                var sync = num(this.blockSystem.sync_count);
+                var content = '当前有 ' + num(this.blockTotal) + ' 条来自 WAF';
+                content += sync ? '，其中 ' + sync + ' 条同时来自系统防火墙。' : '。';
+                var label = sync ? '同步解封 ' + sync + ' 条来自系统防火墙的 IP' : '';
+                this.showConfirmWithOption('全部解封', content, label, false).then(async function (res) {
+                    if (!res || !res.ok) return;
+                    try {
+                        var d = await WafAPI.data('unban_all', { site: '', sync_system: !!res.checked });
+                        BTP.msg(
+                            '已提交全部解封：' + num(d && d.unbanned) + ' 条' +
+                            (res.checked ? '，同步系统防火墙 ' + num(d && d.system_unbanned) + ' 条' : ''),
+                            'success'
+                        );
                         self.loadBlocks();
                         self.refreshStatusAfterSave();
+                    } catch (e) { }
+                });
+            },
+            unbanAllSystem: function () {
+                var self = this;
+                var total = num(this.blockSystem.total) || (this.blockSystem.list || []).length;
+                this.showConfirm('全部解封', '当前有 ' + total + ' 条来自系统防火墙，确定全部解封？').then(async function (ok) {
+                    if (!ok) return;
+                    try {
+                        var d = await WafAPI.data('unban_system_all', {});
+                        BTP.msg('已解封系统防火墙 IP：' + num(d && d.unbanned) + ' 条', 'success');
+                        self.loadSystemFirewall();
                     } catch (e) { }
                 });
             },
