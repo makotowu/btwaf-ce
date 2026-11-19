@@ -123,7 +123,6 @@ body.waf-dark,
 body.waf-dark { background: #0a0a0a; color: #e5eaf3; }
 body.waf-dark .waf-teleport,
 body.waf-dark .el-overlay .el-dialog,
-body.waf-dark .el-overlay .el-drawer,
 body.waf-dark .el-overlay .el-message-box {
     --el-bg-color: #141414;
     --el-bg-color-page: #0a0a0a;
@@ -365,14 +364,23 @@ body.waf-dark .el-overlay .el-message-box {
 }
 
 .waf-teleport .waf-detail,
-.waf-teleport .waf-site-drawer { font-size: var(--el-font-size-base, 13px); }
+.waf-teleport .waf-site-dialog { font-size: var(--el-font-size-base, 13px); }
 .waf-teleport .waf-section-title {
     margin: 14px 0 8px;
     font-size: var(--el-font-size-base, 13px);
     font-weight: 600;
     color: var(--el-text-color-primary, #303133);
 }
-.waf-teleport .waf-drawer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.waf-teleport .waf-dialog-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.waf-teleport .waf-dialog-footer-actions { display: flex; align-items: center; gap: 8px; }
+.waf-dialog { max-width: calc(100vw - 32px); padding: 0 !important; }
+.el-overlay .waf-dialog .el-dialog__body { padding: 0; }
+.el-overlay .waf-dialog .el-dialog__footer { padding: 12px 20px; }
+.waf-dialog-body { padding: 16px 20px; max-height: 64vh; overflow: auto; box-sizing: border-box; }
+.waf-dialog-body-tall { height: 62vh; max-height: 62vh; overflow: auto; padding: 16px 20px; box-sizing: border-box; }
+.waf-dialog-body-flush { padding: 0; }
+.el-overlay .waf-dialog .el-dialog__headerbtn { top: 14px; right: 16px; width: 32px; height: 32px; }
+.el-overlay .waf-dialog .el-dialog__headerbtn .el-dialog__close { font-size: 18px; }
 .waf-teleport .waf-confirm-text {
     font-size: var(--el-font-size-base, 13px);
     line-height: 1.7;
@@ -387,68 +395,6 @@ body.waf-dark .el-overlay .el-message-box {
     background: var(--el-bg-color, #ffffff);
 }
 .waf-teleport .el-descriptions__label { color: var(--el-text-color-secondary, #909399); }
-
-/* ================= el-drawer 最小结构样式 =================
- * 面板 style.css 中没有 .el-drawer 系列样式（面板未使用该组件），
- * 这里只补结构布局（定位/尺寸/滚动），配色全部走 --el-* 变量。 */
-.el-drawer {
-    position: fixed;
-    top: 0;
-    bottom: 0;
-    display: flex;
-    flex-direction: column;
-    max-width: 100%;
-    background: var(--el-bg-color, #ffffff);
-    color: var(--el-text-color-primary, #303133);
-    box-shadow: var(--el-box-shadow-dark, 0 8px 24px rgba(0, 0, 0, .18));
-    outline: none;
-    z-index: 1;
-}
-.el-drawer.rtl { right: 0; }
-.el-drawer.ltr { left: 0; }
-.el-drawer.ttb,
-.el-drawer.btt { left: 0; right: 0; width: 100% !important; height: 50%; }
-.el-drawer.ttb { top: 0; }
-.el-drawer.btt { bottom: 0; }
-.el-drawer__header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 0;
-    padding: 14px 20px 10px;
-    border-bottom: 1px solid var(--el-border-color-lighter, #ebeef5);
-    color: var(--el-text-color-primary, #303133);
-    font-size: var(--el-font-size-medium, 14px);
-    font-weight: 600;
-}
-.el-drawer__header > :first-child { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.el-drawer__close-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: transparent;
-    color: var(--el-text-color-secondary, #909399);
-    cursor: pointer;
-    font-size: 16px;
-}
-.el-drawer__close-btn:hover { color: var(--el-color-primary, #20a53a); }
-.el-drawer__body {
-    flex: 1 1 auto;
-    padding: 16px 20px 20px;
-    overflow: auto;
-}
-.el-drawer__footer {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 8px;
-    padding: 10px 20px;
-    border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
-}
-.el-drawer__footer .waf-drawer-footer-actions { display: flex; align-items: center; gap: 8px; }
 
 @media (max-width: 980px) {
     #btwaf-ce-app .waf-layout { flex-direction: column; }
@@ -717,13 +663,11 @@ body.waf-dark .waf-teleport .waf-pre { background: var(--el-fill-color, #303030)
     --el-color-primary-light-9: var(--btp-primary-light-9, color-mix(in srgb, var(--el-color-primary, #20a53a) 10%, var(--el-bg-color, #ffffff)));
 }
 
-/* 弹窗/抽屉/确认框（teleport 到 body，不在 #app 内）跟随主题 */
+/* 弹窗/确认框（teleport 到 body，不在 #app 内）跟随主题 */
 .el-overlay,
 .el-overlay .el-dialog,
-.el-overlay .el-drawer,
 .el-overlay .el-message-box,
 .el-dialog,
-.el-drawer,
 .el-message-box {
     --el-color-primary: var(--btp-primary, #20a53a);
     --waf-primary: var(--btp-primary, #20a53a);
@@ -759,9 +703,12 @@ body.waf-dark .waf-teleport .waf-pre { background: var(--el-fill-color, #303030)
 .el-overlay .el-dialog__headerbtn:hover .el-dialog__close { color: var(--waf-primary, #20a53a); }
 
 /* Element Upload：面板 CSS 未包含 upload 样式时，原生 file input 会露出来 */
-#btwaf-ce-app .el-upload { display: inline-flex; align-items: center; }
-#btwaf-ce-app .el-upload__input { display: none !important; }
-#btwaf-ce-app .el-upload-list { margin-top: 8px; }
+#btwaf-ce-app .el-upload,
+.waf-teleport .el-upload { display: inline-flex; align-items: center; }
+#btwaf-ce-app .el-upload__input,
+.waf-teleport .el-upload__input { display: none !important; }
+#btwaf-ce-app .el-upload-list,
+.waf-teleport .el-upload-list { margin-top: 8px; }
 
 /* 数字输入框：去掉右侧上下箭头（面板缺样式时会出现缝），保留纯数字输入 */
 #btwaf-ce-app .el-input-number,
@@ -849,14 +796,12 @@ body.waf-dark .waf-teleport .waf-pre { background: var(--el-fill-color, #303030)
 /* 主按钮 hover/按下态直接取主题色，避免面板/Element 默认深绿色 */
 #btwaf-ce-app .el-button--primary:hover,
 .el-overlay .el-button--primary:hover,
-.el-drawer .el-button--primary:hover,
 .el-dialog .el-button--primary:hover {
     background-color: var(--btp-primary-light-3, #63c075) !important;
     border-color: var(--btp-primary-light-3, #63c075) !important;
 }
 #btwaf-ce-app .el-button--primary:active,
 .el-overlay .el-button--primary:active,
-.el-drawer .el-button--primary:active,
 .el-dialog .el-button--primary:active {
     background-color: var(--btp-primary, #20a53a) !important;
     border-color: var(--btp-primary, #20a53a) !important;

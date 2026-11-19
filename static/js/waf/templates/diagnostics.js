@@ -132,8 +132,8 @@
     </main>
 </div>
 
-<el-drawer v-model="siteLogVisible" :title="siteLogSite ? siteLogSite + ' 日志' : '站点日志'" size="760px" append-to-body>
-    <div class="waf-teleport">
+<el-dialog v-model="siteLogVisible" :title="siteLogSite ? siteLogSite + ' 日志' : '站点日志'" width="900px" append-to-body class="waf-dialog">
+    <div class="waf-teleport waf-dialog-body">
         <div class="waf-filters">
             <el-select v-model="siteLogDate" size="small" style="width:160px" @change="siteLogDateChange">
                 <el-option v-for="d in siteLogDates" :key="d" :label="d" :value="d"></el-option>
@@ -170,10 +170,10 @@
             <el-pagination background small layout="total, sizes, prev, pager, next" :total="siteLogTotal" :page-size="siteLogRows" :current-page="siteLogPage" :page-sizes="[10, 20, 50, 100]" @current-change="onSiteLogPageChange" @size-change="onSiteLogSizeChange"></el-pagination>
         </div>
     </div>
-</el-drawer>
+</el-dialog>
 
-<el-drawer v-model="logDetailVisible" title="命中详情" size="640px" append-to-body>
-    <div v-if="logDetail" class="waf-detail waf-teleport">
+<el-dialog v-model="logDetailVisible" title="命中详情" width="760px" append-to-body class="waf-dialog">
+    <div v-if="logDetail" class="waf-detail waf-teleport waf-dialog-body">
         <el-descriptions :column="2" size="small" border>
             <el-descriptions-item label="时间">{{ fmtTime(logDetail.time) }}</el-descriptions-item>
             <el-descriptions-item label="站点">{{ logDetail.site || '-' }}</el-descriptions-item>
@@ -211,18 +211,20 @@
         </el-table>
         <h4 class="waf-section-title">请求内容（纯文本展示，不执行任何 HTML）</h4>
         <pre class="waf-pre">{{ logPayloadText(logDetail) }}</pre>
-        <div class="waf-drawer-actions">
+    </div>
+    <template #footer>
+        <div v-if="logDetail" class="waf-dialog-actions">
             <el-button size="small" type="danger" plain @click="addIpToList(logDetail, 'ip_black')">加入 IP 黑名单</el-button>
             <el-button size="small" type="warning" plain @click="addIpToList(logDetail, 'ip_white')">加入 IP 白名单</el-button>
             <el-button size="small" @click="unbanLogIp(logDetail)">解封该 IP</el-button>
         </div>
-    </div>
-</el-drawer>
+    </template>
+</el-dialog>
 
-<el-drawer v-model="siteDialog.visible" :title="'站点防护配置 · ' + siteDialog.site_name" size="780px" append-to-body :before-close="beforeCloseSite">
-    <div v-loading="siteDialog.loading" class="waf-site-drawer waf-teleport">
+<el-dialog v-model="siteDialog.visible" :title="'站点防护配置 · ' + siteDialog.site_name" width="900px" append-to-body class="waf-dialog" :before-close="beforeCloseSite">
+    <div v-loading="siteDialog.loading" class="waf-site-dialog waf-teleport waf-dialog-body waf-dialog-body-tall">
         <el-tabs v-model="siteDialog.tab" class="waf-tabs">
-            <el-tab-pane label="基础" name="basic">
+            <el-tab-pane lazy label="基础" name="basic">
                 <el-form label-width="130px" size="small" class="waf-form">
                     <el-form-item label="站点防护开关">
                         <el-switch v-model="siteDialog.config.open"></el-switch>
@@ -244,7 +246,7 @@
                 </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="模块" name="modules">
+            <el-tab-pane lazy label="模块" name="modules">
                 <el-table :data="modules" size="small" border>
                     <el-table-column label="模块" width="160">
                         <template #default="s">{{ s.row.name }}</template>
@@ -262,7 +264,7 @@
                 </el-table>
             </el-tab-pane>
 
-            <el-tab-pane label="地区访问" name="geo">
+            <el-tab-pane lazy label="地区访问" name="geo">
                 <el-form label-width="150px" size="small" class="waf-form">
                     <el-form-item label="本站点地区控制">
                         <el-select v-model="siteTri.geo_open" size="small" style="width:170px">
@@ -295,7 +297,7 @@
                 </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="CC / 攻击拦截" name="cc">
+            <el-tab-pane lazy label="CC / 攻击拦截" name="cc">
                 <el-form label-width="150px" size="small" class="waf-form">
                     <el-form-item label="CC 防护">
                         <el-select v-model="siteTri.cc_open" size="small" style="width:150px">
@@ -336,7 +338,7 @@
                 </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="CDN" name="cdn">
+            <el-tab-pane lazy label="CDN" name="cdn">
                 <el-alert v-if="panelCdnOpen()" type="warning" :closable="false" show-icon
                     :title="'面板已开启 CDN 真实 IP 解析（' + (siteDialog.panelCdn.scope === 'site' ? '站点' : '全局') + '，Header=' + (siteDialog.panelCdn.header || '-') + '），插件站点 CDN 设置暂不生效'"></el-alert>
                 <el-form label-width="130px" size="small" class="waf-form">
@@ -355,7 +357,7 @@
                 </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="黑白名单" name="lists">
+            <el-tab-pane lazy label="黑白名单" name="lists">
                 <div class="waf-list-editor">
                     <el-select v-model="siteListType" size="small" style="width:180px">
                         <el-option v-for="m in listMeta" :key="m.key" :label="m.label" :value="m.key"></el-option>
@@ -368,7 +370,7 @@
                 <el-input v-model="siteText[siteListType]" type="textarea" :rows="10" class="waf-mono" placeholder="一行一条"></el-input>
             </el-tab-pane>
 
-            <el-tab-pane label="敏感路径 / 后缀" name="paths">
+            <el-tab-pane lazy label="敏感路径 / 后缀" name="paths">
                 <el-form label-width="150px" size="small" class="waf-form">
                     <el-form-item label="敏感路径后缀">
                         <el-input v-model="siteText.disable_php_path" type="textarea" :rows="5" class="waf-mono" placeholder="一行一个，支持 ^ 开头正则，如 ^/cache/"></el-input>
@@ -382,7 +384,7 @@
                 </el-form>
             </el-tab-pane>
 
-            <el-tab-pane label="绑定自定义规则" name="custom">
+            <el-tab-pane lazy label="绑定自定义规则" name="custom">
                 <div class="waf-list-editor">
                     <el-select v-model="siteDialog.config.custom_rules" multiple collapse-tags size="small" style="width:100%" placeholder="选择要绑定到本站点的自定义规则">
                         <el-option v-for="o in customRuleOptions" :key="o.value" :label="o.label" :value="o.value"></el-option>
@@ -396,15 +398,15 @@
         </el-tabs>
     </div>
     <template #footer>
-        <div class="waf-drawer-footer-actions">
+        <div class="waf-dialog-footer-actions">
             <el-button size="small" @click="closeSiteDialog">取消</el-button>
             <el-button size="small" type="primary" :disabled="!siteDialogDirty" :loading="siteDialog.saving" @click="saveSiteConfig">保存站点配置</el-button>
         </div>
     </template>
-</el-drawer>
+</el-dialog>
 
-<el-dialog v-model="customDialogVisible" :title="customForm.id ? '编辑自定义规则' : '新增自定义规则'" width="660px" append-to-body>
-  <div class="waf-teleport">
+<el-dialog v-model="customDialogVisible" :title="customForm.id ? '编辑自定义规则' : '新增自定义规则'" width="660px" append-to-body class="waf-dialog">
+  <div class="waf-teleport waf-dialog-body">
     <el-form label-width="100px" size="small" class="waf-form">
         <el-form-item label="规则名称">
             <el-input v-model="customForm.name" placeholder="如：拦截 sqlmap 扫描器" maxlength="120"></el-input>
@@ -466,15 +468,15 @@
     </template>
 </el-dialog>
 
-<el-dialog v-model="blockPagePreviewVisible" title="拦截页面预览（后端已过滤危险标签）" width="720px" append-to-body>
-    <div class="waf-teleport">
+<el-dialog v-model="blockPagePreviewVisible" title="拦截页面预览（后端已过滤危险标签）" width="720px" append-to-body class="waf-dialog">
+    <div class="waf-teleport waf-dialog-body waf-dialog-body-flush">
         
         <iframe class="waf-preview-frame" sandbox="" :srcdoc="blockPagePreview"></iframe>
     </div>
 </el-dialog>
 
-<el-dialog v-model="confirmDialog.visible" :title="confirmDialog.title" width="420px" append-to-body @closed="onConfirmClosed">
-    <div class="waf-teleport">
+<el-dialog v-model="confirmDialog.visible" :title="confirmDialog.title" width="420px" append-to-body class="waf-dialog" @closed="onConfirmClosed">
+    <div class="waf-teleport waf-dialog-body">
         <div class="waf-confirm-text">{{ confirmDialog.content }}</div>
         <el-checkbox v-if="confirmDialog.checkbox" v-model="confirmDialog.checked" style="margin-top:12px">{{ confirmDialog.checkboxLabel }}</el-checkbox>
     </div>

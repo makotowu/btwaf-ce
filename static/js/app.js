@@ -69,6 +69,7 @@
                     site_name: '', config: defaultSiteConfig(), raw: null, global: {},
                     panelCdn: null, cdnPreset: 'custom'
                 },
+                siteConfigCache: {},
                 siteTri: { observe: 'inherit', cc_open: 'inherit', url_cc: 'inherit', attack_open: 'inherit', geo_open: 'inherit', geo_mode: 'inherit', geo_unknown: 'inherit' },
                 siteText: {
                     ip_black: '', ip_white: '', url_black: '', url_white: '', ua_black: '', ua_white: '',

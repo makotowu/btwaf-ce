@@ -95,8 +95,7 @@
                 this.siteLogPage = 1;
                 this.siteLogError = '';
                 this.siteLogVisible = true;
-                await this.loadSiteLogDates();
-                await this.loadSiteLogs();
+                await Promise.all([this.loadSiteLogDates(), this.loadSiteLogs()]);
             },
             loadSiteLogDates: async function () {
                 try {
@@ -147,27 +146,47 @@
                 var self = this;
                 var d = this.siteDialog;
                 d.visible = true;
-                d.loading = true;
                 d.saving = false;
                 d.tab = 'basic';
                 d.site_name = row.site_name;
                 this.errors.sites = '';
+                var cached = this.siteConfigCache[row.site_name];
+                if (cached) {
+                    d.loading = false;
+                    this.applySiteConfigData(row, cached);
+                } else {
+                    d.loading = true;
+                }
                 WafAPI.data('get_site_config', { site_name: row.site_name }).then(function (res) {
                     res = res || {};
-                    // 编辑用站点自身配置 raw（保留 0/null 继承语义）；config 为合并后生效值，仅作回退
-                    d.config = normalizeSiteConfig(res.raw || res.config || {});
-                    d.raw = res.raw || {};
-                    d.global = res.global || {};
-                    d.panelCdn = res.panel_cdn || null;
-                    self.buildSiteTexts();
-                    d.snapshot = self.siteFingerprint();
-                    if (!self.customRuleOptions.length) self.loadCustomRuleOptions();
-                    if (!self.siteNames.length) self.loadSiteNames();
+                    self.siteConfigCache[row.site_name] = res;
+                    if (d.site_name !== row.site_name) return;
+                    self.applySiteConfigData(row, res);
                 }).catch(function (e) {
                     BTP.msg('读取站点配置失败：' + errText(e), 'error');
                 }).then(function () {
                     d.loading = false;
                 });
+            },
+            applySiteConfigData: function (row, res) {
+                var d = this.siteDialog;
+                if (!res) return;
+                // 编辑用站点自身配置 raw（保留 0/null 继承语义）；config 为合并后生效值，仅作回退
+                d.config = normalizeSiteConfig(res.raw || res.config || {});
+                d.raw = res.raw || {};
+                d.global = res.global || {};
+                d.panelCdn = res.panel_cdn || null;
+                this.buildSiteTexts();
+                d.snapshot = this.siteFingerprint();
+                if (!this.customRuleOptions.length) this.loadCustomRuleOptions();
+                if (!this.siteNames.length) this.loadSiteNames();
+            },
+            prefetchSiteConfig: function (row) {
+                if (!row || !row.site_name || this.siteConfigCache[row.site_name]) return;
+                var self = this;
+                WafAPI.data('get_site_config', { site_name: row.site_name }).then(function (res) {
+                    self.siteConfigCache[row.site_name] = res || {};
+                }).catch(function () { });
             },
             detectCdnPreset: function (headers) {
                 var normalized = (Array.isArray(headers) ? headers : []).map(function (h) { return String(h || '').toLowerCase(); });
@@ -306,6 +325,7 @@
                 var self = this;
                 try {
                     await WafAPI.data('save_site_config', { site_name: d.site_name, config: JSON.stringify(d.config) });
+                    delete self.siteConfigCache[d.site_name];
                     BTP.msg('站点配置已保存：' + d.site_name, 'success');
                     d.visible = false;
                     self.refreshStatusAfterSave();

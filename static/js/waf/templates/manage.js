@@ -33,7 +33,7 @@
         </template>
         <el-button v-else size="small" type="success" @click="enableAllUnprotected">一键开启未防护（{{ unprotectedCount }}）</el-button>
     </div>
-    <el-table :data="siteList" size="small" border stripe v-loading="siteLoading" @selection-change="onSiteSelection" @row-click="openSiteDialog" class="waf-clickable-table">
+    <el-table :data="siteList" size="small" border stripe v-loading="siteLoading" @selection-change="onSiteSelection" @row-click="openSiteDialog" @cell-mouse-enter="prefetchSiteConfig" class="waf-clickable-table">
         <el-table-column type="selection" width="42"></el-table-column>
         <el-table-column label="站点" prop="site_name" min-width="160" show-overflow-tooltip></el-table-column>
         <el-table-column label="域名" min-width="180">
@@ -62,7 +62,7 @@
             <template #default="s">
                 <div class="waf-row-actions">
                     <el-button link type="primary" size="small" @click.stop="viewSiteLogs(s.row)">日志</el-button>
-                    <el-button size="small" type="primary" plain @click.stop="openSiteDialog(s.row)">配置</el-button>
+                    <el-button size="small" type="primary" plain @mouseenter="prefetchSiteConfig(s.row)" @click.stop="openSiteDialog(s.row)">配置</el-button>
                 </div>
             </template>
         </el-table-column>
