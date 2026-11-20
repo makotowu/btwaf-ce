@@ -27,8 +27,28 @@ jobs:
           VERSION="${TAG#v}"
           python tools/build_zip.py --version "$VERSION"
 
+      - name: Extract release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          VERSION="${TAG#v}"
+          python - "$VERSION" <<'PY' > release-notes.md
+          import sys
+          from pathlib import Path
+
+          version = sys.argv[1]
+          text = Path("CHANGELOG.md").read_text(encoding="utf-8")
+          marker = "## " + version
+          start = text.find(marker)
+          if start < 0:
+              raise SystemExit("CHANGELOG.md 中找不到版本段落：" + version)
+          end = text.find("\n## ", start + len(marker))
+          section = text[start:] if end < 0 else text[start:end]
+          print(section.strip())
+          PY
+
       - name: Upload to GitHub Release
         uses: softprops/action-gh-release@v3
         with:
           files: dist/btwaf_ce-*.zip
-          generate_release_notes: true
+          body_path: release-notes.md
